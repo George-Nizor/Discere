@@ -140,7 +140,7 @@ const expected: Record<string, number> = {
   "from-rate-to-amount-7": 30 + 5 * 4,
   "from-rate-to-amount-9": 40 + (4 ** 2 - 6 * 4),
   "from-rate-to-amount-10": 3 * 5,
-  "from-rate-to-amount-11": 7 - 4,
+  "from-rate-to-amount-11": 3 ** 3 - 5 * 3 - (1 ** 3 - 5 * 1), // the integral of 3t² − 5 from 1 to 3
   "from-rate-to-amount-total-distance": 1 + 1, // |v| = 2 − 2t then 2t − 2: a triangle of 1 each side of t = 1
   "from-rate-to-amount-displacement": 6 * 5 - 5 ** 2,
 };
@@ -871,7 +871,7 @@ describe("Story lessons 6 to 12", () => {
       integral(() => 3, 0, 5),
       6,
     );
-    expect(keyOf("from-rate-to-amount-11")).toBeCloseTo(7 - 4, 9);
+    expect(keyOf("from-rate-to-amount-11")).toBeCloseTo(integral((t) => 3 * t ** 2 - 5, 1, 3), 6);
     // displacement and distance for v(t) = 2t − 2 on [0, 2]
     expect(integral((t) => 2 * t - 2, 0, 2)).toBeCloseTo(0, 6);
     expect(integral((t) => Math.abs(2 * t - 2), 0, 2)).toBeCloseTo(2, 4);

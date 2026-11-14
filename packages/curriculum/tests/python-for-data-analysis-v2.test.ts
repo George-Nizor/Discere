@@ -607,8 +607,8 @@ const ROWS: Row[] = [
  {
   "id": "python-filters-and-columns-revenue",
   "kind": "n",
-  "expect": 33,
-  "code": "import pandas as pd\ndf = pd.DataFrame({'units': [3, 4, 1], 'price': [2, 5, 7]})\nanswer = (df['units'] * df['price']).sum()"
+  "expect": 13,
+  "code": "import pandas as pd\ndf = pd.DataFrame({'shop': ['Bay', 'Hill', 'Bay'], 'units': [3, 4, 1], 'price': [2, 5, 7]})\ndf['revenue'] = df['units'] * df['price']\nanswer = df.loc[df['shop'] == 'Bay', 'revenue'].sum()"
  },
  {
   "id": "python-filters-and-columns-correct",

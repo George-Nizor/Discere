@@ -80,20 +80,22 @@ describe("Logic and Reasoning v2 lessons", () => {
 
   it("what-logic-operates-on", () => {
     const l = "what-logic-operates-on";
-    // The soup is cold, so p ("The soup is hot") is false and ¬p is true.
+    // The soup is lukewarm, so p ("The soup is hot") is false and ¬p ("The soup is not hot") is true.
     const soupIsHot = false;
-    expect(word(l, "3")).toBe(verdict(!soupIsHot));
-    expect(choice(l, "3")).toHaveLength(1);
+    expect(word(l, "3")).toBe(
+      `p is ${verdict(soupIsHot)} and ¬p, “the soup is not hot”, is ${verdict(!soupIsHot)}`,
+    );
+    expect(choice(l, "3")).toEqual(["a"]);
     // "Close the window." gives an order: it is neither true nor false, and it is not a question.
     expect(word(l, "practice-1")).toBe("a command");
     expect(labels(l, "practice-1")).toEqual(["a claim", "a question", "a command"]);
-    // A claim about a sealed jar has exactly one truth value in the actual case. If the claim is
-    // false, its negation is true; the item words it as "It is true."
-    expect(word(l, "practice-2")).toBe(`it is ${verdict(!false)}.`);
+    // p is false, so ¬p is true, and ¬¬p reverses that value again.
+    const p = false;
+    expect(word(l, "practice-2")).toBe(`${verdict(!!p)}, because the second reversal undoes the first`);
     expect(labels(l, "practice-2")).toEqual([
-      "it is true.",
-      "it is false.",
-      "it depends on the claim.",
+      "it has no truth value, because ¬¬p is not a claim",
+      "false, because the second reversal undoes the first",
+      "true, because the negation of a false claim is true",
     ]);
     expect(choice(l, "practice-2")).toEqual(["a"]);
   });

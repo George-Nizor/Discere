@@ -10055,34 +10055,55 @@
         "system-call",
         "fork-exec"
       ],
-      "prompt": "What is the name of a request that a program makes to the operating system kernel, such as write or fork?",
-      "responseType": "short_text",
+      "prompt": "A program running in user mode executes these five lines in order:\n`total = a + b;`\n`write(1, buf, 5);`\n`n = n + 1;`\n`pid = fork();`\n`if (pid == 0) { total = 5; }`\nHow many of them make a system call?",
+      "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "It is a two-word term, and the kernel's side of it is called a handler.",
-        "Think of how you would describe, in two words, the act of asking the system for something."
+        "A system call is how a program asks the kernel for something it cannot do in user mode.",
+        "For each line, ask whether it needs a file, a process or another resource from the machine, or only uses the program's own variables."
       ],
       "sourceIds": [
         "ostep",
         "man-pages",
         "posix"
       ],
-      "onCorrect": "A system call is the only way a program in user mode can ask the kernel to act.",
+      "onCorrect": "Only `write` and `fork` ask the kernel for something, a file operation and a new process. Arithmetic, assignment and an `if` use only the program's own variables, so they run in user mode.",
       "skill": "name-syscall-boundary",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "text",
-        "acceptedIdeas": [
-          "system call"
-        ],
-        "acceptedAlternatives": [
-          "syscall",
-          "a system call",
-          "system-call"
-        ],
-        "rejectedIdeas": [],
-        "exampleAnswer": "system call"
-      }
+        "kind": "numeric",
+        "value": 2,
+        "unit": "",
+        "absoluteTolerance": 0.000001,
+        "relativeTolerance": 0,
+        "workedAnswer": "`write` asks the kernel to write to a file and `fork` asks it for a new process, so both are system calls. The other three lines use only the program's own variables."
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "numeric": [
+              1
+            ]
+          },
+          "feedback": "That counts only `write`. `fork` is a system call too, because only the kernel can create a process."
+        },
+        {
+          "match": {
+            "numeric": [
+              3
+            ]
+          },
+          "feedback": "The `if` only compares and assigns the program's own variables, so it runs in user mode like the arithmetic."
+        },
+        {
+          "match": {
+            "numeric": [
+              5
+            ]
+          },
+          "feedback": "Arithmetic, assignment and an `if` need nothing from the kernel. Only the lines that ask for a file or a process are system calls."
+        }
+      ]
     },
     {
       "id": "sysp-file-descriptors-and-buffering-stderr-number",
@@ -10091,13 +10112,12 @@
         "lowest-free",
         "stdio-buffer"
       ],
-      "prompt": "What descriptor number is standard error?",
+      "prompt": "A shell starts a program with descriptor 1 pointed at the file `out.txt` and every other descriptor left as it was. The program writes `done` to standard output and `disk full` to standard error. What appears on the terminal?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The three standard descriptors are numbered in the order input, output, errors.",
-        "Input is 0 and output is 1.",
-        "Count on from output."
+        "Only descriptor 1 now leads to the file.",
+        "Standard output is descriptor 1. Which descriptor does standard error use, and where does it lead?"
       ],
       "sourceIds": [
         "ostep",
@@ -10105,33 +10125,33 @@
         "posix",
         "rust-std"
       ],
-      "onCorrect": "The standard descriptors are 0 for input, 1 for output and 2 for error text, and a new process starts with them already open.",
+      "onCorrect": "Standard output is descriptor 1 and standard error is descriptor 2, and only descriptor 1 was sent to `out.txt`, so `done` is in the file and `disk full` is still written to the terminal.",
       "skill": "predict-descriptor-numbers",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "2"
+          "Only `disk full`"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "2"
+        "exampleAnswer": "Only `disk full`"
       },
       "misconceptions": [
-        {
-          "match": {
-            "choiceIds": [
-              "a"
-            ]
-          },
-          "feedback": "0 is standard input, the descriptor a program reads from."
-        },
         {
           "match": {
             "choiceIds": [
               "b"
             ]
           },
-          "feedback": "1 is standard output. Error text has its own descriptor, so that it can be separated from normal output."
+          "feedback": "`done` went to standard output, which is descriptor 1 and now leads to `out.txt`, so it is in the file and not on the terminal."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Only descriptor 1 was redirected. `done` was written to it, so it is in `out.txt` and is not shown on the terminal as well."
         },
         {
           "match": {
@@ -10139,25 +10159,25 @@
               "d"
             ]
           },
-          "feedback": "3 is the first descriptor a program gets from its own open call. The standard ones come before it."
+          "feedback": "Descriptor 2 was left alone, so it still leads to the terminal, and the error text is shown there and is not in the file."
         }
       ],
       "choices": [
         {
-          "id": "a",
-          "label": "0"
-        },
-        {
-          "id": "b",
-          "label": "1"
-        },
-        {
           "id": "c",
-          "label": "2"
+          "label": "Both `done` and `disk full`"
+        },
+        {
+          "id": "a",
+          "label": "Only `disk full`"
         },
         {
           "id": "d",
-          "label": "3"
+          "label": "Nothing, because both lines were written into `out.txt`"
+        },
+        {
+          "id": "b",
+          "label": "Only `done`"
         }
       ]
     },

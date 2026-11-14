@@ -22657,35 +22657,51 @@
       "conceptIds": [
         "sql-rows-and-keys"
       ],
-      "prompt": "The shop's customers table holds Ada, Ben, Cy and Dee. Elm signs up and has not ordered anything yet. How many rows does customers hold now?",
+      "prompt": "The shop's `customers` table holds 4 rows and its `orders` table holds 6. Ada, who is already a customer, places one new order. Then Elm signs up and places an order too. After both orders are recorded, how many rows do the two tables hold altogether?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Elm is a person, so Elm gets a row in the table of people.",
-        "Having no orders does not stop Elm from having a customer row.",
-        "Add Elm's row to the rows already in customers."
+        "Ask what one row of each table stands for: a person in `customers`, a purchase in `orders`.",
+        "Ada is already in `customers`, so her new order adds a row to `orders` only.",
+        "Elm adds a row to `customers` on signing up, and a row to `orders` for the order."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 5,
+        "value": 13,
         "unit": "",
         "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
-        "workedAnswer": "The four original customers plus Elm make five customer rows."
+        "workedAnswer": "`customers` gains Elm's row and goes from 4 to 5. `orders` gains one row for Ada's order and one for Elm's, and goes from 6 to 8. Together that is 5 + 8 = 13."
       },
       "sourceIds": [
         "sqlite-aggregate",
         "swc-sql-select"
       ],
-      "onCorrect": "Elm adds one row to customers, which makes five, and nothing to orders until an order is placed.",
+      "onCorrect": "Rows in `customers` count people and rows in `orders` count purchases. Elm adds one customer row, and the two orders add two order rows, so the tables hold 5 + 8 = 13 rows.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              4
+              12
             ]
           },
-          "feedback": "Those are the customers before Elm signed up. A new customer gets a row as soon as they sign up, whether or not they have ordered."
+          "feedback": "That leaves out Elm's customer row. A new customer gets a row as soon as they sign up, whether or not they have ordered."
+        },
+        {
+          "match": {
+            "numeric": [
+              14
+            ]
+          },
+          "feedback": "That gives Ada a second customer row. Ada is already in `customers`, so her new order adds only a row to `orders`."
+        },
+        {
+          "match": {
+            "numeric": [
+              10
+            ]
+          },
+          "feedback": "That is the total before anything was recorded."
         }
       ],
       "skill": "identify-row-unit"
@@ -22907,44 +22923,44 @@
       "conceptIds": [
         "sql-select-and-name"
       ],
-      "prompt": "A query works out `amount * 2` for every order. What does it give for order 101, whose amount is 80?",
+      "prompt": "The `orders` table holds the amounts 80, 20, 80, 40, 20 and NULL for orders 101 to 106. The query `SELECT id, amount * 2 AS doubled FROM orders` is run. How many of the six result rows show a number in the `doubled` column?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "The star between two values is multiplication.",
-        "Order 101 has an amount of 80.",
-        "Multiply that amount by the number after the star."
+        "The expression is worked out separately for each row.",
+        "Think about what the calculation gives for the row whose amount is missing.",
+        "A calculation on NULL gives NULL, so count the rows whose amount is known."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 160,
+        "value": 5,
         "unit": "",
         "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
-        "workedAnswer": "80 × 2 = 160."
+        "workedAnswer": "The five known amounts double to 160, 40, 160, 80 and 40, and the missing amount stays NULL, so five rows show a number."
       },
       "sourceIds": [
         "sqlite-expr",
         "swc-sql-select",
         "swc-sql-calc"
       ],
-      "onCorrect": "The expression is worked out for the row, so 80 multiplied by 2 gives 160.",
+      "onCorrect": "The expression is worked out for each row, so the five known amounts give 160, 40, 160, 80 and 40, and the missing amount stays NULL.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              82
+              6
             ]
           },
-          "feedback": "That adds 2 to the amount. The star is the multiplication sign, so the amount is multiplied by 2."
+          "feedback": "That counts order 106, whose amount is NULL. A missing value stays missing when it is doubled, so that row's `doubled` is NULL and not 0."
         },
         {
           "match": {
             "numeric": [
-              40
+              1
             ]
           },
-          "feedback": "That halves the amount, which is what the division in the figure did. This expression multiplies."
+          "feedback": "That counts the one row that shows NULL. The question asks for the rows that show a number."
         }
       ],
       "skill": "row-expression"
@@ -25568,7 +25584,7 @@
       "conceptIds": [
         "sql-ask-a-query-inside-a-query"
       ],
-      "prompt": "How many orders have an amount greater than `AVG(amount)` over all orders?",
+      "prompt": "The `orders` table has six rows whose amounts are 80, 20, 80, 40, 20 and NULL. How many rows does `SELECT id FROM orders WHERE amount > (SELECT AVG(amount) FROM orders)` return?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
@@ -25582,7 +25598,7 @@
         "unit": "",
         "absoluteTolerance": 0.000001,
         "relativeTolerance": 0,
-        "workedAnswer": "The known average is 48; orders 101 and 103 each have amount 80."
+        "workedAnswer": "The five known amounts total 240, so the average is 48. Only the two amounts of 80 are above it."
       },
       "sourceIds": [
         "sqlite-expr",
@@ -25598,7 +25614,7 @@
               4
             ]
           },
-          "feedback": "An amount of 40 is below the average, so that order fails the test."
+          "feedback": "An amount of 40 is below the average, so that row fails the test."
         },
         {
           "match": {
