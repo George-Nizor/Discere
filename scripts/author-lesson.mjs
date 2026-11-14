@@ -57,7 +57,7 @@ const curriculumFile = path.join(ROOT, "docs", "curricula", `${course}.json`);
  * A course scaffolded from docs/curricula has no old lesson to show, so its brief carries the
  * lesson's plan from the curriculum instead (bundle lesson i is curriculum lesson i), with the
  * concept ids as the bundle spells them. The format is learnt from
- * docs/writing-calibration/new-course/example-lesson.json, so it is not repeated per lesson.
+ * docs/authoring/example-lesson.json, so it is not repeated per lesson.
  */
 function curriculumBrief() {
   const curriculum = JSON.parse(readFileSync(curriculumFile, "utf8"));

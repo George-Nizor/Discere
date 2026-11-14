@@ -25,7 +25,7 @@ Geometry: Shape and Space adds twelve questions per check kind, each covering ev
 Its 36 numerical answers were independently recomputed. Exact geometric givens use a bounded,
 read-only SVG contract without computed teaching readouts. Five Geometry browser scenarios verify
 all lesson prerequisites, all check responses, saved progress and seven-day eligibility.
-[Geometry sources, publication and captures](../library-expansion/geometry-course.md) retain the evidence.
+Geometry sources, publication and captures retain the evidence.
 
 ## Physics extension
 
@@ -33,25 +33,25 @@ Physics: Motion and Forces adds eighteen problems per check kind, covering every
 Its 54 numerical check keys were independently recomputed. Read-only mechanics drawings display
 bounded givens without worked results. Five Physics browser scenarios verify all eighteen lesson
 prerequisites, all check responses, saved results and the real seven-day delay.
-[Physics sources and captures](../library-expansion/physics-course.md) retain the evidence.
+Physics sources and captures retain the evidence.
 Calculus adds 36 fresh problems covering all twelve lessons. Its bounded graphs show givens
-without worked result summaries. [Calculus records](../library-expansion/calculus-course.md)
+without worked result summaries. Calculus records
 retain source corrections and independent key checks.
 Chemistry adds 36 fresh problems across all twelve lessons, with supplied particle data,
 Lewis drawings, molar models and tables. All keys were independently recomputed and all three
-sets exercised through the browser. [Chemistry records](../library-expansion/chemistry-course.md)
+sets exercised through the browser. Chemistry records
 retain the sources and verification.
 Biology adds 48 fresh problems across sixteen lessons: 24 numeric and 24 qualitative responses.
 They cover cells, energy, inheritance, evolution and ecology with given-data models and tables.
-[Biology sources and captures](../library-expansion/biology-course.md) retain the independent keys,
+Biology sources and captures retain the independent keys,
 visual limits and verification.
 
 Logic adds eight questions per kind, and Computer Science and Statistics add six each. Those sixty
 new problems use original argument cases, Python listings and data displays. Each set covers every
-taught lesson; all 33 numeric keys were independently recomputed. [Foundation extension](foundation-expansion.md)
+taught lesson; all 33 numeric keys were independently recomputed. Foundation extension
 records the 27 reviewed choices, unchanged teaching content and six responsive browser scenarios.
 SQL adds fifteen questions per kind and Python twenty-one, with all 108 query/program results
-independently executed. [Data extension](data-expansion.md) records preserved teaching content,
+independently executed. Data extension records preserved teaching content,
 source semantics and four responsive scenarios. All eleven courses contain 398 check problems.
 
 ## Learner flow
@@ -110,10 +110,10 @@ Screens cover 1440×900, 1024×768 and 390×844. They include numerical, choice,
 problems plus placement, checkpoint and transfer results. Representative captures were inspected
 for hierarchy, legible given values, responsive containment and reachable controls.
 
-- [Starting-point problem](screens/placement-question-390.png)
-- [Equality choices](screens/placement-choice-1024.png)
-- [Mixed table problem](screens/mixed-table-1440.png)
-- [Targeted result](screens/placement-result-390.png)
+- Starting-point problem
+- Equality choices
+- Mixed table problem
+- Targeted result
 
 The complete repository check passes 1,178 package tests and thirteen bundle validations. All 98
 browser scenarios passed together, including the six foundation, four data assessment and three

@@ -2,10 +2,8 @@
 
 Status: accepted direction, 6 October 2026. Phases 0–2 are implemented; see [Implementation status](#12-implementation-status).
 Prompted by: George's review of Maths Foundations, "What a letter stands for", step 1 of 4.
-Supersedes, once accepted: the "question first" lesson grammar in
-[product-goal-and-library-roadmap.md](../product-goal-and-library-roadmap.md) §1 and the "Learning
-behavior" section of [brilliant-experience/README.md](../brilliant-experience/README.md). Neither file
-has been edited.
+Supersedes the "question first" lesson grammar of the October roadmap (since deleted) and the
+"Learning behavior" section of [brilliant-experience/README.md](../brilliant-experience/README.md).
 
 George's complaint, quoted: "why is that in big bold letters and what was the actual lesson? this is
 the first panel of that course, is that really how you want to introduce maths?"
@@ -1060,11 +1058,12 @@ Calculus, Linear Algebra, Philosophy, English and Economics first lessons; corpu
 
 ## 12. Implementation status
 
-Updated 6 October 2026. Phases 0 to 2 of section 10 are done. Phase 3 is next: every course's first
-lesson, then the bulk migration. The rewrite follows [the conversion style guide](style-guide.md)
-and uses the `scripts/lesson-migration/scaffold.ts` script.
+Updated 14 November 2026. Every phase is done. Phase 3, the migration, shipped as the story
+lessons of 1.2.0 (16 October), and every course written since uses the format: all 861 lessons
+have an opener and a recap, and no legacy step remains. What happened to the courses after that is
+in `docs/content-history.md`. The record below is from 6 October.
 
-### Player (no content change; fixes from the [lesson audit](../platform-audit/lessons/README.md))
+### Player (no content change; fixes from the lesson audit)
 
 | Finding | What changed | Where |
 |---|---|---|
@@ -1124,12 +1123,11 @@ tool and tab are hidden. When it says `suggested`, the tool is highlighted.
 - The 1.1.1 bundle is kept at `review/history/<hash>-bundle.json`, so the earlier release tests
   still verify their history.
 
-### Not done yet
+### Not done as of 6 October, and where it went
 
-- Sibling items after a second miss (section 3.4).
-- The "⋯" header menu.
-- Opener warm-up recall.
-- The tutor's per-kind behaviour (section 6.4).
-- The course intro screen (section 5.1).
-- Lessons 2–3 of Maths in the new format.
-- The 900 legacy steps, still played through the sentence split until they are rewritten.
+- Sibling items after a second miss (section 3.4): partly, as the tutor's "Show me a similar one"
+  walkthrough (1.14.0).
+- The "⋯" header menu and opener warm-up recall: not built.
+- The tutor's per-kind behaviour (section 6.4): see the `discere-tutor-voice` skill.
+- The course intro screen (section 5.1): built ("About this course", 1.2.0).
+- Lessons 2–3 of Maths and the 900 legacy steps: rewritten in 1.2.0 and again in 1.3.0.

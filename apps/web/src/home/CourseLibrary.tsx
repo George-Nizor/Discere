@@ -147,6 +147,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
         "astronomy-sky-to-cosmos",
         "chemistry-atoms-to-reactions",
         "biology-cells-to-ecosystems",
+        "how-the-body-works",
         "earth-and-environmental-science",
       ],
     },
@@ -185,6 +186,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
       courseIds: [
         "philosophy-knowledge-mind-and-ethics",
         "history",
+        "roman-republic",
         "linguistics",
         "english-reading-writing-and-rhetoric",
         "reading-and-research",
@@ -228,7 +230,6 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
     <main className="page library-page" id="stage">
       <header className="library-head">
         <h1>Courses</h1>
-        <p>Step by step, from curiosity to understanding.</p>
       </header>
       <div className="library-tools">
         <label className="library-search">

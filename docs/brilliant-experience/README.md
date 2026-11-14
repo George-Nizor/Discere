@@ -75,9 +75,9 @@ checks release results after all responses are saved, then recommend lessons and
 Geometry adds 36 new problems across the same three check kinds, using exact given-data drawings.
 Physics adds 54, spanning every one of its eighteen lessons with bounded mechanics drawings.
 Calculus adds 36, spanning all twelve lessons with given-function graphs. Chemistry adds another 36, using given particle models and tables. Biology adds 48 mixed numeric and qualitative problems. Logic adds 24; Computer Science and Statistics each add eighteen. SQL and Python add 108, and Linear Algebra adds sixty. All twelve courses provide
-458 independent check problems. [Foundation assessment records](../course-checks/foundation-expansion.md)
+458 independent check problems. Foundation assessment records
 show the original statement, code and dot-plot givens.
-[Data assessment records](../course-checks/data-expansion.md) retain executed SQL/Python checks and compact query givens.
+Data assessment records retain executed SQL/Python checks and compact query givens.
 Confidence is recorded separately from correctness; a due delayed check appears in Review.
 [Course-check captures and behavior](../course-checks/README.md) document this assessment flow.
 
@@ -85,13 +85,13 @@ Biology: Cells to Ecosystems adds sixteen lessons, 96 questions, 32 fresh recall
 independent checks. Ten models connect cells, energy, inheritance, evolution and ecology. All 64
 teaching beats and 128 cases work at three sizes. Eighty-one numeric keys were recomputed, and
 95 term/choice answers were reviewed. Equivalent scientific terms are explicitly supported.
-[Biology records](../library-expansion/biology-course.md) retain the source-note correction, review,
+Biology records retain the source-note correction, review,
 model limits, screenshots and substantial remaining subject scope.
 
 Linear Algebra adds twenty lessons with matrix/vector givens, earned transformations and actual
 row operations. Visible unit directions make the SVD factor controls meaningful through rotations;
 rectangular factor shapes are shown without implying a two-dimensional plot. Its sixty independent
-check questions retain hidden marking until completion. [Linear Algebra records](../library-expansion/linear-algebra-course.md)
+check questions retain hidden marking until completion. Linear Algebra records
 retain the reviewed source mapping, numeric audit and responsive captures.
 
 ## Verification and visual comparison
@@ -123,9 +123,9 @@ Calculus adds all twelve lesson openings, keyboard graph controls and 36 check r
 Chemistry adds all 48 teaching beats at three sizes, particle controls and another 36 check responses.
 Its tablet spacing, atom contrast and visible reaction coefficients were repaired during screenshot review.
 Tablet input visibility and longer learning-path containment were repaired during visual review.
-[Calculus evidence](../library-expansion/calculus-course.md) records the sources and results.
+Calculus evidence records the sources and results.
 Physics screenshots exposed cart-label overlap and inconsistent work-distance scaling; both were
-repaired before publication. [Physics evidence](../library-expansion/physics-course.md) records the review.
+repaired before publication. Physics evidence records the review.
 
 Representative captures:
 
@@ -134,10 +134,10 @@ Representative captures:
 - [Python roadmap](screens/roadmap-python-for-data-analysis-1440x900.png)
 - [Geometry roadmap](screens/roadmap-geometry-shape-and-space-1440x900.png)
 - [Physics roadmap](screens/roadmap-physics-motion-and-forces-1440x900.png)
-- [Physics force pairs on a phone](../library-expansion/screens/physics/pairs-of-forces-390.png)
-- [Geometry net on a phone](../library-expansion/screens/geometry/box-net-390.png)
-- [Python example on a phone](../library-expansion/screens/python-run-and-bind-390.png)
-- [Python correction](../library-expansion/screens/python-correction-1440.png)
+- Physics force pairs on a phone
+- Geometry net on a phone
+- Python example on a phone
+- Python correction
 - [Unanswered question](screens/question-390x844.png)
 - [Correct feedback](screens/correct-feedback-1440x900.png)
 - [Correction](screens/incorrect-explanation-390x844.png)

@@ -1,10 +1,11 @@
 # Testing the courses with learner agents
 
-Status: planned on 4 November 2026, not started. George agreed the plan and will start it when he
-wants to focus on testing.
+Status: planned on 4 November 2026. One trial run took Earth and Environmental Science through the
+app (`scripts/learner-run.ts`) and led to the giveaway pass of 1.9.8. The full plan has not been
+started; George will start it when he wants to focus on testing. Still true on 14 November.
 
-The 46 expansion courses and the rewritten twenty were written by agents and checked by scripts,
-but nobody has worked through most of them as a learner. George can only test a few courses
+All 67 courses were written by agents and checked by scripts and by agents reading them, but
+nobody has worked through most of them as a learner in the app. George can only test a few courses
 himself, so this plan uses cheap agents to read each course as a learner would and report where a
 real learner would get stuck. It finds problems in the teaching; George's own use and other
 people's feedback remain the better judges of pace, interest and the look of the app.
@@ -49,7 +50,7 @@ course bundle), so a beginner course is read as a beginner would read it.
 Findings are not fixed as they come in. The lead session collects them, checks each one against
 the lesson, and throws out the false ones, which will be common because agents misread. The rest
 are fixed course by course. A problem that turns up in several courses is fixed at its source
-instead: in the writing brief (`docs/writing-calibration/new-course/brief.md`), the voice skill,
+instead: in the authoring briefs (`docs/authoring/`), the voice skill,
 or `scripts/voice-check.ts`, the way announced openers were in 1.7.0. Content fixes follow the
 usual checks (`voice-check`, `check-course`, `rebind-review` for courses with a review record)
 and ship as a release.

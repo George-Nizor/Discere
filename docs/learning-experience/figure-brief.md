@@ -5,7 +5,7 @@ to. You are drawing the figures that are missing, for the lessons you are given.
 SVG written into the lesson (diagram type `svg_figure`), drawn so it reads in the light and the dark
 theme, and checked by looking at it.
 
-Read first: `docs/learning-experience/story-brief.md` (the shape and voice of the lessons) and the
+Read first: the `discere-lesson-voice` skill (the shape and voice of the lessons) and the
 course's `content/<course>/.authoring/figure-wishlist.md` (what the lesson writers wished for, screen
 by screen). The approved Astronomy prototype, `story-prototype/astronomy-turning-sky.html`, shows what
 a good figure does: it is the thing the screen is talking about, labelled with words the learner has

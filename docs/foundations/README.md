@@ -113,5 +113,5 @@ Open-ended proofs, learner-owned card collections, flexible panes, broader pathw
 documented learner trial remain product work.
 
 Geometry now extends the foundations path with twelve lessons, 72 questions, 24 recall cards and
-36 separate course-check problems. [Geometry evidence](../library-expansion/geometry-course.md)
+36 separate course-check problems. Geometry evidence
 records exact drawings, folding nets, source mapping and the remaining wider-subject scope.
