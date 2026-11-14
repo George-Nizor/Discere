@@ -1,9 +1,10 @@
 /**
- * Draws the authored figures (diagram type svg_figure) of one lesson draft to PNG files, once in
- * the light theme and once in the dark, so a writer can look at them before saving.
+ * Draws the authored figures (diagram type svg_figure) of one lesson draft (a JSON file with the
+ * lesson under `lesson`) to PNG files, once in the light theme and once in the dark, so a writer
+ * can look at them before saving.
  *
  *   LD_LIBRARY_PATH=/tmp/claude-1000/libs/ex/usr/lib/x86_64-linux-gnu \
- *   node scripts/render-figures.mjs content/<course>/.authoring/migration/<lesson>.json <out-dir>
+ *   node scripts/render-figures.mjs <lesson-draft.json> <out-dir>
  *
  * Writes <out-dir>/<step-id>-<case-id>-<light|dark>.png. Look at each one with the Read tool.
  */

@@ -1,17 +1,13 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
+import { assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
-import { assessTextAnswer } from "@discere/assessment-engine";
 import { validateCourseBundle } from "../src/index.js";
 
 /**
  * Logic and Reasoning, v2 lessons. Every numeric key and every checkable answer is recomputed here
  * from truth-table and puzzle arithmetic, not read back from the authority it checks.
  */
-const candidateUrl = new URL(
-  "../../../content/logic-and-reasoning/.authoring/candidate.json",
-  import.meta.url,
-);
 const bundleUrl = new URL("../../../content/logic-and-reasoning/bundle.json", import.meta.url);
 const bundle = JSON.parse(readFileSync(bundleUrl, "utf8")) as CourseBundle;
 
@@ -350,15 +346,7 @@ describe("Logic and Reasoning story lessons", () => {
   }
 
   it("has a course introduction of the agreed shape", () => {
-    const intro = JSON.parse(
-      readFileSync(
-        new URL(
-          "../../../content/logic-and-reasoning/.authoring/course-intro.json",
-          import.meta.url,
-        ),
-        "utf8",
-      ),
-    ) as { paragraphs: string[]; outcomes: string[]; prerequisites: string; length: string };
+    const intro = bundle.course.introduction!;
     const total = intro.paragraphs.join(" ").split(/\s+/u).length;
     expect(total).toBeGreaterThanOrEqual(120);
     expect(total).toBeLessThanOrEqual(200);

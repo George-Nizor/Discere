@@ -1,7 +1,12 @@
 import { randomUUID } from "node:crypto";
-import type { RustProjectAction, RustProjectSession, TutoringMode } from "@discere/contracts";
+import { readFileSync } from "node:fs";
+import {
+  type RustProjectAction,
+  RustProjectCollectionSchema,
+  type RustProjectSession,
+  type TutoringMode,
+} from "@discere/contracts";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { projects } from "../../../content/rust-foundations/authoring/course.js";
 import { createApp } from "../src/app.js";
 import { DiscereStore } from "../src/db/store.js";
 import { RustProjectRepository, RustProjectService } from "../src/rust/projects.js";
@@ -13,6 +18,14 @@ import {
   splitReturned,
 } from "../src/rust/runtime.js";
 
+const projects = RustProjectCollectionSchema.parse(
+  JSON.parse(
+    readFileSync(
+      new URL("../../../content/rust-foundations/rust-projects.json", import.meta.url),
+      "utf8",
+    ),
+  ),
+);
 const runtime = new IsolatedRustRuntime();
 let ready = false;
 beforeAll(async () => {
@@ -36,7 +49,10 @@ describe("Rust result comparison", () => {
     expect(sameDebug("[1, 2]", "[1, 2]")).toBe(true);
   });
   it("separates the checker's marker from printed text", () => {
-    expect(splitReturned("hi\n\u001eDISCERE_RETURN 4\n")).toEqual({ printed: "hi\n", returned: "4" });
+    expect(splitReturned("hi\n\u001eDISCERE_RETURN 4\n")).toEqual({
+      printed: "hi\n",
+      returned: "4",
+    });
     expect(splitReturned("hi\n")).toEqual({ printed: "hi\n" });
   });
 });
@@ -55,7 +71,9 @@ describe("sandboxed Rust", () => {
   it("returns rustc's diagnostics without host paths, and refuses include_str! of host files", async () => {
     if (!ready) return;
     const [result] = await runtime.run(
-      { code: 'fn main() {\n    let s = include_str!("/etc/hostname");\n    println!("{s}");\n}\n' },
+      {
+        code: 'fn main() {\n    let s = include_str!("/etc/hostname");\n    println!("{s}");\n}\n',
+      },
       [""],
     );
     expect(result?.status).toBe("compile_error");
@@ -74,7 +92,7 @@ describe("sandboxed Rust", () => {
     if (!ready) return;
     const results = await runtime.run(
       {
-        code: "fn double(n: i32) -> i32 {\n    n * 2\n}\nfn main() {\n    println!(\"{}\", double(1));\n}\n",
+        code: 'fn double(n: i32) -> i32 {\n    n * 2\n}\nfn main() {\n    println!("{}", double(1));\n}\n',
         harness: functionHarness("double", [["2"], ["-7"]]),
       },
       ["0", "1"],
@@ -147,7 +165,9 @@ describe("Rust projects", () => {
     if (!ready) return;
     const service = setup();
     let session = start(service);
-    session = await act(service, session, "check", { code: projects.projects[0]!.tasks[0]!.solution });
+    session = await act(service, session, "check", {
+      code: projects.projects[0]!.tasks[0]!.solution,
+    });
     session = await act(service, session, "next");
     session = await act(service, session, "run", {
       code: "fn area(width: i32, height: i32) -> i32 {\n    width * height\n}\n",
@@ -173,7 +193,11 @@ describe("Rust projects", () => {
 });
 
 describe("lesson questions answered with Rust", () => {
-  const ask = (app: Awaited<ReturnType<typeof createApp>>["app"], questionId: string, response: string) =>
+  const ask = (
+    app: Awaited<ReturnType<typeof createApp>>["app"],
+    questionId: string,
+    response: string,
+  ) =>
     app.inject({
       method: "POST",
       url: "/api/attempts",
@@ -182,7 +206,9 @@ describe("lesson questions answered with Rust", () => {
   it("sends the starter and example but never the hidden cases or worked program", async () => {
     const { app } = await createApp({ dbPath: ":memory:", migrate: true });
     try {
-      const lesson = await app.inject({ url: "/api/courses/rust-foundations/lessons/types-and-functions/journey" });
+      const lesson = await app.inject({
+        url: "/api/courses/rust-foundations/lessons/types-and-functions/journey",
+      });
       expect(lesson.statusCode).toBe(200);
       const text = lesson.body;
       expect(text).toContain('"responseType":"code"');
@@ -198,10 +224,21 @@ describe("lesson questions answered with Rust", () => {
     if (!ready) return;
     const { app } = await createApp({ dbPath: ":memory:", migrate: true });
     try {
-      const wrong = await ask(app, "types-and-functions-triple", "fn triple(n: i32) -> i32 {\n    12\n}\n");
-      expect(wrong.json()).toMatchObject({ correct: false, codeRun: { status: "ok", returned: "12", passed: 1, total: 3 } });
+      const wrong = await ask(
+        app,
+        "types-and-functions-triple",
+        "fn triple(n: i32) -> i32 {\n    12\n}\n",
+      );
+      expect(wrong.json()).toMatchObject({
+        correct: false,
+        codeRun: { status: "ok", returned: "12", passed: 1, total: 3 },
+      });
       expect(wrong.json().feedback).toContain("works for the example");
-      const broken = await ask(app, "types-and-functions-triple", "fn triple(n: i32) -> i32 {\n    n * 3;\n}\n");
+      const broken = await ask(
+        app,
+        "types-and-functions-triple",
+        "fn triple(n: i32) -> i32 {\n    n * 3;\n}\n",
+      );
       // A program that does not compile is something to fix, not a miss.
       expect(broken.json()).toMatchObject({
         correct: false,
@@ -210,7 +247,11 @@ describe("lesson questions answered with Rust", () => {
         codeRun: { status: "compile_error" },
       });
       expect(broken.json().codeRun.diagnostics).toContain("E0308");
-      const right = await ask(app, "types-and-functions-triple", "fn triple(n: i32) -> i32 {\n    n * 3\n}\n");
+      const right = await ask(
+        app,
+        "types-and-functions-triple",
+        "fn triple(n: i32) -> i32 {\n    n * 3\n}\n",
+      );
       expect(right.json()).toMatchObject({ correct: true, codeRun: { passed: 3, total: 3 } });
       const run = await app.inject({
         method: "POST",

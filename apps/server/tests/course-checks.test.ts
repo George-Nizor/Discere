@@ -1,10 +1,10 @@
 import type { CourseBundle, CourseCheckDefinition, CourseCheckSession } from "@discere/contracts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mathsCourseChecks } from "../../../content/maths-foundations/authoring/course-checks.js";
 import { createApp, type DiscereApp } from "../src/app.js";
 import { placedOutLessonIds } from "../src/course-checks.js";
 
 let service: DiscereApp, now: Date;
+let mathsCourseChecks: CourseCheckDefinition[];
 const root = "/api/courses/maths-foundations/checks";
 const body = (response: { json: () => unknown }) => response.json() as CourseCheckSession;
 const get = (url: string) => service.app.inject({ method: "GET", url });
@@ -16,7 +16,9 @@ const submit = (id: string, questionId: string, response: string, confidence = "
 beforeEach(async () => {
   now = new Date("2026-10-02T00:00:00Z");
   service = await createApp({ dbPath: ":memory:", migrate: true, clock: () => now });
-  service.content.bundle("maths-foundations")!.courseChecks = structuredClone(mathsCourseChecks);
+  const bundle = service.content.bundle("maths-foundations")!;
+  mathsCourseChecks = structuredClone(bundle.courseChecks!);
+  bundle.courseChecks = structuredClone(mathsCourseChecks);
 });
 afterEach(async () => {
   await service.app.close();

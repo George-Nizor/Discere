@@ -6,8 +6,9 @@
 // carries a pinned node.exe, the server bundled into one file, better-sqlite3's Windows build,
 // the sandbox helper and the TypeScript compiler. Run `pnpm build` first. The sandbox helper is built on Windows
 // (tools/windows-sandbox); pass --sandbox <exe> or leave it at tools/windows-sandbox/dist.
-import { createHash } from "node:crypto";
+
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -90,7 +91,9 @@ async function typescriptCompiler() {
       `https://registry.npmjs.org/@typescript/typescript-win32-x64/-/${name}.tgz`,
     );
     if (!response.ok)
-      throw new Error(`TypeScript ${TYPESCRIPT.version} could not be downloaded (${response.status}).`);
+      throw new Error(
+        `TypeScript ${TYPESCRIPT.version} could not be downloaded (${response.status}).`,
+      );
     writeFileSync(archive, Buffer.from(await response.arrayBuffer()));
   }
   if (sha256(archive) !== TYPESCRIPT.sha256)
@@ -147,8 +150,12 @@ await build({
   logLevel: "warning",
 });
 
-// Course bundles, their reviewed assets and project files. Authoring sources stay behind.
-copy("content", "content", (source) => !source.split(path.sep).includes("authoring"));
+// Course bundles, their reviewed assets and project files. Authoring notes (.authoring) stay behind.
+copy(
+  "content",
+  "content",
+  (source) => !source.split(path.sep).some((part) => part === "authoring" || part === ".authoring"),
+);
 copy("prompts");
 copy("apps/web/dist");
 copy("apps/server/drizzle");
@@ -175,7 +182,9 @@ cpSync(path.join(nodeDirectory, "LICENSE"), path.join(stage, "runtime/NODE-LICEN
 cpSync(sandbox, path.join(stage, "runtime/discere-sandbox.exe"));
 // tsc.exe looks for its lib.*.d.ts files beside itself, so the folder is copied whole.
 const typescript = await typescriptCompiler();
-cpSync(path.join(typescript, "lib"), path.join(stage, "runtime/typescript/lib"), { recursive: true });
+cpSync(path.join(typescript, "lib"), path.join(stage, "runtime/typescript/lib"), {
+  recursive: true,
+});
 for (const notice of ["LICENSE", "NOTICE.txt"])
   cpSync(path.join(typescript, notice), path.join(stage, "runtime/typescript", notice));
 

@@ -1,42 +1,36 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { CourseBundleSchema } from "@discere/contracts";
 import Database from "better-sqlite3";
 import { describe, expect, it } from "vitest";
-import { combiningLessons } from "../../../content/sql-from-rows-to-reports/authoring/combining-lessons.js";
-import { tables } from "../../../content/sql-from-rows-to-reports/authoring/definition.js";
-import { readingLessons } from "../../../content/sql-from-rows-to-reports/authoring/reading-lessons.js";
-import { summaryLessons } from "../../../content/sql-from-rows-to-reports/authoring/summary-lessons.js";
-import { windowLessons } from "../../../content/sql-from-rows-to-reports/authoring/window-lessons.js";
 
 const root = path.resolve(import.meta.dirname, "../../../");
 const courseRoot = path.join(root, "content/sql-from-rows-to-reports");
-const published = path.join(courseRoot, "bundle.json");
 const bundle = CourseBundleSchema.parse(
-  JSON.parse(
-    readFileSync(
-      existsSync(published) ? published : path.join(courseRoot, ".authoring/candidate.json"),
-      "utf8",
-    ),
-  ),
+  JSON.parse(readFileSync(path.join(courseRoot, "bundle.json"), "utf8")),
 );
-const definitions = [...readingLessons, ...summaryLessons, ...combiningLessons, ...windowLessons];
-const customers = tables
-  .find((table) => table.name === "customers")!
-  .rows.map((row) => ({
-    id: row[0] as number,
-    name: row[1] as string,
-    region: row[2] as string,
-  }));
-const orders = tables
-  .find((table) => table.name === "orders")!
-  .rows.map((row) => ({
-    id: row[0] as number,
-    customer: row[1] as number,
-    item: row[2] as string,
-    amount: row[3] as number | null,
-    status: row[4] as string,
-  }));
+// The customers and orders the lessons query, written out here so the keys below are computed from
+// the data itself and not from what the course says.
+const customers = [
+  { id: 1, name: "Ada", region: "North" },
+  { id: 2, name: "Ben", region: "South" },
+  { id: 3, name: "Cy", region: "North" },
+  { id: 4, name: "Dee", region: "West" },
+];
+const orders: Array<{
+  id: number;
+  customer: number;
+  item: string;
+  amount: number | null;
+  status: string;
+}> = [
+  { id: 101, customer: 1, item: "Desk", amount: 80, status: "paid" },
+  { id: 102, customer: 1, item: "Book", amount: 20, status: "paid" },
+  { id: 103, customer: 2, item: "Desk", amount: 80, status: "paid" },
+  { id: 104, customer: 2, item: "Lamp", amount: 40, status: "pending" },
+  { id: 105, customer: 3, item: "Book", amount: 20, status: "paid" },
+  { id: 106, customer: 3, item: "Lamp", amount: null, status: "pending" },
+];
 const known = (rows = orders) => rows.flatMap((row) => (row.amount === null ? [] : [row.amount]));
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 const mean = (values: number[]) => sum(values) / values.length;
@@ -160,36 +154,40 @@ const numericCards: Record<string, number> = {
   "running-totals-and-neighbours": [4, 9, 12].at(-2)!,
 };
 describe("independent SQL curriculum review", () => {
-  it.each(definitions)("recomputes every numeric assessment in $id", (lesson) => {
-    const checks = numericChecks[lesson.id]!;
+  const lessonIds = Object.keys(numericCards);
+  it("recomputes every lesson of the course", () => {
+    expect(bundle.lessons.map((lesson) => lesson.id).sort()).toEqual([...lessonIds].sort());
+  });
+  it.each(lessonIds)("recomputes every numeric assessment in %s", (id) => {
+    const checks = numericChecks[id]!;
     // A question the fix pass turned into a choice is no longer numeric in the shipped course.
-    const stillNumeric = (index: number) =>
-      bundle.questions.find((question) => question.id === "sql-" + lesson.id + "-" + index)
-        ?.answerAuthority.kind === "numeric";
-    const numeric = lesson.questions.flatMap((question, index) =>
-      question.answerAuthority.kind === "numeric" && stillNumeric(index + 1) ? [index + 1] : [],
+    const numeric = [1, 2, 3, 4, 5, 6].filter(
+      (index) =>
+        bundle.questions.find((question) => question.id === "sql-" + id + "-" + index)
+          ?.answerAuthority.kind === "numeric",
     );
-    expect(Object.keys(checks).map(Number).filter(stillNumeric)).toEqual(numeric);
+    expect(
+      Object.keys(checks)
+        .map(Number)
+        .filter((index) => numeric.includes(index)),
+    ).toEqual(numeric);
     for (const index of numeric) {
-      const authority = lesson.questions[index - 1]!.answerAuthority;
-      if (authority.kind !== "numeric") throw new Error("Expected numeric marking");
-      expect(authority.value).toBeCloseTo(checks[index]!, 12);
       const shipped = bundle.questions.find(
-        (question) => question.id === "sql-" + lesson.id + "-" + index,
+        (question) => question.id === "sql-" + id + "-" + index,
       )!;
       // The question review (1.12.0) rewrote worked answers and prompts, so the shipped key is
-      // checked against the recomputed value and unit rather than the authoring text.
+      // checked against the recomputed value.
       const marked = shipped.answerAuthority;
       if (marked.kind !== "numeric") throw new Error("Expected numeric marking");
       expect(marked.value).toBeCloseTo(checks[index]!, 12);
-      expect(marked.unit).toBe(authority.unit);
-      expect(marked.relativeTolerance).toBeLessThanOrEqual(authority.relativeTolerance);
     }
   });
-  it.each(definitions)("recomputes the standalone numeric card in $id", (lesson) => {
-    const authority = lesson.cards[0]!.answerAuthority;
-    if (authority.kind !== "numeric") throw new Error("Expected numeric recall");
-    expect(authority.value).toBeCloseTo(numericCards[lesson.id]!, 12);
+  it.each(lessonIds)("recomputes the standalone numeric card in %s", (id) => {
+    const authority = bundle.flashcards.find(
+      (card) => card.id === "sql-" + id + "-card-1",
+    )!.answerAuthority;
+    if (authority?.kind !== "numeric") throw new Error("Expected numeric recall");
+    expect(authority.value).toBeCloseTo(numericCards[id]!, 12);
   });
   it.each(bundle.lessons)(
     "executes all published query comparisons in $id in a fresh database",

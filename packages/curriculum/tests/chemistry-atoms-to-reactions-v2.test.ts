@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
+import { assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
-import { assessTextAnswer } from "@discere/assessment-engine";
 import { validateCourseBundle } from "../src/index.js";
 
 /**
@@ -451,15 +451,7 @@ describe("Chemistry v2 lessons", () => {
     });
 
     it("has a course introduction of 120 to 200 words with 3 to 5 outcomes", () => {
-      const intro = JSON.parse(
-        readFileSync(
-          new URL(
-            "../../../content/chemistry-atoms-to-reactions/.authoring/course-intro.json",
-            import.meta.url,
-          ),
-          "utf8",
-        ),
-      ) as { paragraphs: string[]; outcomes: string[]; prerequisites: string; length: string };
+      const intro = bundle.course.introduction!;
       const count = intro.paragraphs.join(" ").split(/\s+/).length;
       expect(count).toBeGreaterThanOrEqual(120);
       expect(count).toBeLessThanOrEqual(200);

@@ -1,8 +1,17 @@
+import { readFileSync } from "node:fs";
+import { SqlProjectCollectionSchema, type SqlTable } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 import { IsolatedSqlRuntime, sameSqlResult } from "../src/sql-projects/runtime.js";
-import type { SqlTable } from "@discere/contracts";
-import { sqlProjects } from "../../../content/sql-from-rows-to-reports/authoring/projects.js";
+
 const runtime = new IsolatedSqlRuntime();
+const sqlProjects = SqlProjectCollectionSchema.parse(
+  JSON.parse(
+    readFileSync(
+      new URL("../../../content/sql-from-rows-to-reports/projects.json", import.meta.url),
+      "utf8",
+    ),
+  ),
+);
 const tables: SqlTable[] = [
   {
     name: "values_table",

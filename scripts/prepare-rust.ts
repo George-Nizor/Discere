@@ -1,18 +1,24 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { bundleDigest, validateCourseBundle, validateRustProjects } from "@discere/curriculum";
-import { RustDiagramSchema, RustProjectCollectionSchema } from "../packages/contracts/src/index.js";
-import { courseId, projects } from "../content/rust-foundations/authoring/course.js";
 import { mark } from "../apps/server/src/rust/grading.js";
-import { functionHarness, IsolatedRustRuntime, sameDebug, samePrinted, splitReturned } from "../apps/server/src/rust/runtime.js";
+import {
+  functionHarness,
+  IsolatedRustRuntime,
+  sameDebug,
+  samePrinted,
+  splitReturned,
+} from "../apps/server/src/rust/runtime.js";
+import { RustDiagramSchema, RustProjectCollectionSchema } from "../packages/contracts/src/index.js";
 
 /**
- * Checks Rust Foundations against the compiler. The lessons are written in bundle.json, which is
- * the source of truth (authoring/course.ts now supplies only the projects). Every lesson program
- * is compiled and run in the same sandbox learners use and must do what its diagram declares:
- * print the stated output, or fail with the stated error code. The real output then replaces the
- * declared one, so rustc's own wording is what the learner sees. Every code question's worked
- * program must pass all its cases and its starter must fail one; every project the same.
+ * Checks Rust Foundations against the compiler. The lessons are written in bundle.json and the
+ * projects in rust-projects.json, which are the source of truth; this reads both and writes back
+ * what the compiler reported. Every lesson program is compiled and run in the same sandbox
+ * learners use and must do what its diagram declares: print the stated output, or fail with the
+ * stated error code. The real output then replaces the declared one, so rustc's own wording is
+ * what the learner sees. Every code question's worked program must pass all its cases and its
+ * starter must fail one; every project the same.
  */
 type ProgramDraft = {
   code: string;
@@ -22,6 +28,7 @@ type ProgramDraft = {
 const errorCode = (diagnostics: string) => /error\[(E\d{4})\]/.exec(diagnostics)?.[1];
 
 const root = path.resolve(import.meta.dirname, "..");
+const courseId = "rust-foundations";
 const directory = path.join(root, "content", courseId);
 const runtime = new IsolatedRustRuntime();
 const status = await runtime.status();
@@ -33,7 +40,13 @@ async function prepareProgram(draft: ProgramDraft, where: string) {
   if (!result) throw new Error(where + ": no result");
   if (draft.outcome.kind === "output") {
     if (result.status !== "ok" || !samePrinted(result.stdout, draft.outcome.stdout))
-      throw new Error(where + ": expected output " + JSON.stringify(draft.outcome.stdout) + ", got " + JSON.stringify(result));
+      throw new Error(
+        where +
+          ": expected output " +
+          JSON.stringify(draft.outcome.stdout) +
+          ", got " +
+          JSON.stringify(result),
+      );
     evidence.push({ where, status: "ok", stdout: result.stdout });
     return RustDiagramSchema.parse({
       type: "rust_program",
@@ -43,7 +56,8 @@ async function prepareProgram(draft: ProgramDraft, where: string) {
     });
   }
   const expected = errorCode(draft.outcome.diagnostics);
-  if (!expected) throw new Error(where + ": a declared compile error must name its code, as error[E0382]");
+  if (!expected)
+    throw new Error(where + ": a declared compile error must name its code, as error[E0382]");
   if (result.status !== "compile_error" || !result.diagnostics.includes("error[" + expected + "]"))
     throw new Error(where + ": expected " + expected + ", got " + JSON.stringify(result));
   evidence.push({ where, status: "compile_error", code: expected });
@@ -66,9 +80,16 @@ const candidate = JSON.parse(await readFile(bundlePath, "utf8")) as Record<strin
 const isProgram = (diagram?: { type: string }) => diagram?.type === "rust_program";
 for (const lesson of candidate.lessons) {
   if (lesson.intro && isProgram(lesson.intro.hook.diagram))
-    lesson.intro.hook.diagram = await prepareProgram(lesson.intro.hook.diagram as unknown as ProgramDraft, lesson.id + ".hook");
+    lesson.intro.hook.diagram = await prepareProgram(
+      lesson.intro.hook.diagram as unknown as ProgramDraft,
+      lesson.id + ".hook",
+    );
   for (const step of lesson.steps)
-    if (isProgram(step.diagram)) step.diagram = await prepareProgram(step.diagram as unknown as ProgramDraft, lesson.id + "." + step.id);
+    if (isProgram(step.diagram))
+      step.diagram = await prepareProgram(
+        step.diagram as unknown as ProgramDraft,
+        lesson.id + "." + step.id,
+      );
 }
 
 // Lessons still being written (no steps yet) are left out of the check and put back unchanged.
@@ -88,24 +109,39 @@ if (!validation.passed || !validation.bundle) {
 for (const question of validation.bundle.questions) {
   if (question.code?.language !== "rust" || !question.codeCases) continue;
   const task = { kind: question.code.kind, call: question.code.call, cases: question.codeCases };
-  const solution = question.answerAuthority.kind === "text" ? question.answerAuthority.exampleAnswer : "";
+  const solution =
+    question.answerAuthority.kind === "text" ? question.answerAuthority.exampleAnswer : "";
   const solved = await mark(runtime, task, solution);
   if (!solved.correct)
     throw new Error(question.id + ": the worked program fails: " + JSON.stringify(solved.run));
   const started = await mark(runtime, task, question.code.starter);
   if (started.correct) throw new Error(question.id + ": the starter already passes");
-  evidence.push({ where: question.id, solutionPasses: solved.passed, starterPasses: started.passed });
+  evidence.push({
+    where: question.id,
+    solutionPasses: solved.passed,
+    starterPasses: started.passed,
+  });
 }
 
-const collection = RustProjectCollectionSchema.parse(projects);
+const collection = RustProjectCollectionSchema.parse(
+  JSON.parse(await readFile(path.join(directory, "rust-projects.json"), "utf8")),
+);
 for (const project of collection.projects)
   for (const task of project.tasks) {
     const run = async (code: string) => {
       const results = await runtime.run(
         task.kind === "function"
-          ? { code, harness: functionHarness(task.call!.name, task.cases.map((c) => c.arguments!)) }
+          ? {
+              code,
+              harness: functionHarness(
+                task.call!.name,
+                task.cases.map((c) => c.arguments!),
+              ),
+            }
           : { code },
-        task.kind === "function" ? task.cases.map((_, i) => String(i)) : task.cases.map((c) => c.stdin ?? ""),
+        task.kind === "function"
+          ? task.cases.map((_, i) => String(i))
+          : task.cases.map((c) => c.stdin ?? ""),
       );
       return task.cases.map((c, i) => {
         const result = results[i];
@@ -120,15 +156,25 @@ for (const project of collection.projects)
       throw new Error(task.id + ": the worked solution fails case " + solution.indexOf(false));
     const starter = await run(task.starter);
     if (starter.every(Boolean)) throw new Error(task.id + ": the starter already passes");
-    evidence.push({ where: project.id + "." + task.id, solutionPasses: solution.length, starterPasses: starter.filter(Boolean).length });
+    evidence.push({
+      where: project.id + "." + task.id,
+      solutionPasses: solution.length,
+      starterPasses: starter.filter(Boolean).length,
+    });
   }
 const { warnings } = validateRustProjects(collection, validation.bundle);
 
 await mkdir(path.join(directory, "review"), { recursive: true });
 const written = new Map(validation.bundle.lessons.map((lesson) => [lesson.id, lesson]));
-const complete = { ...validation.bundle, lessons: all.map((lesson) => written.get(lesson.id) ?? lesson) };
+const complete = {
+  ...validation.bundle,
+  lessons: all.map((lesson) => written.get(lesson.id) ?? lesson),
+};
 await writeFile(path.join(directory, "bundle.json"), JSON.stringify(complete, null, 2) + "\n");
-await writeFile(path.join(directory, "rust-projects.json"), JSON.stringify(collection, null, 2) + "\n");
+await writeFile(
+  path.join(directory, "rust-projects.json"),
+  JSON.stringify(collection, null, 2) + "\n",
+);
 await writeFile(
   path.join(directory, "review", "rust-projects.json"),
   JSON.stringify(
@@ -140,11 +186,16 @@ await writeFile(
       authority:
         "George asked for a Rust proof of concept in Discere on 15 October 2026; this is not an independent human review.",
       evidence: [
-        "Every worked solution passes all of its cases in the sandboxed " + status.version + " runtime.",
+        "Every worked solution passes all of its cases in the sandboxed " +
+          status.version +
+          " runtime.",
         "Every starter program fails at least one case, so no task passes unchanged.",
         "Expected values were written by hand before the solutions were run.",
       ],
-      acceptedWarnings: warnings.map((w) => ({ ...w, rationale: "Reviewed while authoring the proof of concept." })),
+      acceptedWarnings: warnings.map((w) => ({
+        ...w,
+        rationale: "Reviewed while authoring the proof of concept.",
+      })),
     },
     null,
     2,

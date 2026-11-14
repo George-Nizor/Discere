@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type {
-  PythonProjectSession,
-  PythonProjectAction,
-  PythonValue,
-  TutoringMode,
+import {
+  PythonProjectCollectionSchema,
+  type PythonProjectSession,
+  type PythonProjectAction,
+  type PythonValue,
+  type TutoringMode,
 } from "@discere/contracts";
-import { pythonProjects } from "../../../content/python-for-data-analysis/authoring/projects.js";
 import { createApp } from "../src/app.js";
 import { DiscereStore } from "../src/db/store.js";
 import { PythonProjectRepository } from "../src/python-projects/repository.js";
@@ -22,7 +22,11 @@ const pythonReady =
   process.arch === "x64" &&
   existsSync(path.join(runtimeDirectory, "lib/python3.12/site-packages/pandas")) &&
   existsSync("/usr/bin/bwrap");
-const collection = pythonProjects,
+const collection = PythonProjectCollectionSchema.parse(
+  JSON.parse(
+    readFileSync(new URL("../../../content/python-for-data-analysis/python-projects.json", import.meta.url), "utf8"),
+  ),
+),
   project = collection.projects[0]!;
 function setup(runtime: PythonRuntime = new IsolatedPythonRuntime()) {
   let time = new Date("2026-10-02T00:00:00Z");
