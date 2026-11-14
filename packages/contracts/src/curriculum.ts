@@ -32,7 +32,7 @@ export const ModuleSchema = z
   .strict();
 export type CourseModule = z.infer<typeof ModuleSchema>;
 
-/** The page a learner reads before lesson 1: story-format courses (docs/learning-experience/story-brief.md). */
+/** The page a learner reads before lesson 1: story-format courses (docs/learning-experience/README.md). */
 export const CourseIntroductionSchema = z
   .object({
     paragraphs: z.array(z.string().min(1)).min(1).max(4),
@@ -74,7 +74,7 @@ export const CourseSchema = z
     status: z.enum(["available", "coming_soon"]).default("available"),
     /**
      * Archived prototypes remain addressable for saved history but leave discovery. A hidden
-     * course is complete and unchanged but kept out of the library, search, Today and review
+     * course is complete and unchanged but kept out of the library, search, Home and review
      * until its rewrite is finished; `DISCERE_SHOW_HIDDEN_COURSES=1` lists it again.
      */
     catalogueVisibility: z.enum(["listed", "hidden", "archived"]).optional(),

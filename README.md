@@ -4,12 +4,32 @@
 
 # Discere
 
-Lessons, review scheduling and a notebook that keep working offline.
+A private learning app with 67 courses, from maths, science and engineering to programming, data,
+AI, the humanities and writing. Each course teaches through short lessons with figures, questions
+marked on your own computer, code and writing practice, and spaced review, with a tutor that runs
+on your own Claude Code.
 
-Discere is a local learning workspace built around explanation, interaction, assessment, and review.
-It keeps learner state in SQLite and renders its teaching visuals deterministically. Tutoring can use
-the learner's own Claude Code, an OpenAI-compatible endpoint, the local Codex CLI, or an explicit
-ChatGPT handoff.
+## What it offers
+
+- **The library:** 67 courses, 848 lessons and 8,812 questions, in ten groups: mathematics and
+  logic, programming and computer science, building software, data and AI, science, engineering
+  and making, mind and society, history, language and writing, music and sound, and first aid.
+  [The library](docs/library.md) lists every course with its numbers.
+- **Lessons** that open on a concrete case, teach one idea per screen, ask as they go, end with a
+  three-question check and a recap, and list their sources.
+- **Questions:** multiple choice with feedback on every wrong option, numbers with units, typed
+  answers, putting steps in order, sorting into groups, quoted sources side by side, and code. All
+  are marked by the server, with help recorded separately from independent answers.
+- **Practice:** code exercises run in a sandbox (Python, SQL, Rust, TypeScript), projects in
+  Python, SQL and Rust, writing tasks in the writing courses, and placement, mixed and delayed
+  course checks in 18 courses.
+- **Review:** spaced repetition (FSRS) of each lesson's cards and of every question you missed,
+  with XP, goals, streaks, leagues and achievements tied to real work.
+- **A tutor** that coaches without giving answers away, walks through a similar problem, and
+  reviews workings from a drawing page.
+
+[The platform overview](docs/platform-overview.md) describes all of it and says how good each
+part of the library is.
 
 ## Install it
 
@@ -56,19 +76,21 @@ bundle.
 
 ## Courses
 
-The library in `content/` covers mathematics, the sciences, engineering, computing and data, the
-humanities and social sciences, and writing, music and design. Every directory with a `bundle.json`
-is a course, and nothing in the server names one, so adding a directory adds a course.
-`pnpm validate:content` prints each course with its lesson and question counts. A course whose
-`catalogueVisibility` is `archived` leaves the library but keeps its saved history reachable.
+Every directory in `content/` with a `bundle.json` is a course, and nothing in the server names
+one, so adding a directory adds a course. `pnpm validate:content` prints each course with its
+lesson and question counts. A course whose `catalogueVisibility` is `archived` leaves the library
+but keeps its saved history reachable; `hidden` keeps a course out of the library, search, Home
+and review while it is reworked (`DISCERE_SHOW_HIDDEN_COURSES=1` lists it again).
+
+What each course holds and which passes it has had are in [the library](docs/library.md),
+[the content ledger](docs/content-ledger.json) and [the content history](docs/content-history.md).
 
 A lesson is an opener, a run of short steps (explain, predict, worked example, faded example, try and
 transfer), a skill check of three questions and a recap. The server turns that into addressed stages:
 the steps, an interactive visual only when the lesson names an activity, one stage for each
 skill-check question, an essay only when the lesson names one, review of the lesson's cards, the
 recap and completion. Image records carry source, creator, licence, attribution, retrieval date and a
-content hash. See [the foundation notes](docs/foundations/README.md) and
-[content/README.md](content/README.md).
+content hash. See [content/README.md](content/README.md).
 
 Around the lessons there is a course library, a due-review queue, concept progress, a per-lesson
 notebook, daily goals, streaks and achievements. Rewards reflect saved work and cannot be farmed by
@@ -133,38 +155,19 @@ machine until then.
 
 ## Authoring
 
-```bash
-node scripts/scaffold-course.mjs <course-id>
-node scripts/author-lesson.mjs brief <course-id> <lesson-id>
-node scripts/author-lesson.mjs apply <course-id> <lesson-id>
-npx tsx scripts/voice-check.ts <course-id>
-```
-
-This is the current route, and the courses of the November 2026 expansion were written this way
-([the plan](docs/expansion-plan-2026-11.md)). `scaffold-course.mjs` turns a curriculum in
-`docs/curricula/` into a bundle of lesson stubs. For each lesson, `brief` writes the lesson's plan,
-figures and question pool to `.author/<course-id>/<lesson-id>/input.json`, a Claude agent following
-[the new-course brief](docs/writing-calibration/new-course/brief.md) writes `output.json` beside it,
-and `apply` validates the result and merges it into the bundle. `voice-check.ts` checks the prose
-against the lesson voice. [The authoring brief](docs/writing-calibration/authoring-brief.md) covers
-rewriting a course that already has questions.
-
-Two older routes still run. Both write the legacy lesson shape, with no opener or recap, so neither
-produces a v2 lesson:
+Read [the authoring guide](docs/authoring/README.md) before changing content. It covers writing a
+new course, rewriting a course's questions and a targeted question pass, with the briefs the
+writing agents follow and the checks every change runs:
 
 ```bash
-pnpm author pipeline --course <id> --slug <name> --concepts <a,b> --plan @plan.md --lesson <lessonId>
-pnpm curate prompt <course-id>
-pnpm curate import <course-id>
-pnpm curate publish <course-id>
+node scripts/question-check.mjs <course-id>       # option lengths, feedback, hints
+npx tsx scripts/voice-check.ts <course-id>        # the lesson voice
+pnpm validate:content
+node scripts/library-report.mjs                   # regenerate docs/library.md
 ```
 
-`author` generates, lints, validates, reviews and merges a lesson draft through the local Codex CLI,
-whatever `DISCERE_TUTOR_PROVIDER` says; [the authoring pipeline](docs/authoring-pipeline.md) describes
-it. `curate` is the topic-map loop that moves prompts and replies through a ChatGPT session. Its
-`publish` step needs an accepted `review/publication.json` tied to the candidate hash, source and
-licence records, claim citations, reviewed artwork and complete teaching beats. Raw output stays in
-ignored course-local folders.
+`content/<course>/bundle.json` is the only source of a course. Every pass is recorded in
+`docs/content-ledger.json`.
 
 ## Verify a change
 
@@ -186,14 +189,15 @@ rules live in `packages/`, and `mcp/` exposes a learner-safe stdio server for co
 
 ## Documentation
 
+- [Platform overview](docs/platform-overview.md): what Discere offers and how good the library is
+- [The library](docs/library.md), [content history](docs/content-history.md) and
+  [backlog](docs/backlog.md)
+- [Authoring guide](docs/authoring/README.md) and [question writing guide](docs/question-writing-guide.md)
 - [Setup, configuration, backup, reset, and troubleshooting](docs/setup.md)
-- [Current implementation boundary](docs/implementation-status.md)
-- [Architecture](docs/architecture.md)
-- [Product overview](docs/product-overview.md)
-- [Authoring pipeline](docs/authoring-pipeline.md) and [writing rules](docs/writing-system.md)
-- [Visual system](docs/visual-system.md)
-- [Validation approach](docs/validation.md)
-- [Instrumenta brand alignment](docs/brand/README.md)
+- [Release notes and how each feature works](docs/implementation-status.md)
+- [Lesson design](docs/learning-experience/README.md)
+- [Architecture](docs/architecture.md) and [decision records](docs/adr/)
+- [Visual system](docs/visual-system.md) and [Instrumenta brand alignment](docs/brand/README.md)
 - [Archive of superseded plans and reports](docs/archive/README.md)
 
 ---

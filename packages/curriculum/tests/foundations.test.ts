@@ -1,11 +1,12 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
 import { runTeachingProgram, traceSearch } from "@discere/activity-engine";
+import { CourseBundleSchema } from "@discere/contracts";
+import { describe, expect, it } from "vitest";
 import { assertEditorialApproval, loadCourseBundle, validateCourseBundle } from "../src/index.js";
 import { correctChoiceId } from "../src/lesson-projection.js";
-import { CourseBundleSchema } from "@discere/contracts";
 import { historicalBundle } from "./helpers/published-history.js";
+
 const root = path.resolve(import.meta.dirname, "../../../content");
 const load = (id: string) => loadCourseBundle(path.join(root, id, "bundle.json"));
 
@@ -123,8 +124,7 @@ describe("published foundation curriculum", () => {
     const wrongPoint = pointChoices.filter((choice) => choice.id !== markedPoint!.id);
     const flagged = pointQuestion.misconceptions!.flatMap((m) => m.match.choiceIds ?? []);
     expect(flagged.sort()).toEqual(wrongPoint.map((choice) => choice.id).sort());
-    // The v2 rewrites added numeric items (hooks, checks, faded blanks); those are recomputed in
-    // maths-gold-lesson.test.ts and maths-foundations-v2.test.ts. Every original item stays here.
+    // The v2 rewrites added numeric items (hooks, checks, faded blanks). Every original item stays here.
     const numeric = bundle.questions
       .filter((question) => question.answerAuthority.kind === "numeric")
       .map((question) => question.id);

@@ -27,8 +27,8 @@ stay multiple choice and short text: the new types are for the few places descri
 
 ## Before you write
 
-1. Read `docs/holistic-review-2026-11.md` (the teaching sections) and the `discere-lesson-voice`
-   skill.
+1. Read `docs/content-history.md`, the course's entry in `docs/content-ledger.json` and the
+   `discere-lesson-voice` skill.
 2. Read every lesson of the course as a learner, with its questions. A dump script helps: print
    each step's text, each question with its options, answer, hints and feedback, and the end
    check. Note what each lesson promises.

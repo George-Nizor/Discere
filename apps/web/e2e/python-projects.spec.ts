@@ -1,10 +1,19 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { PythonProjectCollectionSchema } from "@discere/contracts";
 import type { Page } from "@playwright/test";
-import { pythonProjects } from "../../../content/python-for-data-analysis/authoring/projects.js";
-import { captureDir, test, expect } from "./fixtures.js";
-import { pythonRuntimeInstalled } from "./lesson-player.js";
 import { createApp } from "../../server/src/app.js";
+import { captureDir, expect, test } from "./fixtures.js";
+import { pythonRuntimeInstalled } from "./lesson-player.js";
+
+const pythonProjects = PythonProjectCollectionSchema.parse(
+  JSON.parse(
+    readFileSync(
+      new URL("../../../content/python-for-data-analysis/python-projects.json", import.meta.url),
+      "utf8",
+    ),
+  ),
+);
 const sizes = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
@@ -162,10 +171,14 @@ for (const [index, project] of pythonProjects.projects.entries()) {
     const final = await (await request.get(endpoint)).json();
     expect(final.results).toHaveLength(project.tasks.length);
     expect(final.xp).toBe(index === 0 ? 37 : index === 1 ? 25 : 40);
-    await expect(summary.locator(".python-project-results > details")).toHaveCount(final.results.length);
+    await expect(summary.locator(".python-project-results > details")).toHaveCount(
+      final.results.length,
+    );
     await expect(summary.locator(".python-earned")).toHaveText("+" + final.xp + " XP");
     await page.reload();
-    await expect(summary.locator(".python-project-results > details")).toHaveCount(final.results.length);
+    await expect(summary.locator(".python-project-results > details")).toHaveCount(
+      final.results.length,
+    );
     await capture(page, project.id + "-results");
     await page.getByRole("link", { name: "Return to the roadmap" }).click();
     await expect(page.getByRole("heading", { name: "Write your own programs" })).toBeVisible();

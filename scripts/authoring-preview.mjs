@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Renders a lesson authored from the curriculum (docs/writing-calibration/authoring-pilot/brief.md)
+ * Renders a lesson authored from the curriculum (see docs/authoring/README.md)
  * as a playable preview page: screens in order, questions that answer back, and the author's
  * plan folded at the top.
  *

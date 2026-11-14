@@ -3,15 +3,20 @@
 Every directory here that contains a `bundle.json` is a course. The server scans this directory
 at start-up, so adding a course is adding a directory. Nothing in `apps/server` names a course.
 
+`bundle.json` is the only source of a course: every content pass edits it directly, and nothing
+regenerates it from other files. Which passes each course has had is in
+`docs/content-ledger.json`, and how to write and change content is in `docs/authoring/README.md`.
+
 ```text
 content/
   <course-id>/
     bundle.json        the course, validated by @discere/curriculum
     assets/            cover art and retrieved images, with provenance.json
     review/            the publication record and what backs it (see below)
-    authoring/         TypeScript that defines a course's checks, in the older courses
-    generated/         raw Codex output from `pnpm author`, ignored by Git
-  _topic-maps/         inputs to `pnpm curate`
+    .authoring/        figure-wishlist.md, the figures the lesson writers asked for
+    python-projects.json, projects.json, rust-projects.json   coding projects
+    generated/         raw Codex output from the legacy `pnpm author`, ignored by Git
+  _topic-maps/         inputs to the legacy `pnpm curate`
 ```
 
 The shape of a bundle is `CourseBundleSchema` in `packages/contracts/src/curriculum.ts`. The rules
@@ -25,7 +30,7 @@ cards, activities and essays by id.
 
 | Collection         | Purpose                                                                                  |
 | ------------------ | ---------------------------------------------------------------------------------------- |
-| `course`           | Title, description, audience, assurance level, accent, cover, subjects, an optional introduction and `catalogueVisibility` (`listed` or `archived`). |
+| `course`           | Title, description, audience, assurance level, accent, cover, subjects, an optional introduction and `catalogueVisibility` (`listed`, `hidden` or `archived`). |
 | `modules`          | Groupings of concepts. Every concept belongs to exactly one module.                      |
 | `concepts`         | The learnable units, with prerequisites. The graph must be acyclic.                      |
 | `lessons`          | The lessons, described below.                                                            |
@@ -67,11 +72,15 @@ an interactive stage and an `essayId` adds an essay stage, and a lesson without 
 (`EditorialApprovalSchema` in `packages/contracts/src/curation.ts`). `pnpm curate publish` refuses a
 record that is not accepted, has unresolved issues, or names a different hash from the candidate.
 
-Some content is written straight into `bundle.json` and is in no authoring file: the SQL and Python
-code exercises and the writing tasks. A `scripts/prepare-*.ts` script that rebuilds a candidate from
-`authoring/*.ts`, and `pnpm curate publish`, therefore stop when the candidate lacks questions,
-lesson steps or writing tasks that the published bundle has, and say how many would go. Pass
-`--force`, or set `DISCERE_ALLOW_CONTENT_LOSS=1`, to drop them on purpose.
+A course edited after its review (every reviewed course has been) is rebound with
+`npx tsx scripts/rebind-review.ts <course-id> "<what changed and what was checked>"`, which records
+the new hash and the note. The legacy `pnpm curate publish` stops when a candidate lacks
+questions, lesson steps or writing tasks that the published bundle has; pass `--force`, or set
+`DISCERE_ALLOW_CONTENT_LOSS=1`, to drop them on purpose.
+
+The first-draft generators of the October courses (`authoring/*.ts`, `.authoring/candidate.json`
+and `scripts/prepare-<course>.ts`) were removed on 14 November 2026: their wording was from
+October, and rebuilding from them would have undone every later pass.
 
 `review/history/` keeps earlier published bundles and their records, named by hash
 (`<sha256>-bundle.json`, `<sha256>-publication.json`). The history tests check a past release
@@ -79,7 +88,9 @@ against the bundle it shipped, so a course can move on without losing that evide
 `learner-refinement.json` and `guidance-refinement.json` list what changed between two published
 bundles, from `previousBundleSha256` to `publishedBundleSha256`.
 
-The courses added in the November 2026 expansion have no `review/` directory.
+The 20 courses that existed by mid-October have a `review/` directory (Rust's holds only its
+execution evidence); the courses written since
+do not.
 
 ## Retrieved images
 
@@ -104,9 +115,9 @@ pnpm author validate      # schema, references, answer markability, licences
 pnpm author lint          # the writing gate over every learner-facing string
 ```
 
-New lessons are written with `scripts/author-lesson.mjs`, described under Authoring in the
-[README](../README.md). The older `pnpm author` pipeline is documented in
-[`docs/authoring-pipeline.md`](../docs/authoring-pipeline.md).
+New courses and question passes follow [the authoring guide](../docs/authoring/README.md). The
+legacy `pnpm author` and `pnpm curate` routes write the old lesson shape and are not used; they are
+described in [`docs/authoring-pipeline.md`](../docs/authoring-pipeline.md).
 
 ## Rules the validator enforces
 

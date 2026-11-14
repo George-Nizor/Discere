@@ -1,35 +1,48 @@
-import { readFileSync, readdirSync } from "node:fs";
-import type { Question } from "@discere/contracts";
+import { readFileSync } from "node:fs";
+import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 
 /**
- * Electronics Foundations v2 migration drafts. Every numeric key is recomputed here from the
- * circuit the item describes, not read back from the authority it is checking. Reads the drafts
- * because the bundle is only rewritten when the lead applies them.
+ * Electronics Foundations v2 lessons. Every numeric key is recomputed here from the circuit the
+ * item describes, not read back from the authority it is checking. Read from bundle.json.
  */
-const directory = new URL(
-  "../../../content/electronics-foundations/.authoring/migration/",
-  import.meta.url,
-);
+const bundle = JSON.parse(
+  readFileSync(
+    new URL("../../../content/electronics-foundations/bundle.json", import.meta.url),
+    "utf8",
+  ),
+) as CourseBundle;
 interface DraftStep {
   id: string;
   kind: string;
   lead?: { text?: string }[];
   afterFigure?: { text?: string }[];
   checkQuestionId?: string;
-  workedSteps?: { math?: string; blank?: { questionId: string }; selfExplain?: { questionId: string } }[];
+  workedSteps?: {
+    math?: string;
+    blank?: { questionId: string };
+    selfExplain?: { questionId: string };
+  }[];
 }
-interface Draft {
-  lesson: { id: string; steps: DraftStep[]; questionIds: string[]; intro: { hook: { questionId?: string } } };
-  questions: Question[];
+interface Story {
+  lesson: {
+    id: string;
+    steps: DraftStep[];
+    questionIds: string[];
+    intro: { hook: { questionId?: string } };
+  };
 }
-const drafts: Draft[] = [];
-const questions = new Map<string, Question>();
-for (const file of readdirSync(directory).filter((name) => name.endsWith(".json"))) {
-  const draft = JSON.parse(readFileSync(new URL(file, directory), "utf8")) as Draft;
-  drafts.push(draft);
-  for (const q of draft.questions) questions.set(q.id, q);
-}
+const lessonIds = [
+  "current-in-one-loop",
+  "series-circuit-resistance",
+  "parallel-branches",
+  "electrical-power",
+  "component-behaviour",
+];
+const drafts: Story[] = lessonIds.map((id) => ({
+  lesson: bundle.lessons.find((lesson) => lesson.id === id) as unknown as Story["lesson"],
+}));
+const questions = new Map<string, Question>(bundle.questions.map((q) => [q.id, q]));
 const words = (step: DraftStep) =>
   [...(step.lead ?? []), ...(step.afterFigure ?? [])].reduce(
     (sum, block) => sum + (block.text ?? "").split(/\s+/u).filter(Boolean).length,
@@ -65,7 +78,8 @@ describe("Electronics Foundations v2 keys", () => {
   it("lesson 2: series", () => {
     near("two-identical-resistors", ohm(10, 100 + 100));
     near("current-at-second-resistor", ohm(9, 100 + 200));
-    near("calculate-series-current-9v-300ohm", ohm(9, 100 + 200));
+    // The id keeps its old numbers; the question now asks 6 V across 50 Ω and 100 Ω in series.
+    near("calculate-series-current-9v-300ohm", ohm(6, 50 + 100));
     near("calculate-series-total-220-330", 220 + 330);
     near("voltage-across-second-resistor", ohm(12, 100 + 200) * 200);
     near("check-series-current-6v-600ohm", ohm(6, 100 + 500));

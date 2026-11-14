@@ -45,6 +45,24 @@ A reusable test is: **Does the screen say something the interface already makes 
 - Bind local services to loopback by default and avoid paid dependencies.
 - Do not add placeholder controls that imply unsupported functionality.
 
+## Course content
+
+Read `docs/platform-overview.md` first for what Discere offers and how good each part of the
+library is.
+
+- `content/<course>/bundle.json` is the only source of a course. Edit it directly; nothing
+  regenerates it from other files.
+- Every course has been through many passes. Before proposing or starting content work, read
+  `docs/content-history.md`, the course's entry in `docs/content-ledger.json` and its row in
+  `docs/library.md`. A proposal to rewrite a course names the problem as measured on the current
+  bundle and which earlier pass missed it.
+- Ask George before choosing a new subject or course.
+- Record every pass in `docs/content-ledger.json`, run `node scripts/library-report.mjs`, and add
+  a release paragraph to `docs/implementation-status.md`.
+- How to write and check content: `docs/authoring/README.md`. Open work: `docs/backlog.md`.
+- Once a pass ships, delete its brief and any hand-off note. Open items go in `docs/backlog.md`,
+  not in new plan files.
+
 ## Repository map
 
 - `apps/web`: React learning workspace.
@@ -60,7 +78,7 @@ A reusable test is: **Does the screen say something the interface already makes 
 - `packages/tutor-providers`: tutor provider boundary (Claude Code, OpenAI-compatible, Codex, ChatGPT companion, mock).
 - `packages/paths`: repository, data and CLI path resolution.
 - `packages/prompts`: loader for the prompts in `prompts/`.
-- `content`: reviewed curriculum bundles.
+- `content`: the course bundles (`content/README.md`).
 - `prompts`: model instructions kept under version control.
 
 ## Working commands
@@ -81,5 +99,6 @@ From a checkout the server runs TypeScript through `tsx`, and its build command 
 1. Read the relevant ADR in `docs/adr/` before changing a boundary.
 2. Add or update tests for behaviour changes.
 3. Run the narrow package test first, then `pnpm check` and `pnpm build`.
-4. Record deliberate scope changes in `docs/implementation-status.md`.
+4. Record deliberate scope changes in `docs/implementation-status.md`, and content passes in
+   `docs/content-ledger.json`.
 5. Keep commits focused and describe any unvalidated dependency or host assumption.

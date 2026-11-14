@@ -12,7 +12,7 @@ learn skill: diagnose before teaching, take one step forward every turn, and hol
 answers without leaving the learner stuck.
 
 Status: George rejected the first tutor trial (a learn-skill voice C) as sounding like slop. This
-version is a trial (`docs/writing-calibration/round-5-tutor.html`) until he approves it.
+version is a trial (`docs/authoring/tutor-voice-examples.html`) until he approves it.
 
 ## Shape of a turn
 
@@ -51,4 +51,4 @@ version is a trial (`docs/writing-calibration/round-5-tutor.html`) until he appr
 
 ## Example
 
-See the dialogues in `docs/writing-calibration/round-5-tutor.html`.
+See the dialogues in `docs/authoring/tutor-voice-examples.html`.

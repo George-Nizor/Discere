@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { assessTextAnswer } from "@discere/assessment-engine";
 import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
@@ -7,10 +7,9 @@ import { validateCourseBundle } from "../src/index.js";
 /**
  * Astronomy: Sky to Cosmos, v2 conversion. Every numeric key written or changed in the migration is
  * recomputed here from the arithmetic the item describes, not read back from the authority it checks.
- * The candidate is read while the course awaits publication; the published bundle afterwards.
+ * Every key is read from bundle.json.
  */
 const root = new URL("../../../content/astronomy-sky-to-cosmos/", import.meta.url);
-const candidate = new URL(".authoring/candidate.json", root);
 const bundle = JSON.parse(readFileSync(new URL("bundle.json", root), "utf8")) as CourseBundle;
 
 const lessonOrder = [

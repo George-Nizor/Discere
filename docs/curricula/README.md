@@ -1,9 +1,9 @@
-# Curricula for the expansion
+# Curricula
 
-Each new course in `docs/expansion-plan-2026-11.md` gets one curriculum file here,
-`docs/curricula/<course-id>.json`. A curriculum is complete enough for a writer agent to author
-the course with `docs/writing-calibration/authoring-brief.md` and the `discere-lesson-voice`
-skill, and for figures and interactions to be built, without doing any research of its own.
+Every course written since November 2026 has one curriculum file here,
+`docs/curricula/<course-id>.json`: the 45 courses of the November expansion and the two written
+on 14 November. A curriculum is complete enough for a writer agent to author the course with the
+new-course route in `docs/authoring/README.md` and the `discere-lesson-voice` skill, and for figures and interactions to be built, without doing any research of its own.
 
 ## Brief for a curriculum researcher
 

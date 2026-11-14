@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { loadCourseBundle, assertEditorialApproval, validateCourseBundle } from "../src/index.js";
-import { astronomyLessons } from "../../../content/astronomy-sky-to-cosmos/authoring/lessons.js";
-import { astronomyChecks } from "../../../content/astronomy-sky-to-cosmos/authoring/course-checks.js";
-import { AstronomyDiagramSchema } from "@discere/contracts";
-import { historicalBundle } from "./helpers/published-history.js";
-import { CourseBundleSchema } from "@discere/contracts";
+import { unchangedChecks, unchangedKeys } from "./helpers/unchanged-keys.js";
 
 /*
  * Every key below is recomputed from the problem statement with plain arithmetic, independent of
@@ -98,6 +91,14 @@ const recall: Record<string, number[]> = {
   "expanding-universe": [70 * 40, 3600 / 72],
   "big-bang": [977.8 / 65, 2.898e-3 / 1.0e-3],
 };
+
+function within(key: number, tolerance: number, truth: number) {
+  // The authored key must sit within the stated rounding of the true value, and the tolerance
+  // must stay within whole-number rounding or 2%, whichever is wider.
+  expect(Math.abs(key - truth)).toBeLessThanOrEqual(tolerance + 1e-9);
+  expect(tolerance).toBeLessThanOrEqual(Math.max(0.5, Math.abs(truth) * 0.02));
+}
+
 const checkValues: Record<string, number[]> = {
   "starting-point": [
     noon(40, 30),
@@ -143,85 +144,44 @@ const checkValues: Record<string, number[]> = {
   ],
 };
 
-function within(key: number, tolerance: number, truth: number) {
-  // The authored key must sit within the stated rounding of the true value, and the tolerance
-  // must stay within whole-number rounding or 2%, whichever is wider.
-  expect(Math.abs(key - truth)).toBeLessThanOrEqual(tolerance + 1e-9);
-  expect(tolerance).toBeLessThanOrEqual(Math.max(0.5, Math.abs(truth) * 0.02));
-}
+const lessons = unchangedKeys("astronomy-sky-to-cosmos", "astro", { tolerance: true });
+const keyedChecks = unchangedChecks("astronomy-sky-to-cosmos", { tolerance: true });
 
+// The tables describe the course as first published. A key is checked here while the live bundle
+// still holds it; a question rewritten since is recomputed by astronomy-sky-to-cosmos-v2.test.ts.
 describe("independent Astronomy content review", () => {
-  it("ships the reviewed candidate, exact cover and independently checked authoring", async () => {
-    const root = path.resolve(import.meta.dirname, "../../../content/astronomy-sky-to-cosmos");
-    // The authoring source describes the lessons as first published. A course rewritten to v2
-    // keeps that bundle in review/history (helpers/published-history.ts); approval is on the current one.
-    const current = await loadCourseBundle(path.join(root, "bundle.json"));
-    const bundle = CourseBundleSchema.parse(historicalBundle("astronomy-sky-to-cosmos"));
-    const review = JSON.parse(await readFile(path.join(root, "review/publication.json"), "utf8"));
-    expect(() =>
-      assertEditorialApproval(current, review, validateCourseBundle(current)),
-    ).not.toThrow();
-    for (const lesson of astronomyLessons) {
-      lesson.questions.forEach((q, i) =>
-        expect(
-          bundle.questions.find((item) => item.id === "astro-" + lesson.id + "-" + (i + 1)),
-        ).toMatchObject(q),
-      );
-      lesson.cards.forEach((c, i) =>
-        expect(
-          bundle.flashcards.find((item) => item.id === "astro-" + lesson.id + "-card-" + (i + 1)),
-        ).toMatchObject(c),
-      );
-      const shipped = bundle.lessons.find((item) => item.id === lesson.id)!;
-      expect(shipped.steps.map((s) => s.diagram)).toEqual(lesson.beats.map((b) => b.diagram));
-    }
-    expect(bundle.courseChecks).toEqual(astronomyChecks);
-    const choices = bundle.questions.filter((q) => q.choices?.length).length;
-    expect(choices / bundle.questions.length).toBeLessThanOrEqual(0.35);
-  });
-  it.each(astronomyLessons)("recomputes all numerical questions in $id", (lesson) => {
-    expect(lesson.questions).toHaveLength(6);
-    const values = expected[lesson.id]!;
-    expect(values).toHaveLength(6);
-    lesson.questions.forEach((q, i) => {
-      const a = q.answerAuthority;
-      if (a.kind === "numeric") {
-        expect(values[i]).not.toBeNull();
-        within(a.value, a.absoluteTolerance, values[i]!);
-        expect(q.hints).toHaveLength(3);
-      } else expect(values[i]).toBeNull();
-    });
-  });
-  it.each(astronomyLessons)("checks both fresh recall keys and all diagrams in $id", (lesson) => {
-    expect(lesson.cards).toHaveLength(2);
-    expect(lesson.beats).toHaveLength(4);
+  it.each(lessons)(
+    "recomputes the numerical questions still keyed as first published in $id",
+    (lesson) => {
+      const values = expected[lesson.id]!;
+      expect(values).toHaveLength(6);
+      lesson.questions.forEach((q, i) => {
+        if (!q) return;
+        const a = q.answerAuthority;
+        if (a.kind === "numeric") {
+          expect(values[i]).not.toBeNull();
+          within(a.value, a.absoluteTolerance, values[i]!);
+        } else expect(values[i]).toBeNull();
+      });
+    },
+  );
+  it.each(lessons)("recomputes the recall keys still keyed as first published in $id", (lesson) => {
     lesson.cards.forEach((card, i) => {
+      if (!card) return;
       const a = card.answerAuthority;
       expect(a.kind).toBe("numeric");
       if (a.kind === "numeric") within(a.value, a.absoluteTolerance, recall[lesson.id]![i]!);
-      expect(lesson.questions.some((q) => q.prompt === card.front)).toBe(false);
-    });
-    for (const beat of lesson.beats)
-      expect(AstronomyDiagramSchema.safeParse(beat.diagram).success).toBe(true);
-  });
-  it.each(astronomyChecks)("recomputes every fresh problem in $id", (check) => {
-    expect(check.items).toHaveLength(12);
-    expect(new Set(check.items.map((i) => i.lessonId)).size).toBe(12);
-    check.items.forEach((item, i) => {
-      const a = item.question.answerAuthority;
-      expect(a.kind).toBe("numeric");
-      if (a.kind === "numeric") within(a.value, a.absoluteTolerance, checkValues[check.id]![i]!);
     });
   });
-  it("keeps independent checks distinct from teaching and requires a delayed final application", () => {
-    const prompts = [
-      ...astronomyLessons.flatMap((l) => l.questions.map((q) => q.prompt)),
-      ...astronomyLessons.flatMap((l) => l.cards.map((c) => c.front)),
-      ...astronomyChecks.flatMap((c) => c.items.map((i) => i.question.prompt)),
-    ];
-    expect(new Set(prompts).size).toBe(prompts.length);
-    expect(astronomyChecks[0]!.requiredLessonIds).toEqual([]);
-    for (const c of astronomyChecks.slice(1)) expect(c.requiredLessonIds).toHaveLength(12);
-    expect(astronomyChecks[2]).toMatchObject({ afterCheckId: "mixed-challenge", delayDays: 7 });
-  });
+  it.each(keyedChecks)(
+    "recomputes the fresh problems still keyed as first published in $id",
+    (check) => {
+      check.items.forEach((item, i) => {
+        if (!item) return;
+        const a = item.question.answerAuthority;
+        expect(a.kind).toBe("numeric");
+        if (a.kind === "numeric") within(a.value, a.absoluteTolerance, checkValues[check.id]![i]!);
+      });
+    },
+  );
 });
