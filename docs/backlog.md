@@ -11,8 +11,10 @@ says what is wrong now and how it was measured, so nobody has to redo a pass to 
   first of a set of era courses written the same way.
 - **The short foundation courses stay short.** Maths Foundations, Probability and Statistics and
   CS Basics (6 lessons), Electronics (5) and Logic (8) are starters, and that is fine.
-- **Questions are rewritten only where they are genuinely not good enough**, judged on a sample
-  against the fully rewritten courses (see `docs/content-history.md`).
+- **Questions are rewritten only where they are genuinely not good enough**, judged on a blind
+  sample against fully rewritten courses. Done the same day: five courses were below the bar and
+  were rewritten; the other 25 were at the bar and only their named weak questions were fixed
+  (`docs/content-history.md`, release 1.20.0).
 - **New subjects come next**, to complete the library's breadth for a polymath learner, drawing on
   the sources Atlas Open Academy uses. The prioritised list is `docs/new-subjects.md`.
 
