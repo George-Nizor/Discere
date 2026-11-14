@@ -2,7 +2,7 @@
 
 Updated: 2026-11-13
 
-Release 1.18.0 hides the thirty courses whose rewrite is not finished: the maths, science and engineering courses, CS Basics, Logic, the three writing courses and the five programming-language courses. A course marked `catalogueVisibility: "hidden"` is unchanged but stays out of the library, search, Today, review and the project lists, so only the 38 finished courses show. Setting `DISCERE_SHOW_HIDDEN_COURSES=1` lists them again; the server tests, browser tests and smoke run set it so every course is still checked. Each course loses the flag when its rewrite ships.
+Release 1.18.0 hides the thirty courses whose rewrite is not finished: the maths, science and engineering courses, CS Basics, Logic, the three writing courses and the five programming-language courses. A course marked `catalogueVisibility: "hidden"` is unchanged but stays out of the library, search, Today, review and the project lists, so only the 37 finished courses show (Drawing stays archived, since Delineare teaches it). Setting `DISCERE_SHOW_HIDDEN_COURSES=1` lists them again; the server tests, browser tests and smoke run set it so every course is still checked. Each course loses the flag when its rewrite ships.
 
 Release 1.17.0 adds two new courses, How the Body Works and The Roman Republic, each planned from a pack of fetched sources and written in the approved voice. It also rewrites the questions of fifteen more courses: Linux, Software Testing, Software Design, Game Design, Data Engineering, Analytics Engineering, Decision Theory, The Web, Computers and Networks, AI-Assisted Engineering, Industrial Design, Small Buildings, Technical Writing, and Speaking, Argument and Debate.
 
