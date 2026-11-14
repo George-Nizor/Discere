@@ -1,8 +1,0 @@
-import { bundle, save } from "./lib.mjs";
-
-bundle.course.introduction.paragraphs = [
-  "A jump in a platform game is two things at once. For the player it is an experience, which feels crisp or heavy according to how many frames pass between the press of the button and the first movement of the character. For the program it is a state that the character enters, which some states can reach and others cannot, and which has to keep working as the game grows to hundreds of kinds of object. Game design is the study of how rules produce the first, and game programming patterns are the standard arrangements of code that keep the second manageable.",
-  "Qualities that players describe only loosely often have numbers behind them. A control that feels heavy can be traced to a delay counted in frames, and a fight that drags to the ratio of the enemy's health to the damage dealt each second. Once a quality has a number, two versions of a game can be compared on paper, and a prototype or a playtest can then show whether the number matches what players feel.",
-  "The code has recurring problems of its own, and a pattern is a standard arrangement of code for one of them, together with what the arrangement costs. A character whose behaviour is held in one state variable cannot be in a combination of states that makes no sense, and a grid that files entities by position avoids most of the collision tests that comparing every pair would need when the entities are spread out. None of this depends on an engine, since Godot, Unity and Unreal are current examples of where the ideas are used and every example can be followed in any language by reading short pseudocode or Python.",
-];
-save();
