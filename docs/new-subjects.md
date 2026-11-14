@@ -2,7 +2,10 @@
 
 A proposal of 14 November 2026 for completing the library's breadth, for a learner who wants to be
 well rounded across the main fields of knowledge. Nothing here is started; George chooses what goes
-ahead and in what order. Once a course is written it leaves this list and enters
+ahead and in what order. George agreed the order on 15 November; the first two are being written.
+
+OpenStax text is left out of every source list here: its books now forbid use in AI tools without
+written permission (`docs/authoring/open-sources.md`). Once a course is written it leaves this list and enters
 `docs/content-ledger.json`. Sources and their licences are in `docs/authoring/open-sources.md`.
 
 ## How the gaps were found
@@ -28,26 +31,26 @@ answers, order, sort, quoted sources side by side, code).
 
 | # | Course | What it adds | Main sources (licence) |
 |---|---|---|---|
-| 1 | **The Modern World, 1750 to Today** | Revolutions, industrialisation, empire, the world wars, decolonisation, the Cold War, globalisation. The History course teaches method with cases up to 1914; nothing covers how the present world was made. | OpenStax World History vol. 2 (NC-SA); Our World in Data (CC BY) for long-run charts; Avalon Project and Fordham Modern History Sourcebook (public domain) for quoted documents |
-| 2 | **How Government Works** | States and regimes, constitutions, elections and parties, rights, international relations. Needed to read the news well. | OpenStax Introduction to Political Science and American Government (NC-SA); McGlinchey, International Relations (BY-NC); constitutions and founding documents (public domain) |
-| 3 | **Personal Finance and Investing** | Budgeting, debt and interest, compounding, index funds and fees, risk, insurance, retirement saving. The highest everyday payoff of anything missing. | Government consumer guides (public domain in the US; check the local equivalent); Saylor Personal Finance (NC-SA); OpenStax Principles of Finance (NC-SA) |
+| 1 | **The Modern World, 1750 to Today** | Revolutions, industrialisation, empire, the world wars, decolonisation, the Cold War, globalisation. The History course teaches method with cases up to 1914; nothing covers how the present world was made. | Wikipedia (CC BY-SA); Our World in Data (CC BY) for long-run charts; Avalon Project and Fordham Modern History Sourcebook (public domain) for quoted documents |
+| 2 | **How Government Works** | States and regimes, constitutions, elections and parties, rights, international relations. Needed to read the news well. | Wikipedia (CC BY-SA); McGlinchey, International Relations (BY-NC); constitutions and founding documents (public domain) |
+| 3 | **Personal Finance and Investing** | Budgeting, debt and interest, compounding, index funds and fees, risk, insurance, retirement saving. The highest everyday payoff of anything missing. | Government consumer guides (public domain in the US; check the local equivalent); Saylor Personal Finance (NC-SA) |
 | 4 | **Law and Legal Reasoning** | How law is made and argued: sources of law, precedent, contract, tort, criminal law, constitutional rights. | Law 101 (Open SUNY, CC BY); constitutions and court judgments (public domain); CALI casebooks (NC-SA) |
 | 5 | **Art History: a Survey** | How to look at a painting, sculpture or building, and the main traditions from cave art to now, across cultures. | Smarthistory (NC-SA); Introduction to Art, University of North Georgia (BY-SA); Met, Art Institute and National Gallery open images (CC0), through the existing Wikimedia image retriever |
 | 6 | **Reading Literature: Poems, Stories and Plays** | Close reading of poetry, how a novel and a short story work, drama and Shakespeare. English teaches rhetoric and some prosody, not literature as such. | Lindsay and Bergstrom, An Introduction to Poetry (CC BY); Maricopa Introduction to Literature (BY-SA); public-domain works from Gutenberg and Wikisource, quoted word for word |
-| 7 | **Modern Physics: Relativity and the Quantum** | Special relativity, light as particles, atoms and spectra, quantum behaviour, nuclear physics. The two physics courses stop at classical physics, so the most important ideas of the last century are missing. | OpenStax University Physics vol. 3 (NC-SA); MIT OpenCourseWare 8.04 (NC-SA); NIST and CERN public pages |
+| 7 | **Modern Physics: Relativity and the Quantum** | Special relativity, light as particles, atoms and spectra, quantum behaviour, nuclear physics. The two physics courses stop at classical physics, so the most important ideas of the last century are missing. | MIT OpenCourseWare 8.04 (NC-SA); Wikipedia (CC BY-SA); NIST and CERN public pages |
 | 8 | **World Religions** | What Judaism, Christianity, Islam, Hinduism, Buddhism, Chinese and indigenous traditions believe and practise, read through their own texts. Needed for history, art and literature as much as for itself. | World Religions, Florida State College at Jacksonville (CC BY); public-domain scripture translations (Sacred Texts Archive, eBible, JPS 1917) |
 
 ## Second: strong value, a step behind
 
 | # | Course | What it adds | Main sources (licence) |
 |---|---|---|---|
-| 9 | **Accounting: Reading the Numbers of a Business** | Balance sheet, income statement, cash flow, ratios: how to read a company. Pairs with Economics and Personal Finance. | OpenStax Principles of Accounting vol. 1 (NC-SA); Lyryx Introduction to Financial Accounting (NC-SA) |
-| 10 | **Sociology** | Social structure, class, institutions, inequality, how societies change, and how sociologists know. | OpenStax Introduction to Sociology 2e (CC BY) and 3e (NC-SA); Noba (NC-SA); Du Bois, Weber, Durkheim (public domain) |
+| 9 | **Accounting: Reading the Numbers of a Business** | Balance sheet, income statement, cash flow, ratios: how to read a company. Pairs with Economics and Personal Finance. | Lyryx Introduction to Financial Accounting (NC-SA) |
+| 10 | **Sociology** | Social structure, class, institutions, inequality, how societies change, and how sociologists know. | Little and McGivern, Introduction to Sociology (BCcampus, CC BY); Noba (NC-SA); Du Bois, Weber, Durkheim (public domain) |
 | 11 | **Human and Physical Geography** | Why people, cities, trade and climate sit where they do; landforms, climate zones and hazards; reading maps. | Dorrell and Henderson, Introduction to Human Geography (CC BY); Earle, Physical Geology (CC BY); Our World in Data and World Bank data (CC BY) |
 | 12 | **A first foreign language** | Speaking, reading and listening in a second language. The largest single gap, but also the largest build (see below). | Depends on the language: LibreTexts ¡Chévere! (Spanish, CC BY), FREN 101 (French, CC BY), Grimm Grammar (German, CC BY); US Foreign Service Institute courses with audio (public domain) |
 | 13 | **Nutrition and Exercise** | What food does in the body, reading a label, energy balance, evidence on diets, training and recovery. Pairs with How the Body Works. | University of Hawai'i Human Nutrition (CC BY); national dietary guidelines (public domain in the US); NIH Office of Dietary Supplements (public domain) |
-| 14 | **The Ancient World** | Mesopotamia, Egypt, Greece, Rome, China and India to late antiquity. The Roman Republic course becomes its Rome module or its deep dive. Starts the set of era courses. | OpenStax World History vol. 1 (NC-SA); Perseus and Gutenberg translations (public domain) |
-| 15 | **Anthropology** | Culture, kinship, human evolution and archaeology: how other ways of living work. | OpenStax Introduction to Anthropology (NC-SA); AAA Perspectives and Explorations (BY-NC) |
+| 14 | **The Ancient World** | Mesopotamia, Egypt, Greece, Rome, China and India to late antiquity. The Roman Republic course becomes its Rome module or its deep dive. Starts the set of era courses. | Wikipedia (CC BY-SA); Perseus and Gutenberg translations (public domain) |
+| 15 | **Anthropology** | Culture, kinship, human evolution and archaeology: how other ways of living work. | AAA Perspectives and Explorations (BY-NC) |
 
 ## Later, or as modules of the above
 

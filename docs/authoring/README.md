@@ -18,7 +18,8 @@ Nothing regenerates a bundle from other files.
 Used for How the Body Works and The Roman Republic.
 
 1. **Source pack.** A cheap agent fetches the sources the course will rest on into a scratch
-   folder: open textbooks (OpenStax and similar), public-domain primary texts, official guidance.
+   folder: open textbooks, Wikipedia, public-domain primary texts, official guidance. No OpenStax
+   text without OpenStax's written permission (see `open-sources.md`).
    It writes `passages.md`, listing each passage with its licence and whether it may be quoted
    word for word or only paraphrased.
 2. **Plan.** An agent writes the curriculum (`docs/curricula/<id>.json`, checked by
