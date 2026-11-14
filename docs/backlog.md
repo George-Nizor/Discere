@@ -4,23 +4,20 @@ Open work and open decisions, checked against the code and content on 14 Novembe
 the only list of what is left; plans and hand-offs are deleted once their work ships. Each item
 says what is wrong now and how it was measured, so nobody has to redo a pass to find out.
 
+## Decided on 14 November 2026
+
+- **The Roman Republic stays**, filed under History with the History course (both carry the
+  History subject). Later it should become a module of a broader ancient-history course, or the
+  first of a set of era courses written the same way.
+- **The short foundation courses stay short.** Maths Foundations, Probability and Statistics and
+  CS Basics (6 lessons), Electronics (5) and Logic (8) are starters, and that is fine.
+- **Questions are rewritten only where they are genuinely not good enough**, judged on a sample
+  against the fully rewritten courses (see `docs/content-history.md`).
+- **New subjects come next**, to complete the library's breadth for a polymath learner, drawing on
+  the sources Atlas Open Academy uses. The prioritised list is `docs/new-subjects.md`.
+
 ## Decisions for George
 
-- **The Roman Republic.** Chosen by an agent on 14 November for its free primary sources, without
-  asking. A Roman Empire placeholder course was removed on 16 October. Keep it, hide it
-  (`catalogueVisibility: "hidden"`) or archive it.
-- **Thin foundation courses.** Maths Foundations, Probability and Statistics and CS Basics have
-  6 lessons each, Electronics 5 and Logic 8, against 12 to 20 elsewhere. Their titles promise more
-  than they cover. Extend them, or leave them as short starters.
-- **Full question rewrites for a few targeted-pass courses.** Optional, after using them. Biology
-  has 82 numeric questions, many of them arithmetic dressed as biology ("a population starts at
-  120, with 30 births and 45 deaths"). Python for Data Analysis has 188 numeric questions and 55%
-  of its prompts are under 90 characters, with few tables or scripts to read. TypeScript and
-  Systems Programming have the same pattern, and Earth Science and Astronomy lean towards it.
-  Maths, physics, chemistry and engineering do not need it: there the number is the skill.
-- **New subjects.** Missing: foreign languages, law, business and finance, modern and regional
-  history, politics, sociology, anthropology, geography, religion, art history, literature. A
-  language course would want a sentence-building question (an order question with another label).
 - **Learner-agent testing** (`docs/learner-agent-testing-plan.md`): agents work through each
   course as a learner and report where they get stuck. Planned on 4 November; one trial run;
   not started.
