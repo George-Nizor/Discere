@@ -1,11 +1,8 @@
+import { readFileSync } from "node:fs";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 import type { DiscereStore } from "../src/db/store.js";
-import { readingLessons } from "../../../content/sql-from-rows-to-reports/authoring/reading-lessons.js";
-import { summaryLessons } from "../../../content/sql-from-rows-to-reports/authoring/summary-lessons.js";
-import { combiningLessons } from "../../../content/sql-from-rows-to-reports/authoring/combining-lessons.js";
-import { windowLessons } from "../../../content/sql-from-rows-to-reports/authoring/window-lessons.js";
 
 let app: FastifyInstance;
 let store: DiscereStore;
@@ -15,7 +12,12 @@ beforeEach(async () => {
 afterEach(async () => {
   await app.close();
 });
-const lessons = [...readingLessons, ...summaryLessons, ...combiningLessons, ...windowLessons];
+const { lessons } = JSON.parse(
+  readFileSync(
+    new URL("../../../content/sql-from-rows-to-reports/bundle.json", import.meta.url),
+    "utf8",
+  ),
+) as { lessons: Array<{ id: string }> };
 const answer = (id: string, response: string) =>
   app.inject({
     method: "POST",
@@ -45,7 +47,9 @@ describe("published SQL learner flow", () => {
       if (stages[0].intro) {
         // A lesson rewritten to the v2 format: an opener, steps that compare tables, a recap.
         expect(stages[0].intro.promise).toBeTruthy();
-        expect(stages.find((stage: { type: string }) => stage.type === "recap").keyIdea).toBeTruthy();
+        expect(
+          stages.find((stage: { type: string }) => stage.type === "recap").keyIdea,
+        ).toBeTruthy();
         expect(steps.some((step) => step.diagram?.type === "relational_query")).toBe(true);
         for (const step of steps) {
           if (!step.question) continue;

@@ -1,6 +1,6 @@
 /**
- * The before/after split of a lesson step lives in `@discere/curriculum`, so the server and the
- * lesson-migration scaffold (scripts/lesson-migration) project prose identically.
+ * The before/after split of a lesson step lives in `@discere/curriculum`, so every caller projects
+ * prose identically.
  */
 export {
   answerLeakTokens,
@@ -8,7 +8,7 @@ export {
   isV2Step,
   projectStep,
   projectV2Step,
+  type StepProjection,
   sentences,
   splitLegacyStep,
-  type StepProjection,
 } from "@discere/curriculum";

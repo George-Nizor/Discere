@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mathsCourseChecks } from "../../../content/maths-foundations/authoring/course-checks.js";
 import { createApp, type DiscereApp } from "../src/app.js";
 
 let service: DiscereApp;
@@ -12,7 +11,6 @@ const inject = (method: "GET" | "PUT" | "POST" | "DELETE", url: string, payload?
 
 beforeEach(async () => {
   service = await createApp({ dbPath: ":memory:", migrate: true });
-  service.content.bundle("maths-foundations")!.courseChecks = structuredClone(mathsCourseChecks);
 });
 afterEach(async () => {
   await service.app.close();

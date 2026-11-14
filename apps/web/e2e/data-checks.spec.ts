@@ -1,11 +1,12 @@
-import { mkdtempSync, readFileSync, mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { resolve, join } from "node:path";
-import type { Page } from "@playwright/test";
+import { join, resolve } from "node:path";
 import { CourseBundleSchema, type CourseCheckDefinition } from "@discere/contracts";
+import type { Page } from "@playwright/test";
 import { createApp, type DiscereApp } from "../../server/src/app.js";
-import { captureDir, test, expect } from "./fixtures.js";
+import { captureDir, expect, test } from "./fixtures.js";
 import { completeLessonsThroughApi } from "./lesson-player.js";
+
 const root = resolve(import.meta.dirname, "../../..");
 const sizes = [
   { width: 1440, height: 900 },
@@ -13,7 +14,6 @@ const sizes = [
   { width: 390, height: 844 },
 ];
 const output = captureDir("course-checks/screens/data");
-const candidate = process.env["DISCERE_DATA_CHECKS_CANDIDATE"] === "1";
 async function layout(page: Page) {
   for (const size of sizes) {
     await page.setViewportSize(size);
@@ -70,12 +70,7 @@ async function save(page: Page) {
 for (const id of ["sql-from-rows-to-reports", "python-for-data-analysis"])
   test.describe(id + " independent checks", () => {
     const bundle = CourseBundleSchema.parse(
-      JSON.parse(
-        readFileSync(
-          join(root, "content", id, candidate ? ".authoring/candidate.json" : "bundle.json"),
-          "utf8",
-        ),
-      ),
+      JSON.parse(readFileSync(join(root, "content", id, "bundle.json"), "utf8")),
     );
     let directory: string,
       address: string,
@@ -89,11 +84,6 @@ for (const id of ["sql-from-rows-to-reports", "python-for-data-analysis"])
         clock: () => now,
         webRoot: resolve(import.meta.dirname, "../dist"),
       });
-      if (candidate) {
-        // Preview only in this disposable in-memory content catalogue; no published file changes.
-        server.content.bundle(id)!.courseChecks = structuredClone(bundle.courseChecks!);
-        server.content.bundle(id)!.course.version = bundle.course.version;
-      }
       address = await server.app.listen({ port: 0, host: "127.0.0.1" });
       mkdirSync(output, { recursive: true });
     });

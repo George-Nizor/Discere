@@ -1,13 +1,26 @@
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import {
+  type SqlProjectAction,
+  SqlProjectCollectionSchema,
+  type SqlProjectSession,
+  type SqlResult,
+} from "@discere/contracts";
 import { afterEach, describe, expect, it } from "vitest";
-import type { SqlProjectSession, SqlProjectAction, SqlResult } from "@discere/contracts";
-import { sqlProjects } from "../../../content/sql-from-rows-to-reports/authoring/projects.js";
 import { DiscereStore } from "../src/db/store.js";
 import { SqlProjectRepository } from "../src/sql-projects/repository.js";
-import { SqlProjectService } from "../src/sql-projects/service.js";
 import { IsolatedSqlRuntime, type SqlRuntime } from "../src/sql-projects/runtime.js";
+import { SqlProjectService } from "../src/sql-projects/service.js";
+
 const stores: DiscereStore[] = [];
-const collection = sqlProjects;
+const collection = SqlProjectCollectionSchema.parse(
+  JSON.parse(
+    readFileSync(
+      new URL("../../../content/sql-from-rows-to-reports/projects.json", import.meta.url),
+      "utf8",
+    ),
+  ),
+);
 const project = collection.projects[0]!;
 function setup(runtime: SqlRuntime = new IsolatedSqlRuntime()) {
   let time = new Date("2026-10-02T00:00:00Z");

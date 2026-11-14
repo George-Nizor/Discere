@@ -1,14 +1,15 @@
 import { readFileSync } from "node:fs";
 import { CourseBundleSchema, CourseCheckDefinitionSchema } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
-import { mathsCourseChecks } from "../../../content/maths-foundations/authoring/course-checks.js";
 import { validateCourseBundle } from "../src/validate.js";
+
 const base = JSON.parse(
   readFileSync(new URL("../../../content/maths-foundations/bundle.json", import.meta.url), "utf8"),
 );
+const mathsCourseChecks = CourseBundleSchema.parse(base).courseChecks!;
 describe("Maths course checks", () => {
   it("covers every course lesson with three distinct sourced problem sets", () => {
-    const bundle = CourseBundleSchema.parse({ ...base, courseChecks: mathsCourseChecks });
+    const bundle = CourseBundleSchema.parse(base);
     expect(validateCourseBundle(bundle).passed).toBe(true);
     expect(mathsCourseChecks.map((c) => c.items.length)).toEqual([6, 8, 6]);
     expect(

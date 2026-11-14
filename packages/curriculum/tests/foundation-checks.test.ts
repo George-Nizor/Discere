@@ -1,22 +1,25 @@
-import { readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { describe, it, expect } from "vitest";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { CourseBundleSchema, type CourseCheckDefinition } from "@discere/contracts";
-import { validateCourseBundle } from "../src/validate.js";
+import { describe, expect, it } from "vitest";
 import { bundleDigest } from "../src/index.js";
-import { logicCourseChecks } from "../../../content/logic-and-reasoning/authoring/course-checks.js";
-import { csCourseChecks } from "../../../content/cs-basics/authoring/course-checks.js";
-import { statisticsCourseChecks } from "../../../content/probability-statistics/authoring/course-checks.js";
-import { historicalBundle } from "./helpers/published-history.js";
+import { validateCourseBundle } from "../src/validate.js";
 import { restorePreGuidanceBundle } from "./helpers/guidance-history.js";
+import { historicalBundle } from "./helpers/published-history.js";
+
+const read = (id: string, file = "bundle.json") =>
+  JSON.parse(readFileSync(new URL("../../../content/" + id + "/" + file, import.meta.url), "utf8"));
+const checksOf = (id: string): CourseCheckDefinition[] =>
+  CourseBundleSchema.parse(read(id)).courseChecks!;
+const logicCourseChecks = checksOf("logic-and-reasoning");
+const csCourseChecks = checksOf("cs-basics");
+const statisticsCourseChecks = checksOf("probability-statistics");
 const definitions = {
   "logic-and-reasoning": logicCourseChecks,
   "cs-basics": csCourseChecks,
   "probability-statistics": statisticsCourseChecks,
 };
-const read = (id: string, file = "bundle.json") =>
-  JSON.parse(readFileSync(new URL("../../../content/" + id + "/" + file, import.meta.url), "utf8"));
 const items = (sets: CourseCheckDefinition[]) => sets.flatMap((c) => c.items);
 const numbers = (sets: CourseCheckDefinition[]) =>
   items(sets).filter((i) => i.question.answerAuthority.kind === "numeric");
@@ -113,9 +116,8 @@ describe("Independent foundation course checks", () => {
     it(
       id + " covers every taught lesson in three fresh sets without replacing lesson content",
       () => {
-        const base = CourseBundleSchema.parse(read(id)),
-          candidate = CourseBundleSchema.parse({ ...base, courseChecks: sets });
-        expect(validateCourseBundle(candidate).passed).toBe(true);
+        const base = CourseBundleSchema.parse(read(id));
+        expect(validateCourseBundle(base).passed).toBe(true);
         const lessonIds = base.lessons.map((l) => l.id);
         for (const check of sets) {
           expect(check.items.map((i) => i.lessonId).toSorted()).toEqual(lessonIds.toSorted());
@@ -149,7 +151,6 @@ describe("Independent foundation course checks", () => {
     });
     it(id + " published checks retain exact editorial hash binding", () => {
       const base = CourseBundleSchema.parse(read(id));
-      expect(base.courseChecks).toEqual(sets);
       expect(read(id, "review/publication.json").bundleSha256).toBe(bundleDigest(base));
       expect(read(id, "review/check-extension.json").publishedBundleSha256).toBe(
         bundleDigest(restorePreGuidanceBundle(id, CourseBundleSchema.parse(historicalBundle(id)))),

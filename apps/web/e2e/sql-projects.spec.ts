@@ -1,10 +1,19 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { SqlProjectCollectionSchema } from "@discere/contracts";
 import type { Page } from "@playwright/test";
-import { sqlProjects } from "../../../content/sql-from-rows-to-reports/authoring/projects.js";
-import { captureDir, test, expect } from "./fixtures.js";
-import { runnableLanguages } from "./lesson-player.js";
 import { createApp } from "../../server/src/app.js";
+import { captureDir, expect, test } from "./fixtures.js";
+import { runnableLanguages } from "./lesson-player.js";
+
+const sqlProjects = SqlProjectCollectionSchema.parse(
+  JSON.parse(
+    readFileSync(
+      new URL("../../../content/sql-from-rows-to-reports/projects.json", import.meta.url),
+      "utf8",
+    ),
+  ),
+);
 const sizes = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
@@ -172,10 +181,14 @@ for (const [index, project] of sqlProjects.projects.entries()) {
     const final = await (await request.get(endpoint)).json();
     expect(final.results).toHaveLength(5);
     expect(final.xp).toBe(index === 0 ? 22 : index === 1 ? 20 : 25);
-    await expect(summary.locator(".sql-project-results > details")).toHaveCount(final.results.length);
+    await expect(summary.locator(".sql-project-results > details")).toHaveCount(
+      final.results.length,
+    );
     await expect(summary.locator(".sql-earned")).toHaveText("+" + final.xp + " XP");
     await page.reload();
-    await expect(summary.locator(".sql-project-results > details")).toHaveCount(final.results.length);
+    await expect(summary.locator(".sql-project-results > details")).toHaveCount(
+      final.results.length,
+    );
     await capture(page, project.id + "-results");
     await page.getByRole("link", { name: "Return to the roadmap" }).click();
     await expect(page.getByRole("heading", { name: "Write your own queries" })).toBeVisible();
