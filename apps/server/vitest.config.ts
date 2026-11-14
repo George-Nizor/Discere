@@ -4,5 +4,10 @@ import { defineConfig } from "vitest/config";
 // hook. With dozens of courses that takes longer than Vitest's 5 s and 10 s defaults on a CI
 // runner, and it grows with every course added.
 export default defineConfig({
-  test: { testTimeout: 60_000, hookTimeout: 60_000 },
+  // Hidden courses are listed in tests, so every course is still exercised.
+  test: {
+    testTimeout: 60_000,
+    hookTimeout: 60_000,
+    env: { DISCERE_SHOW_HIDDEN_COURSES: "1" },
+  },
 });

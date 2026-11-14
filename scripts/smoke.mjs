@@ -68,6 +68,8 @@ const environment = childEnvironment({
   // The offline fixture provider answers in process, so the workings review below runs without
   // a subscription and without a network call.
   DISCERE_TUTOR_PROVIDER: "mock",
+  // Courses hidden while their rewrite is unfinished are listed, so the smoke run sees every course.
+  DISCERE_SHOW_HIDDEN_COURSES: "1",
 });
 const apiUrl = `http://${formatHostForUrl(host)}:${apiPort}`;
 const webUrl = `http://${formatHostForUrl(host)}:${webPort}`;

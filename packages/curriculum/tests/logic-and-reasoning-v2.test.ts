@@ -13,9 +13,7 @@ const candidateUrl = new URL(
   import.meta.url,
 );
 const bundleUrl = new URL("../../../content/logic-and-reasoning/bundle.json", import.meta.url);
-const bundle = JSON.parse(
-  readFileSync(bundleUrl, "utf8"),
-) as CourseBundle;
+const bundle = JSON.parse(readFileSync(bundleUrl, "utf8")) as CourseBundle;
 
 const question = (lesson: string, suffix: string): Question =>
   bundle.questions.find((item) => item.id === `logic-and-reasoning-${lesson}-${suffix}`)!;
@@ -45,7 +43,10 @@ const askedBy = (lessonId: string) => {
     ...lesson.questionIds,
     ...lesson.steps.flatMap((step) => [
       step.checkQuestionId,
-      ...(step.workedSteps ?? []).flatMap((line) => [line.selfExplain?.questionId, line.blank?.questionId]),
+      ...(step.workedSteps ?? []).flatMap((line) => [
+        line.selfExplain?.questionId,
+        line.blank?.questionId,
+      ]),
     ]),
   ].filter((id): id is string => Boolean(id));
 };
@@ -59,8 +60,10 @@ const rows: Row[] = [
 ];
 const imp = (p: boolean, q: boolean) => !p || q;
 const verdict = (value: boolean) => (value ? "true" : "false");
-const validity = (premises: (p: boolean, q: boolean) => boolean, conclusion: (p: boolean, q: boolean) => boolean) =>
-  rows.some(([p, q]) => premises(p, q) && !conclusion(p, q)) ? "invalid" : "valid";
+const validity = (
+  premises: (p: boolean, q: boolean) => boolean,
+  conclusion: (p: boolean, q: boolean) => boolean,
+) => (rows.some(([p, q]) => premises(p, q) && !conclusion(p, q)) ? "invalid" : "valid");
 
 /** Knights and knaves: a person is consistent when their statement's truth matches their type. */
 type Person = "knight" | "knave";
@@ -91,7 +94,11 @@ describe("Logic and Reasoning v2 lessons", () => {
     // A claim about a sealed jar has exactly one truth value in the actual case. If the claim is
     // false, its negation is true; the item words it as "It is true."
     expect(word(l, "practice-2")).toBe(`it is ${verdict(!false)}.`);
-    expect(labels(l, "practice-2")).toEqual(["it is true.", "it is false.", "it depends on the claim."]);
+    expect(labels(l, "practice-2")).toEqual([
+      "it is true.",
+      "it is false.",
+      "it depends on the claim.",
+    ]);
     expect(choice(l, "practice-2")).toEqual(["a"]);
   });
 
@@ -99,7 +106,9 @@ describe("Logic and Reasoning v2 lessons", () => {
     const l = "if-then-claims";
     expect(num(l, "2")).toBe(rows.filter(([p, q]) => imp(p, q)).length);
     // p and q both false: the claim is true, and the item words it as "It is true."
-    expect(word(l, "3")).toBe(`it is ${verdict(imp(false, false))}.`);
+    expect(word(l, "3")).toBe(
+      `it is ${verdict(imp(false, false))}, because the rule was never broken.`,
+    );
     expect(choice(l, "3")).toEqual(["b"]);
     expect(word(l, "4")).toBe(verdict(imp(false, true)));
     expect(word(l, "practice-1")).toBe(verdict(imp(true, false)));
@@ -132,13 +141,17 @@ describe("Logic and Reasoning v2 lessons", () => {
     const l = "knights-and-knaves";
     const adaSays = ([a, b]: [Person, Person]) => holds(a, b === "knave");
     const benSays = ([a, b]: [Person, Person]) => holds(b, a === b);
-    expect(word(l, "1")).toBe(`a ${pairs.filter(([a, b]) => a === "knight" && adaSays([a, b]))[0]![1]}`);
+    expect(word(l, "1")).toBe(
+      `a ${pairs.filter(([a, b]) => a === "knight" && adaSays([a, b]))[0]![1]}`,
+    );
     const both = pairs.filter((p) => adaSays(p) && benSays(p));
     expect(both).toHaveLength(1);
     const caraSays = ([c, d]: [Person, Person]) => holds(c, d === "knight");
     const drewSays = ([c, d]: [Person, Person]) => holds(d, c === "knave");
     // Ada a knave: her false claim means Ben is not a knave.
-    expect(word(l, "practice-1")).toBe(`a ${pairs.filter(([a, b]) => a === "knave" && adaSays([a, b]))[0]![1]}`);
+    expect(word(l, "practice-1")).toBe(
+      `a ${pairs.filter(([a, b]) => a === "knave" && adaSays([a, b]))[0]![1]}`,
+    );
     const gusSays = ([g, h]: [Person, Person]) => holds(g, h === "knight");
     const halSays = ([g, h]: [Person, Person]) => holds(h, g !== h);
     const gh = pairs.filter((p) => gusSays(p) && halSays(p));
@@ -215,9 +228,24 @@ describe("Logic and Reasoning v2 lessons", () => {
 
   it("valid-but-untrue", () => {
     const l = "valid-but-untrue";
-    expect(word(l, "1")).toBe(validity((p, q) => imp(p, q) && p, (_p, q) => q));
-    expect(word(l, "3")).toBe(validity((p, q) => imp(p, q) && q, (p) => p));
-    expect(word(l, "check-3")).toBe(validity((p, q) => (p || q) && !p, (_p, q) => q));
+    expect(word(l, "1")).toBe(
+      validity(
+        (p, q) => imp(p, q) && p,
+        (_p, q) => q,
+      ),
+    );
+    expect(word(l, "3")).toBe(
+      validity(
+        (p, q) => imp(p, q) && q,
+        (p) => p,
+      ),
+    );
+    expect(word(l, "check-3")).toBe(
+      validity(
+        (p, q) => (p || q) && !p,
+        (_p, q) => q,
+      ),
+    );
     // Worked example: p ∨ q; q; therefore p fails in FT only.
     expect(rows.filter(([p, q]) => (p || q) && q && !p)).toEqual([[false, true]]);
   });
@@ -229,14 +257,27 @@ describe("Logic and Reasoning v2 lessons", () => {
     expect(rows.filter(([p, q]) => imp(p, q) && !p && q)).toEqual([[false, true]]);
     expect(choice(l, "1")).toEqual(["a"]);
     expect(word(l, "2")).toBe(verdict(!true));
-    expect(word(l, "3")).toBe(validity((p, q) => imp(p, q) && !q, (p) => !p));
+    expect(word(l, "3")).toBe(
+      validity(
+        (p, q) => imp(p, q) && !q,
+        (p) => !p,
+      ),
+    );
     // "If it's a bird, it has feathers. It has feathers, so it's a bird": p → q; q; therefore p.
     // Invalid, and the second premise q is the consequent, so the slip is affirming it.
     expect(word(l, "check-3")).toBe(
-      `${validity((p, q) => imp(p, q) && q, (p) => p)}, because it affirms the consequent.`,
+      `${validity(
+        (p, q) => imp(p, q) && q,
+        (p) => p,
+      )}, because it affirms the consequent.`,
     );
     expect(choice(l, "check-3")).toEqual(["c"]);
-    expect(validity((p, q) => imp(p, q) && !p, (_p, q) => !q)).toBe("invalid");
+    expect(
+      validity(
+        (p, q) => imp(p, q) && !p,
+        (_p, q) => !q,
+      ),
+    ).toBe("invalid");
   });
 });
 
@@ -256,7 +297,10 @@ const storyLessons = [
   "naming-the-fallacies",
 ];
 const proseWords = (blocks: { kind: string; text?: string }[] = []) =>
-  blocks.reduce((sum, block) => sum + (block.text ? block.text.split(/\s+/u).filter(Boolean).length : 0), 0);
+  blocks.reduce(
+    (sum, block) => sum + (block.text ? block.text.split(/\s+/u).filter(Boolean).length : 0),
+    0,
+  );
 
 describe("Logic and Reasoning story lessons", () => {
   for (const id of storyLessons) {
@@ -291,7 +335,10 @@ describe("Logic and Reasoning story lessons", () => {
       // Every question a step asks exists, and every numeric item keeps three hints.
       const asked = lesson.steps.flatMap((step) => [
         step.checkQuestionId,
-        ...(step.workedSteps ?? []).flatMap((line) => [line.selfExplain?.questionId, line.blank?.questionId]),
+        ...(step.workedSteps ?? []).flatMap((line) => [
+          line.selfExplain?.questionId,
+          line.blank?.questionId,
+        ]),
       ]);
       for (const questionId of [...asked, ...lesson.questionIds]) {
         if (!questionId) continue;
@@ -305,7 +352,10 @@ describe("Logic and Reasoning story lessons", () => {
   it("has a course introduction of the agreed shape", () => {
     const intro = JSON.parse(
       readFileSync(
-        new URL("../../../content/logic-and-reasoning/.authoring/course-intro.json", import.meta.url),
+        new URL(
+          "../../../content/logic-and-reasoning/.authoring/course-intro.json",
+          import.meta.url,
+        ),
         "utf8",
       ),
     ) as { paragraphs: string[]; outcomes: string[]; prerequisites: string; length: string };
@@ -359,10 +409,20 @@ describe("Logic and Reasoning story lessons", () => {
 describe("Logic and Reasoning validity and fallacy lessons", () => {
   it("valid-but-untrue teaching screens", () => {
     // "p ∧ q; therefore q" has no bad row, because only TT makes the premise true and q holds there.
-    expect(validity((p, q) => p && q, (_p, q) => q)).toBe("valid");
+    expect(
+      validity(
+        (p, q) => p && q,
+        (_p, q) => q,
+      ),
+    ).toBe("valid");
     expect(rows.filter(([p, q]) => p && q)).toEqual([[true, true]]);
     // "p; therefore p ∧ q" has TF as its bad row, and TT is not one.
-    expect(validity((p) => p, (p, q) => p && q)).toBe("invalid");
+    expect(
+      validity(
+        (p) => p,
+        (p, q) => p && q,
+      ),
+    ).toBe("invalid");
     expect(rows.filter(([p, q]) => p && !(p && q))).toEqual([[true, false]]);
     // Worked example: premises p ∨ q and q hold in TT and FT, and FT is the counterexample.
     expect(rows.filter(([p, q]) => (p || q) && q)).toEqual([
@@ -377,7 +437,12 @@ describe("Logic and Reasoning validity and fallacy lessons", () => {
     expect(8 % 2 === 0 && 8 % 4 === 0).toBe(true);
     // Modus ponens is valid, the pattern in the predict screen; the swapped pattern is not, and
     // the figure's starting state (p and q true) is not its counterexample.
-    expect(validity((p, q) => imp(p, q) && p, (_p, q) => q)).toBe("valid");
+    expect(
+      validity(
+        (p, q) => imp(p, q) && p,
+        (_p, q) => q,
+      ),
+    ).toBe("valid");
     expect(rows.filter(([p, q]) => imp(p, q) && q && !p)).toEqual([[false, true]]);
     expect(rows.filter(([p, q]) => imp(p, q) && q && !p)).not.toContainEqual([true, true]);
     // A valid argument has no counterexample, and one is enough to refute it.
@@ -395,7 +460,12 @@ describe("Logic and Reasoning validity and fallacy lessons", () => {
     expect(rows.filter(([p, q]) => imp(p, q) && !p && q)).toEqual([cleaner]);
     // Modus tollens: only FF keeps p → q and ¬q, and ¬p holds there.
     expect(rows.filter(([p, q]) => imp(p, q) && !q)).toEqual([[false, false]]);
-    expect(validity((p, q) => imp(p, q) && !q, (p) => !p)).toBe("valid");
+    expect(
+      validity(
+        (p, q) => imp(p, q) && !q,
+        (p) => !p,
+      ),
+    ).toBe("valid");
     // The contrapositive says what the rule says, row for row.
     for (const [p, q] of rows) expect(imp(p, q)).toBe(imp(!q, !p));
     // The converse is a different claim from the rule (the screen on affirming the consequent).
@@ -409,8 +479,18 @@ describe("Logic and Reasoning validity and fallacy lessons", () => {
     // invalid, and the second premise decides the name: q is the consequent of p → q, and ¬p
     // denies its antecedent.
     const l = "naming-the-fallacies";
-    expect(validity((p, q) => imp(p, q) && q, (p) => p)).toBe("invalid");
-    expect(validity((p, q) => imp(p, q) && !p, (_p, q) => !q)).toBe("invalid");
+    expect(
+      validity(
+        (p, q) => imp(p, q) && q,
+        (p) => p,
+      ),
+    ).toBe("invalid");
+    expect(
+      validity(
+        (p, q) => imp(p, q) && !p,
+        (_p, q) => !q,
+      ),
+    ).toBe("invalid");
     const nameOf = (secondPremise: "q" | "¬p") =>
       secondPremise === "q" ? "affirming the consequent" : "denying the antecedent";
     expect(question(l, "practice-1-v2").prompt).toContain("p → q; q; therefore p");

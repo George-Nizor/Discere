@@ -10,10 +10,7 @@ import { validateCourseBundle } from "../src/index.js";
  */
 const bundle = JSON.parse(
   readFileSync(
-    new URL(
-      "../../../content/chemistry-atoms-to-reactions/bundle.json",
-      import.meta.url,
-    ),
+    new URL("../../../content/chemistry-atoms-to-reactions/bundle.json", import.meta.url),
     "utf8",
   ),
 ) as CourseBundle;
@@ -159,10 +156,13 @@ describe("Chemistry v2 lessons", () => {
     const room = capacities[heliumShells.length - 1]! - outerHolds;
     expect(room).toBe(0); // the shell is full
     const heliumChoices = [
-      { id: "a", label: `${outer(10)} electrons, as in neon and argon` },
-      { id: "b", label: `${outerHolds} electrons, which is as many as the shell can hold` },
+      { id: "a", label: `${outer(10)} electrons, since every outer shell holds ${outer(10)}` },
+      { id: "b", label: `${outerHolds} electrons, the most the first shell can hold` },
       // 6 more would make 8, the size of the second shell, not the first.
-      { id: "c", label: `${outerHolds} electrons, and the shell has room for ${8 - outerHolds} more` },
+      {
+        id: "c",
+        label: `${outerHolds} electrons, and the shell has room for ${8 - outerHolds} more`,
+      },
     ];
     expect(
       bundle.questions
@@ -377,7 +377,9 @@ describe("Chemistry v2 lessons", () => {
     expect(6 / 2).toBe(3);
     // 8 mol H₂ and 3 mol O₂: 4 and 3 batches, so 3 batches, 6 mol water, 6 mol H₂ used and 2 mol left.
     expect([8 / 2, 3 / 1, batches([8, 3], [2, 1])]).toEqual([4, 3, 3]);
-    expect([batches([8, 3], [2, 1]) * 2, batches([8, 3], [2, 1]) * 2, 8 - 3 * 2]).toEqual([6, 6, 2]);
+    expect([batches([8, 3], [2, 1]) * 2, batches([8, 3], [2, 1]) * 2, 8 - 3 * 2]).toEqual([
+      6, 6, 2,
+    ]);
     // 6 mol H₂ with 3 mol O₂ is the exact ratio: 3 batches each, nothing left.
     expect([6 / 2, 3 / 1]).toEqual([3, 3]);
     // 16 g of O₂ at 32 g/mol.

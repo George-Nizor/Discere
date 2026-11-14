@@ -28,6 +28,8 @@ const environment = {
   // The offline fixture provider answers in process, so the tutor path runs without a
   // subscription and without a network call.
   DISCERE_TUTOR_PROVIDER: "mock",
+  // Courses hidden while their rewrite is unfinished are listed here, so every course is tested.
+  DISCERE_SHOW_HIDDEN_COURSES: "1",
 };
 
 export default defineConfig({

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -101,11 +101,11 @@ describe("Discere API", () => {
   it("persists assessed journey progress and restores the next active stage", async () => {
     // Every question asked inside the lesson has to be answered before the explainer completes.
     for (const [questionId, response] of [
-      ["elec-current-in-one-loop-after-the-resistor", "Exactly 0.05 A"],
-      ["why-divide-by-resistance", "A bigger resistance holds the current back, so it gives a smaller current"],
+      ["elec-current-in-one-loop-after-the-resistor", "Exactly 0.05 A, because the charge has nowhere else to go"],
+      ["why-divide-by-resistance", "A bigger resistance holds the current back, so the current is smaller"],
       ["calculate-current-6v-150ohm", "0.04 A"],
       ["calculate-current-5v-100ohm", "0.05 A"],
-      ["choose-change-that-raises-current", "Raising the supply voltage"],
+      ["choose-change-that-raises-current", "Raising the supply voltage, so the battery pushes much harder on the charge"],
       ["current-at-second-meter", "0.2 A"],
     ] as const)
       await app.inject({
@@ -272,6 +272,44 @@ describe("Discere API", () => {
       expect(detail.json().concepts[0].title).toBeTruthy();
     } finally {
       await archived.app.close();
+      fixture.remove();
+    }
+  });
+
+  it("keeps a hidden course out of the list unless hidden courses are asked for", async () => {
+    const fixture = archivedContentRoot("first-aid", ["history", "electronics-foundations"]);
+    const hiddenFile = path.join(fixture.root, "electronics-foundations", "bundle.json");
+    const hiddenBundle = JSON.parse(readFileSync(hiddenFile, "utf8"));
+    hiddenBundle.course.catalogueVisibility = "hidden";
+    writeFileSync(hiddenFile, JSON.stringify(hiddenBundle));
+    const shown = process.env["DISCERE_SHOW_HIDDEN_COURSES"];
+    const listedIds = async () => {
+      const server = await createApp({
+        dbPath: ":memory:",
+        migrate: true,
+        revealDelayMs: 0,
+        contentRoot: fixture.root,
+      });
+      try {
+        const list = await server.app.inject({ method: "GET", url: "/api/courses" });
+        const detail = await server.app.inject({
+          method: "GET",
+          url: "/api/courses/electronics-foundations",
+        });
+        expect(detail.statusCode).toBe(200);
+        return list.json().courses.map((course: { id: string }) => course.id);
+      } finally {
+        await server.app.close();
+      }
+    };
+    try {
+      delete process.env["DISCERE_SHOW_HIDDEN_COURSES"];
+      expect(await listedIds()).toEqual(["history"]);
+      process.env["DISCERE_SHOW_HIDDEN_COURSES"] = "1";
+      expect([...(await listedIds())].sort()).toEqual(["electronics-foundations", "history"]);
+    } finally {
+      if (shown === undefined) delete process.env["DISCERE_SHOW_HIDDEN_COURSES"];
+      else process.env["DISCERE_SHOW_HIDDEN_COURSES"] = shown;
       fixture.remove();
     }
   });

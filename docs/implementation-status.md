@@ -1,6 +1,8 @@
 # Implementation status
 
-Updated: 2026-11-13
+Updated: 2026-11-14
+
+Release 1.19.0 finishes the thirty courses whose questions had not yet been rewritten. All 67 courses show (Drawing stays archived). Their teaching and numeric questions were already sound. The fix was in their multiple-choice questions: in about a third of them the right option had been the longest, often by a wide margin, so it could be guessed by length. Each course now has its wrong options written as specific mistakes with feedback, the right option strictly longest in 12 to 17% of questions and never more than 15% longer than every other, and at least two hints on every question. The three writing courses (English, Creative and Game Writing, Writing Longer Pieces) had a fuller pass: recall questions became judgements on a passage, each gained about ten order and sort questions, and the questions no lesson asked were removed. `option-lengths.test.ts` now checks every course, not a list, and Cloud, DevOps and Speaking were corrected to meet it. It also adds `catalogueVisibility: "hidden"`, for a course that is complete but should stay out of the library, search, Today, review and the project lists while its rewrite is under way; `DISCERE_SHOW_HIDDEN_COURSES=1` lists such courses again, and the server tests, browser tests and smoke run set it so every course is still checked. No course is hidden at the moment.
 
 Release 1.17.0 adds two new courses, How the Body Works and The Roman Republic, each planned from a pack of fetched sources and written in the approved voice. It also rewrites the questions of fifteen more courses: Linux, Software Testing, Software Design, Game Design, Data Engineering, Analytics Engineering, Decision Theory, The Web, Computers and Networks, AI-Assisted Engineering, Industrial Design, Small Buildings, Technical Writing, and Speaking, Argument and Debate.
 

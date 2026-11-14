@@ -11,9 +11,7 @@ import { validateCourseBundle } from "../src/index.js";
  */
 const root = new URL("../../../content/astronomy-sky-to-cosmos/", import.meta.url);
 const candidate = new URL(".authoring/candidate.json", root);
-const bundle = JSON.parse(
-  readFileSync(new URL("bundle.json", root), "utf8"),
-) as CourseBundle;
+const bundle = JSON.parse(readFileSync(new URL("bundle.json", root), "utf8")) as CourseBundle;
 
 const lessonOrder = [
   "turning-sky",
@@ -117,9 +115,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
       "star-lives",
       "expanding-universe",
       "big-bang",
-    ].map(
-      (id) => bundle.lessons.find((lesson) => lesson.id === id)!,
-    );
+    ].map((id) => bundle.lessons.find((lesson) => lesson.id === id)!);
     for (const lesson of lessons) {
       const intro = lesson.intro!;
       // Opener: 120–200 words in two or three paragraphs, a promise, and no question.
@@ -166,9 +162,9 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
       }
       // Every graded question the lesson asks is cited, and every step too.
       const cited = new Set(
-        bundle.authoringMetadata!.find((item) => item.lessonId === lesson.id)!.citations.map(
-          (citation) => citation.targetKind + ":" + citation.targetId,
-        ),
+        bundle
+          .authoringMetadata!.find((item) => item.lessonId === lesson.id)!
+          .citations.map((citation) => citation.targetKind + ":" + citation.targetId),
       );
       for (const step of lesson.steps) expect(cited.has("step:" + step.id)).toBe(true);
     }
@@ -206,7 +202,9 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
           ...(step.workedSteps ?? []).map((line) => line.selfExplain?.questionId),
         ]),
       ]);
-      const cited = bundle.authoringMetadata!.find((item) => item.lessonId === lesson.id)!.citations;
+      const cited = bundle.authoringMetadata!.find(
+        (item) => item.lessonId === lesson.id,
+      )!.citations;
       for (const id of asked) if (id) expect(cited.some((c) => c.targetId === id)).toBe(true);
       for (const c of cited)
         if (c.targetKind === "question") expect(asked.has(c.targetId)).toBe(true);
@@ -228,9 +226,11 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     same(p + "12-v2", (altitude(56, 90, 0) - altitude(41, 90, 0)) * kmPerDegree);
     expect(key(p + "12-v2")).toBe(15 * 111);
     // The wrong values the item flags are the slips it names: the degrees, and either latitude in km.
-    expect(
-      question(p + "12-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
-    ).toEqual([56 - 41, 41 * kmPerDegree, 56 * kmPerDegree]);
+    expect(question(p + "12-v2").misconceptions!.flatMap((m) => m.match.numeric ?? [])).toEqual([
+      56 - 41,
+      41 * kmPerDegree,
+      56 * kmPerDegree,
+    ]);
     for (const lesson of bundle.lessons.filter((l) => l.id === "turning-sky"))
       expect(lesson.steps.map((step) => step.checkQuestionId)).toContain(p + "12-v2");
     same(p + "13", circumpolarLimit(40));
@@ -257,8 +257,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("2 Why the seasons change: noon altitude is 90° − |φ − δ|", () => {
     const p = "astro-seasons-";
     const tilt = 23.4;
-    const noon = (latitude: number, declination: number) =>
-      90 - Math.abs(latitude - declination);
+    const noon = (latitude: number, declination: number) => 90 - Math.abs(latitude - declination);
     same(p + "7", dp(tilt - -tilt, 1));
     same(p + "1", dp(noon(51.5, tilt), 1));
     same(p + "2", dp(noon(51.5, -tilt), 1));
@@ -290,7 +289,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(choiceMarked(p + "10")).toEqual(["a"]);
     expect(choiceMarked(p + "6")).toEqual(["c"]);
     expect(markedLabels(p + "6")).toEqual([
-      "The northern hemisphere tilts away from the Sun, so its noon sunlight is low and its days are short",
+      "The northern hemisphere tilts away from the Sun, giving low noon sunlight and short days",
     ]);
     // The rule is the spherical altitude of the Sun on the meridian.
     for (const [latitude, declination] of [
@@ -332,7 +331,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(dp(daylight(51.5, tilt), 1)).toBe(16.4);
     expect(dp(daylight(51.5, -tilt), 1)).toBe(7.6);
     // Earth's distance varies by about 3% (perihelion 147.1, aphelion 152.1 million km).
-    expect(dp((152.1 - 147.1) / ((152.1 + 147.1) / 2) * 100, 0)).toBe(3);
+    expect(dp(((152.1 - 147.1) / ((152.1 + 147.1) / 2)) * 100, 0)).toBe(3);
   });
 
   it("3 Phases and eclipses: lit fraction, synodic month, angular size", () => {
@@ -359,7 +358,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(dp(27.32 * (360 / 365.25), 0)).toBe(27); // the Sun moves on about 27°
     expect(dp(29.53 - 27.32, 1)).toBe(2.2); // a little over two more days
     expect(dp(360 / 27.32 - 360 / 365.25, 1)).toBe(12.2); // Moon's and Sun's daily drift
-    expect(Math.round(((360 / 29.53) / 15) * 60)).toBe(49); // minutes later each night
+    expect(Math.round((360 / 29.53 / 15) * 60)).toBe(49); // minutes later each night
     expect(384400 * Math.sin(5.1 * rad)).toBeGreaterThan(30000); // lift of the tilted orbit, km
     expect(dp((1.39e6 / 1.496e8) * 57.3, 2)).toBe(0.53); // the Sun's angular diameter
     expect(Math.round(1.39e6 / 3475 / 100) * 100).toBe(400); // Sun's width over the Moon's
@@ -451,7 +450,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(dp(0.5 * (3.986e14 / 6.371e6 ** 2), 0)).toBe(5);
     expect(dp(Math.sqrt(GM / 6.371e6) / 1000, 0)).toBe(8);
     expect(dp(Math.sqrt(2), 2)).toBe(1.41); // escape over circular
-    expect(dp(Math.sqrt(2 * GM / 6.371e6) / Math.sqrt(GM / 6.371e6), 2)).toBe(1.41);
+    expect(dp(Math.sqrt((2 * GM) / 6.371e6) / Math.sqrt(GM / 6.371e6), 2)).toBe(1.41);
     expect(3 ** 3).toBe(27); // a Moon three times as far gives a 27th of the stretch
     expect(2 ** 3).toBe(8); // halving the distance
   });
@@ -472,13 +471,13 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(Math.round(1.496e11 / Math.tan(Math.PI / 180 / 3600) / 1.496e11)).toBe(206265); // 1 pc in AU
     expect(dp(1 / 0.5, 0)).toBe(2); // p = 0.5 arcseconds is 2 pc
     expect(16 / 4 ** 2).toBe(1); // 16 L at 4 times the distance matches 1 L
-    expect(1 / 0.768 * 3.26).toBeCloseTo(4.25, 1); // Proxima in light-years
+    expect((1 / 0.768) * 3.26).toBeCloseTo(4.25, 1); // Proxima in light-years
   });
 
   it("8 Temperature, colour and motion: Wien's law and the Doppler shift", () => {
     const p = "astro-colour-and-motion-";
     const wien = 2.898e-3;
-    same(p + "7", (505 - 500) / 500 * 100);
+    same(p + "7", ((505 - 500) / 500) * 100);
     same(p + "1", Math.round((wien / 5772) * 1e9));
     same(p + "2", nearest(wien / 290e-9, 100));
     same(p + "3", nearest((3e5 * (662.84 - 656.28)) / 656.28, 10));
@@ -494,7 +493,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     // Wien's law backs that label: the cooler star peaks at the longer wavelength.
     expect(wien / 3500).toBeGreaterThan(wien / 12000);
     expect(choiceMarked(p + "9")).toEqual(["a"]);
-    expect(Math.round((wien / 310) * 1e9 / 10) * 10).toBe(9350); // skin, in nanometres
+    expect(Math.round(((wien / 310) * 1e9) / 10) * 10).toBe(9350); // skin, in nanometres
     expect(nearest((3e5 * 0.5) / 100, 10)).toBe(1500); // a line stretched by 0.5%
     expect(dp(0.01 * 3e5, 0)).toBe(3000); // a 1% stretch
   });
@@ -547,12 +546,14 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     same(p + "10", nearest(10 ** 3.5, 100));
     expect(dp(10 * 2 ** -2.5, 2)).toBe(1.77); // the worked example
     expect(dp(3 ** 3.5, 0)).toBe(47); // the teaching screen's 3 M☉ example
-    expect(Math.round(10e9 * 10 ** -2.5 / 1e6)).toBe(32); // a 10 M☉ star lasts about 32 million years
+    expect(Math.round((10e9 * 10 ** -2.5) / 1e6)).toBe(32); // a 10 M☉ star lasts about 32 million years
     expect(4 ** 2.5).toBe(32); // a quarter of the Sun's mass: M⁻²·⁵ = 32, so 320 billion years
     expect(dp(100 ** 0.4, 1)).toBe(6.3); // a star that lasts a hundredth as long as the Sun
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(dp(2 ** 3.5, 0)).toBe(11); // the reveal for a 2 M☉ star
-    expect(bundle.questions.find((item) => item.id === p + "7")!.prompt).toContain("Give a decimal");
+    expect(bundle.questions.find((item) => item.id === p + "7")!.prompt).toContain(
+      "Give a decimal",
+    );
   });
 
   it("11 Galaxies and Hubble's law: v = H₀d", () => {
@@ -578,7 +579,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     }
     expect(choiceMarked(p + "6")).toEqual(["c"]);
     expect(markedLabels(p + "6")).toEqual([
-      "Nothing special, since uniform expansion looks the same from every galaxy",
+      "Nothing special, since any uniform expansion looks the same from every galaxy",
     ]);
     expect([70 * 10, 70 * 20]).toEqual([700, 1400]); // Hubble's law examples
     expect(choiceMarked(p + "8")).toEqual(["a"]);
@@ -606,7 +607,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(assessTextAnswer("microwave", spectrum).correct).toBe(false);
     expect(choiceMarked(p + "6")).toEqual(["a"]);
     expect(markedLabels(p + "6")).toEqual([
-      "The expansion rate has changed over time, so no galaxy has kept one speed",
+      "The expansion rate has changed over time, so no galaxy has held a constant speed",
     ]);
     expect(choiceMarked(p + "8")).toEqual(["a"]);
   });

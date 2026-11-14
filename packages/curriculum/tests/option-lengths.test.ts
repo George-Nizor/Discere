@@ -1,30 +1,17 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /**
  * In a multiple-choice question the right option must not give itself away by being the longest.
- * For each course below, among questions with three or more options (the right one is the choice
+ * For every course, among questions with three or more options (the right one is the choice
  * whose label is an accepted idea), the right option is strictly the longest in at most 30% of
  * them, and is never longer than every other option by more than 15%. No question mixes options
  * that end in a full stop with options that do not.
- *
- * `devops-and-delivery` and `cloud-fundamentals` will be added to this list once their rewrites
- * merge.
  */
-const COURSES = [
-  "history",
-  "psychology-how-minds-work",
-  "drawing-and-visual-art-fundamentals",
-  "philosophy-knowledge-mind-and-ethics",
-  "first-aid",
-  "git-and-version-control",
-  "linguistics",
-  "reading-and-research",
-  "music-theory",
-  "ai-engineering",
-  "economics-markets-and-strategy",
-  "ux-and-hci",
-];
+const contentRoot = new URL("../../../content/", import.meta.url);
+const COURSES = readdirSync(contentRoot).filter(
+  (name) => !name.startsWith("_") && existsSync(new URL(`${name}/bundle.json`, contentRoot)),
+);
 
 type Choice = { id: string; label: string };
 type Question = {

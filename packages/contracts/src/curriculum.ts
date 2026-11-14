@@ -72,8 +72,12 @@ export const CourseSchema = z
      * without pretending the lessons exist.
      */
     status: z.enum(["available", "coming_soon"]).default("available"),
-    /** Archived prototypes remain addressable for saved history but leave discovery. */
-    catalogueVisibility: z.enum(["listed", "archived"]).optional(),
+    /**
+     * Archived prototypes remain addressable for saved history but leave discovery. A hidden
+     * course is complete and unchanged but kept out of the library, search, Today and review
+     * until its rewrite is finished; `DISCERE_SHOW_HIDDEN_COURSES=1` lists it again.
+     */
+    catalogueVisibility: z.enum(["listed", "hidden", "archived"]).optional(),
     /** What the subject is, what the learner will be able to do and what they need first. */
     introduction: CourseIntroductionSchema.optional(),
     /** Authored library subjects, used for discovery rather than inferred from titles. */
