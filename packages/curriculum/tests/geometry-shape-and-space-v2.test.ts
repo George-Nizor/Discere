@@ -94,7 +94,7 @@ describe("Geometry: Shape and Space (v2)", () => {
     close(g + "best-garden", best);
     close(g + "5", 54 / 6);
     close(g + "check-3", 2 * (12 + 5));
-    expect(marked(g + "6")).toEqual(["Square metres"]);
+    expect(marked(g + "6")).toEqual(["Square metres, because area counts squares a metre across"]);
   });
 
   it("base-and-height: triangle and parallelogram areas", () => {
@@ -107,7 +107,9 @@ describe("Geometry: Shape and Space (v2)", () => {
     close(g + "5", (2 * 42) / 12);
     close(g + "check-3", 9 * 6);
     expect(marked(g + "quick")).toEqual(["12 cm"]);
-    expect(marked(g + "2")).toEqual(["It stays the same"]);
+    expect(marked(g + "2")).toEqual([
+      "It stays the same, because the base and the height are unchanged",
+    ]);
   });
 
   it("pieces-and-cutouts: add pieces, subtract cutouts, trapezoids", () => {
@@ -121,7 +123,9 @@ describe("Geometry: Shape and Space (v2)", () => {
     close(g + "check-3", 15 * 10 - 6 * 5);
     expect(marked(g + "6")).toEqual(["Twice"]);
     // A trapezoid is half the parallelogram two copies make.
-    expect(marked(g + "quick-half")).toEqual(["It is half"]);
+    expect(marked(g + "quick-half")).toEqual([
+      "It is half, because two copies make the parallelogram",
+    ]);
     expect(((10 + 6) * 4) / 2).toBe(32);
   });
 
@@ -139,7 +143,7 @@ describe("Geometry: Shape and Space (v2)", () => {
     expect((2 * PI * 6) / (2 * PI * 3)).toBeCloseTo(2, 9);
     expect((PI * 36) / (PI * 9)).toBeCloseTo(4, 9);
     expect(marked(g + "5")).toEqual(["Circumference doubles and area quadruples"]);
-    expect(marked(g + "6")).toEqual(["Its circumference"]);
+    expect(marked(g + "6")).toEqual(["Its circumference, since trim runs along the edge"]);
   });
 
   it("same-shape-new-size: one scale factor on every length", () => {
@@ -329,11 +333,7 @@ describe("Geometry: Shape and Space, story lessons 1 to 5", () => {
     expect(180 - 120).toBe(60); // angles on a line
     expect(180 - 50).toBe(130);
     expect(360 - 200).toBe(160); // all the way round
-    for (const fragment of [
-      "90° − 25° = 65°",
-      "180° − 120° = 60°",
-      "360° − 200° = 160°",
-    ])
+    for (const fragment of ["90° − 25° = 65°", "180° − 120° = 60°", "360° − 200° = 160°"])
       expect(text).toContain(fragment);
     close("geo-measuring-turns-hook", 4 - (2 + 1));
   });

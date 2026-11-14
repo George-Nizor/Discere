@@ -16,10 +16,7 @@ import { lessonQuestionRefs } from "../src/index.js";
  */
 const bundle = JSON.parse(
   readFileSync(
-    new URL(
-      "../../../content/biology-cells-to-ecosystems/bundle.json",
-      import.meta.url,
-    ),
+    new URL("../../../content/biology-cells-to-ecosystems/bundle.json", import.meta.url),
     "utf8",
   ),
 ) as CourseBundle;
@@ -118,14 +115,16 @@ const expected: Record<string, number> = {
   "fuel-to-cell-work-8": 5 * 6,
   "copying-dna-3": 2,
   // 3-v2: one molecule is copied to two, and each of those two is copied again.
-  "copying-dna-3-v2": [1].flatMap((molecule) => [molecule, molecule]).flatMap((molecule) => [molecule, molecule]).length,
+  "copying-dna-3-v2": [1]
+    .flatMap((molecule) => [molecule, molecule])
+    .flatMap((molecule) => [molecule, molecule]).length,
   // Item 4 is a choice now: recomputed below.
   "copying-dna-6": 6 * 2,
   "copying-dna-8": 40,
   // 8-v2: the new strand pairs G with C, so its G count is the template's C count.
-  "copying-dna-8-v2": [...complement("A".repeat(10) + "T".repeat(6) + "C".repeat(8) + "G".repeat(12))].filter(
-    (base) => base === "G",
-  ).length,
+  "copying-dna-8-v2": [
+    ...complement("A".repeat(10) + "T".repeat(6) + "C".repeat(8) + "G".repeat(12)),
+  ].filter((base) => base === "G").length,
   "mitosis-and-growth-2": 6 * 2,
   // Item 3 is a choice now: recomputed below.
   "mitosis-and-growth-4": 2 ** 3,
@@ -229,7 +228,7 @@ describe("Biology: from cells to ecosystems (v2)", () => {
           : `It falls to ${evenedOut} units, because the dye spreads out evenly`,
       );
     };
-    barrier("diffusion-and-membranes-3", 12, 4, "nothing can cross");
+    barrier("diffusion-and-membranes-3", 12, 4, "nothing can get across");
     expect(choice("diffusion-and-membranes-3").item.choices!.map((c) => c.label)).toContain(
       "It falls to 4 units, to match the right side",
     );
@@ -238,7 +237,9 @@ describe("Biology: from cells to ecosystems (v2)", () => {
     expect(choice("diffusion-and-membranes-7").marked.id).toBe("a");
     // 4-v2: the slips are the left value, the original right value and the whole system.
     expect(
-      byId.get("bio-diffusion-and-membranes-4-v2")!.misconceptions!.flatMap((m) => m.match.numeric ?? []),
+      byId
+        .get("bio-diffusion-and-membranes-4-v2")!
+        .misconceptions!.flatMap((m) => m.match.numeric ?? []),
     ).toEqual([8, 5, 9 + 5]);
     // Copying: 4 chromosomes become 4 chromosomes of 2 chromatids each, so 8 DNA molecules.
     const chromosomes = 4;
@@ -250,18 +251,18 @@ describe("Biology: from cells to ecosystems (v2)", () => {
       `${chromosomes * chromatidsEach} chromosomes and ${chromosomes * chromatidsEach} DNA molecules`,
     );
     // Normal mitosis hands each daughter a complete set, the same 4 chromosomes the parent had.
-    expect(choice("mitosis-and-growth-3").marked.label).toBe(`A complete set of ${chromosomes} chromosomes`);
+    expect(choice("mitosis-and-growth-3").marked.label).toBe(
+      `A complete set of ${chromosomes} chromosomes`,
+    );
     expect(choice("mitosis-and-growth-3").item.choices!.map((c) => c.label)).toEqual([
       `Half of the set, which is ${chromosomes / 2} chromosomes`,
       `A complete set of ${chromosomes} chromosomes`,
       `A set of ${chromosomes * chromatidsEach} chromosomes, one for each chromatid`,
     ]);
     // 8-v2's slips are the template's own counts of G, A and T.
-    expect(byId.get("bio-copying-dna-8-v2")!.misconceptions!.flatMap((m) => m.match.numeric ?? [])).toEqual([
-      12,
-      10,
-      6,
-    ]);
+    expect(
+      byId.get("bio-copying-dna-8-v2")!.misconceptions!.flatMap((m) => m.match.numeric ?? []),
+    ).toEqual([12, 10, 6]);
     // The optimum is the temperature with the highest rate among those offered.
     const rates: Record<number, number> = { 20: 4, 30: 10, 45: 7, 60: 2 };
     const fastest = Object.entries(rates).sort(([, a], [, b]) => b - a)[0]![0];
@@ -271,10 +272,14 @@ describe("Biology: from cells to ecosystems (v2)", () => {
     );
     // 5-v2's slips: the fraction, the ratio the wrong way round and the energy lost.
     expect(
-      byId.get("bio-energy-between-levels-5-v2")!.misconceptions!.flatMap((m) => m.match.numeric ?? []),
+      byId
+        .get("bio-energy-between-levels-5-v2")!
+        .misconceptions!.flatMap((m) => m.match.numeric ?? []),
     ).toEqual([1200 / 8000, Math.round((8000 / 1200) * 10) / 10, 100 - percent(1200, 8000)]);
     expect(
-      byId.get("bio-natural-selection-env-b-v2")!.misconceptions!.flatMap((m) => m.match.numeric ?? []),
+      byId
+        .get("bio-natural-selection-env-b-v2")!
+        .misconceptions!.flatMap((m) => m.match.numeric ?? []),
     ).toEqual([6, 100 - percent(6, 40), percent(20, 40)]);
     // Water goes to the side with the more concentrated solute: left 6 in volume 2 (3 a unit)
     // against right 8 in volume 4 (2 a unit).
@@ -298,7 +303,9 @@ describe("Biology: from cells to ecosystems (v2)", () => {
     );
     expect(atLeastThreeBrown).toBeCloseTo(4592 / 15504, 9);
     expect(atLeastThreeBrown).toBeGreaterThan(0.05);
-    expect(choice("natural-selection-4-v2").marked.label).toBe("Either chance or selection could explain it");
+    expect(choice("natural-selection-4-v2").marked.label).toBe(
+      "Either chance or selection could explain it",
+    );
     // Logistic growth: above the carrying capacity the growth term is negative, so deaths exceed births.
     const growth = (n: number, capacity: number, rate: number) => rate * n * (1 - n / capacity);
     expect(growth(400, 250, 0.5)).toBeLessThan(0);
@@ -317,7 +324,10 @@ describe("Biology: from cells to ecosystems (v2)", () => {
         ...lesson.questionIds,
         ...lesson.steps.flatMap((step) => [
           step.checkQuestionId,
-          ...(step.workedSteps ?? []).flatMap((line) => [line.blank?.questionId, line.selfExplain?.questionId]),
+          ...(step.workedSteps ?? []).flatMap((line) => [
+            line.blank?.questionId,
+            line.selfExplain?.questionId,
+          ]),
         ]),
       ];
     };

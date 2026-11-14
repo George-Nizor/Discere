@@ -52,7 +52,8 @@ const askedIn = (lessonId: string): string[] => {
 };
 
 const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
-const grid = (sides: number) => range(sides).flatMap((a) => range(sides).map((b) => [a, b] as const));
+const grid = (sides: number) =>
+  range(sides).flatMap((a) => range(sides).map((b) => [a, b] as const));
 const six = grid(6);
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const median = (xs: number[]) => {
@@ -73,7 +74,10 @@ describe("Probability and Statistics v2", () => {
       expect(lesson.intro, lesson.id).toBeDefined();
       expect(lesson.recap, lesson.id).toBeDefined();
       expect(lesson.questionIds, lesson.id).toHaveLength(3);
-      expect(lesson.steps.some((s) => s.kind === "transfer"), lesson.id).toBe(true);
+      expect(
+        lesson.steps.some((s) => s.kind === "transfer"),
+        lesson.id,
+      ).toBe(true);
     }
   });
 
@@ -89,12 +93,20 @@ describe("Probability and Statistics v2", () => {
     near(key(p + "7"), total(six, (s) => s !== 12) / 36);
     expect(key(p + "8")).toBe(total(six, (s) => s === 8));
     near(key(p + "9"), total(six, (s) => s === 8) / 36);
-    near(key(p + "10"), ["HH", "HT", "TH", "TT"].filter((r) => r.split("H").length === 2).length / 4);
+    near(
+      key(p + "10"),
+      ["HH", "HT", "TH", "TT"].filter((r) => r.split("H").length === 2).length / 4,
+    );
     expect(acceptedChoice(p + "2")).toEqual(["b"]);
     // 2-v2 (in the lesson): which comes up more often, a total of 4 or of 6? Count the ordered pairs.
     const ways = (t: number) => total(six, (s) => s === t);
     expect([ways(4), ways(6)]).toEqual([3, 5]);
-    const moreOften = ways(6) > ways(4) ? "A total of 6" : ways(6) < ways(4) ? "A total of 4" : "Both come up equally often";
+    const moreOften =
+      ways(6) > ways(4)
+        ? "A total of 6"
+        : ways(6) < ways(4)
+          ? "A total of 4"
+          : "Both come up equally often";
     expect(question(p + "2-v2").choices!.map((c) => c.label)).toEqual([
       "A total of 4",
       "A total of 6",
@@ -106,7 +118,9 @@ describe("Probability and Statistics v2", () => {
     expect(askedIn("counting-outcomes")).not.toContain(p + "2");
     // Item 6: favourable ÷ all works when the outcomes are equally likely. The 36 ordered pairs
     // are, but the 11 totals (2 to 12) are not: 7 has six ways and 2 has one.
-    expect(acceptedLabel(p + "6")).toBe("Whenever the outcomes are equally likely");
+    expect(acceptedLabel(p + "6")).toBe(
+      "Whenever every outcome has the same chance as every other outcome",
+    );
     expect(acceptedChoice(p + "6")).toEqual(["c"]);
     expect(new Set(range(11).map((i) => ways(i + 1))).size).toBeGreaterThan(1);
     expect(new Set(six.map(() => 1 / 36)).size).toBe(1);
@@ -119,21 +133,49 @@ describe("Probability and Statistics v2", () => {
       return { possible: rows.length, hits: rows.filter(([a, b]) => event(a, b)).length };
     };
     expect(key(p + "hook")).toBe(["HH", "HT", "TH", "TT"].filter((r) => r.includes("H")).length);
-    expect(key(p + "1")).toBe(cond((a) => a <= 2, () => true).possible);
-    expect(key(p + "8")).toBe(cond((a) => a <= 2, (_a, b) => b <= 3).hits);
-    const q2 = cond((a) => a <= 2, (_a, b) => b <= 3);
+    expect(key(p + "1")).toBe(
+      cond(
+        (a) => a <= 2,
+        () => true,
+      ).possible,
+    );
+    expect(key(p + "8")).toBe(
+      cond(
+        (a) => a <= 2,
+        (_a, b) => b <= 3,
+      ).hits,
+    );
+    const q2 = cond(
+      (a) => a <= 2,
+      (_a, b) => b <= 3,
+    );
     near(key(p + "2"), q2.hits / q2.possible);
-    const q3 = cond((a) => a <= 2, (a, b) => a + b >= 7);
+    const q3 = cond(
+      (a) => a <= 2,
+      (a, b) => a + b >= 7,
+    );
     near(key(p + "3"), q3.hits / q3.possible);
-    const q4 = cond((a) => a === 1, (a, b) => a + b === 7);
+    const q4 = cond(
+      (a) => a === 1,
+      (a, b) => a + b === 7,
+    );
     near(key(p + "4"), q4.hits / q4.possible);
-    const q5 = cond((a) => a === 1, (a, b) => a + b >= 5);
+    const q5 = cond(
+      (a) => a === 1,
+      (a, b) => a + b >= 5,
+    );
     near(key(p + "5"), q5.hits / q5.possible);
-    const q9 = cond((a) => a >= 5, (a, b) => a + b >= 10);
+    const q9 = cond(
+      (a) => a >= 5,
+      (a, b) => a + b >= 10,
+    );
     near(key(p + "9"), q9.hits / q9.possible);
     expect(key(p + "10")).toBe(range(6).filter((x) => x % 2 === 0).length);
     // Worked example (not a question): second roll at most 4 given first at most 2.
-    const w = cond((a) => a <= 2, (_a, b) => b <= 4);
+    const w = cond(
+      (a) => a <= 2,
+      (_a, b) => b <= 4,
+    );
     expect([w.hits, w.possible]).toEqual([8, 12]);
     expect(acceptedChoice(p + "6")).toEqual(["b"]);
     expect(acceptedChoice(p + "7")).toEqual(["a"]);
@@ -196,7 +238,9 @@ describe("Probability and Statistics v2", () => {
     expect(acceptedChoice(p + "1")).toEqual(["b"]);
     // Item 6: with an even count the median is halfway between the two middle values. It need not be
     // in the list (median of 2, 4, 6, 10 is 5) and need not equal the mean (2, 4, 6, 10 has mean 5.5).
-    expect(acceptedLabel(p + "6")).toBe("It is halfway between the two middle values");
+    expect(acceptedLabel(p + "6")).toBe(
+      "It is halfway between the two middle values in the sorted list",
+    );
     expect(acceptedChoice(p + "6")).toEqual(["a"]);
     expect(median([2, 4, 6, 10])).toBe((4 + 6) / 2);
     expect([2, 4, 6, 10]).not.toContain(median([2, 4, 6, 10]));
@@ -209,7 +253,7 @@ describe("Probability and Statistics v2", () => {
     expect(mean(journeys)).toBe(39);
     expect(median(journeys)).not.toBe(mean(journeys));
     expect(question(p + "typical-price-v2").choices!.map((c) => c.label)).toContain(
-      `The mean, ${mean(journeys)} minutes, because it uses every journey`,
+      `The mean, ${mean(journeys)} minutes, because it uses every journey in the list`,
     );
     expect(acceptedLabel(p + "typical-price-v2")).toBe(
       `The median, ${median(journeys)} minutes, because the 95 does not pull it up`,
@@ -276,9 +320,13 @@ describe("Probability and Statistics v2", () => {
     expect(mean(pop(2, 2))).toBe(2);
     expect(mean(pop(2, 8))).toBe(5);
     expect(acceptedChoice(p + "3")).toEqual(["b"]);
-    expect(acceptedLabel(p + "5")).toBe("Residents who never visit that gym have no chance of being asked");
+    expect(acceptedLabel(p + "5")).toBe(
+      "Residents who never visit that gym have no chance of being asked",
+    );
     expect(acceptedChoice(p + "5")).toEqual(["c"]);
-    expect(acceptedLabel(p + "6")).toBe("Members are chosen by chance, and each has a known chance above zero");
+    expect(acceptedLabel(p + "6")).toBe(
+      "Members are chosen by chance, and each has a known chance of more than zero",
+    );
     expect(acceptedChoice(p + "6")).toEqual(["b"]);
     expect(acceptedChoice(p + "8")).toEqual(["a"]);
     // Item 4: six morning customers at £4 and six evening customers at £10, all twelve counted.
@@ -307,13 +355,17 @@ describe("Probability and Statistics v2", () => {
     expect(lesson.steps.some((s) => s.kind === "transfer")).toBe(true);
     expect(lesson.steps.some((s) => s.diagram)).toBe(true);
     expect(lesson.questionIds).toHaveLength(3);
-    const opener = (lesson.intro?.hook.blocks ?? []).map((b) => ("text" in b ? b.text : "")).join(" ");
+    const opener = (lesson.intro?.hook.blocks ?? [])
+      .map((b) => ("text" in b ? b.text : ""))
+      .join(" ");
     expect(opener).toContain("morning");
     // Every question the lesson asks, in a step or a worked step, exists and is unique.
-    const asked = lesson.steps.flatMap((s) => [
-      s.checkQuestionId,
-      ...(s.workedSteps ?? []).flatMap((w) => [w.blank?.questionId, w.selfExplain?.questionId]),
-    ]).filter(Boolean);
+    const asked = lesson.steps
+      .flatMap((s) => [
+        s.checkQuestionId,
+        ...(s.workedSteps ?? []).flatMap((w) => [w.blank?.questionId, w.selfExplain?.questionId]),
+      ])
+      .filter(Boolean);
     expect(new Set(asked).size).toBe(asked.length);
     for (const id of asked) question(id as string);
   });
@@ -352,7 +404,10 @@ describe("Probability and Statistics v2", () => {
     near(0.5 ** 4, 1 / 16);
     near(1 - 4 / 9, 5 / 9);
     near(cells((a, b) => a > 4 || b > 4) / 36, 5 / 9);
-    near(cells((a, b) => a <= 3 && b <= 3), 9);
+    near(
+      cells((a, b) => a <= 3 && b <= 3),
+      9,
+    );
     // centre-and-outliers
     expect(mean([3, 5, 10])).toBe(6);
     expect(sum([3, 5, 10])).toBe(18);
@@ -398,8 +453,14 @@ describe("Probability and Statistics v2", () => {
       expect(lesson.steps[0]!.kind, lesson.id).toBe("explain");
       const teaching = lesson.steps.filter((s) => s.kind === "explain");
       expect(teaching.length / lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(0.4);
-      expect(teaching.every((s) => !s.checkQuestionId), lesson.id).toBe(true);
-      expect(lesson.steps.some((s) => s.diagram), lesson.id).toBe(true);
+      expect(
+        teaching.every((s) => !s.checkQuestionId),
+        lesson.id,
+      ).toBe(true);
+      expect(
+        lesson.steps.some((s) => s.diagram),
+        lesson.id,
+      ).toBe(true);
       expect(lesson.steps.length, lesson.id).toBeGreaterThanOrEqual(8);
       expect(lesson.steps.length, lesson.id).toBeLessThanOrEqual(14);
     }
@@ -410,7 +471,8 @@ describe("Probability and Statistics v2", () => {
       if (item.answerAuthority.kind !== "numeric") continue;
       const value = item.answerAuthority.value;
       for (const m of item.misconceptions ?? [])
-        for (const n of m.match.numeric ?? []) expect(Math.abs(n - value), item.id).toBeGreaterThan(1e-6);
+        for (const n of m.match.numeric ?? [])
+          expect(Math.abs(n - value), item.id).toBeGreaterThan(1e-6);
     }
   });
 });

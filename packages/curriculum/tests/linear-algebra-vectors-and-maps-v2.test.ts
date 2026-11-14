@@ -8,10 +8,7 @@ import { describe, expect, it } from "vitest";
  */
 const bundle = JSON.parse(
   readFileSync(
-    new URL(
-      "../../../content/linear-algebra-vectors-and-maps/bundle.json",
-      import.meta.url,
-    ),
+    new URL("../../../content/linear-algebra-vectors-and-maps/bundle.json", import.meta.url),
     "utf8",
   ),
 ) as CourseBundle;
@@ -25,7 +22,14 @@ const dot = (u: number[], v: number[]) => u.reduce((s, x, i) => s + x * v[i]!, 0
 const len = (v: number[]) => Math.sqrt(dot(v, v));
 const apply = (m: number[][], v: number[]) => m.map((row) => dot(row, v));
 const mul = (a: number[][], b: number[][]) =>
-  a.map((row) => b[0]!.map((_, j) => dot(row, b.map((r) => r[j]!))));
+  a.map((row) =>
+    b[0]!.map((_, j) =>
+      dot(
+        row,
+        b.map((r) => r[j]!),
+      ),
+    ),
+  );
 const det2 = (m: number[][]) => m[0]![0]! * m[1]![1]! - m[0]![1]! * m[1]![0]!;
 const proj = (v: number[], d: number[]) => d.map((x) => (dot(v, d) / dot(d, d)) * x);
 const sub = (u: number[], v: number[]) => u.map((x, i) => x - v[i]!);
@@ -122,42 +126,133 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
   });
 
   it("lessons 5 to 8: matrices, maps, products, inverses", () => {
-    const A = [[1, 4, -2], [3, 0, 5]];
+    const A = [
+      [1, 4, -2],
+      [3, 0, 5],
+    ];
     const L5 = "matrix-shape-and-transpose";
     eq(k(L5, 7), 7);
     eq(k(L5, 2), A[0]!.length);
     eq(k(L5, 3), A[1]![2]!);
     eq(k(L5, 4), A.length);
     eq(k(L5, 1), A.length);
-    eq(k(L5, 5), [[2, -1], [7, 3], [4, 0]][0]![1]!);
+    eq(
+      k(L5, 5),
+      [
+        [2, -1],
+        [7, 3],
+        [4, 0],
+      ][0]![1]!,
+    );
     eq(k(L5, 6), 3);
-    eq(k(L5, 10), [[5, 8], [6, 9], [7, 4]][2]![1]!);
+    eq(
+      k(L5, 10),
+      [
+        [5, 8],
+        [6, 9],
+        [7, 4],
+      ][2]![1]!,
+    );
     expect(choiceLabel(k(L5, 8))).toBe(`${2} × ${3}`);
     const L6 = "linear-transformations";
     eq(k(L6, 7), 2 * 3 + 1);
-    eq(k(L6, 1), apply([[2, 1], [0, 1]], [1, 2])[0]!);
-    eq(k(L6, 2), apply([[1, -2], [3, 1]], [1, 0])[1]!);
-    eq(k(L6, 5), apply([[1, 2], [-1, 3]], [2, 1])[0]!);
-    eq(k(L6, 6), apply([[3, 0], [0, -2]], [-1, 4])[1]!);
+    eq(
+      k(L6, 1),
+      apply(
+        [
+          [2, 1],
+          [0, 1],
+        ],
+        [1, 2],
+      )[0]!,
+    );
+    eq(
+      k(L6, 2),
+      apply(
+        [
+          [1, -2],
+          [3, 1],
+        ],
+        [1, 0],
+      )[1]!,
+    );
+    eq(
+      k(L6, 5),
+      apply(
+        [
+          [1, 2],
+          [-1, 3],
+        ],
+        [2, 1],
+      )[0]!,
+    );
+    eq(
+      k(L6, 6),
+      apply(
+        [
+          [3, 0],
+          [0, -2],
+        ],
+        [-1, 4],
+      )[1]!,
+    );
     eq(k(L6, 10), 3 * 2 + 2 * 1);
     // S(0) = (1, 0) is not zero, so the shift is not linear.
     const shift = (v: number[]) => [v[0]! + 1, v[1]!];
     const zeroToZero = shift([0, 0]).every((x) => x === 0);
     expect(zeroToZero).toBe(false);
-    expect(choiceLabel(k(L6, 4))).toBe(`${yesNo(zeroToZero)}, because it does not send the zero vector to zero.`);
+    expect(choiceLabel(k(L6, 4))).toBe(
+      `${yesNo(zeroToZero)}, because it does not send the zero vector to zero.`,
+    );
     expect(choiceIds(k(L6, 4))).toEqual(["b"]);
     // The other reasons fail: the shift moves every vector by the same (1, 0), so "further than
     // others" is false, and adding the same vector to every input does not make S linear.
-    for (const v of [[0, 0], [2, 3], [-4, 1]]) expect(sub(shift(v), v)).toEqual([1, 0]);
+    for (const v of [
+      [0, 0],
+      [2, 3],
+      [-4, 1],
+    ])
+      expect(sub(shift(v), v)).toEqual([1, 0]);
     expect(shift([3, 4])).not.toEqual(shift([1, 2]).map((x, i) => x + shift([2, 2])[i]!));
     expect(choiceLabel(k(L6, 3))).toBe("T(u) + T(v)");
     const L7 = "compose-matrix-maps";
-    const A7 = [[1, 2], [0, 1]], B7 = [[2, 0], [0, 3]];
+    const A7 = [
+        [1, 2],
+        [0, 1],
+      ],
+      B7 = [
+        [2, 0],
+        [0, 3],
+      ];
     eq(k(L7, 7), (5 + 3) * 2 - (5 * 2 + 3));
     eq(k(L7, 1), mul(A7, B7)[0]![1]!);
     eq(k(L7, 2), mul(B7, A7)[0]![1]!);
-    eq(k(L7, 5), mul([[2, 1], [1, 0]], [[1, 3], [2, 4]])[1]![0]!);
-    eq(k(L7, 10), mul([[1, 0], [2, 1]], [[3, 1], [0, 2]])[1]![1]!);
+    eq(
+      k(L7, 5),
+      mul(
+        [
+          [2, 1],
+          [1, 0],
+        ],
+        [
+          [1, 3],
+          [2, 4],
+        ],
+      )[1]![0]!,
+    );
+    eq(
+      k(L7, 10),
+      mul(
+        [
+          [1, 0],
+          [2, 1],
+        ],
+        [
+          [3, 1],
+          [0, 2],
+        ],
+      )[1]![1]!,
+    );
     // Worked example: A B v and B A v for v = (1, 1).
     expect(apply(A7, apply(B7, [1, 1]))).toEqual([8, 3]);
     expect(apply(B7, apply(A7, [1, 1]))).toEqual([6, 3]);
@@ -165,32 +260,134 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     expect(choiceLabel(k(L7, 4))).toBe("B");
     const L8 = "identity-and-inverses";
     eq(k(L8, 7), (17 - 3) / 2);
-    eq(k(L8, 1), inv2([[1, 0], [0, 1]])[0]![0]!);
-    eq(k(L8, 2), inv2([[2, 1], [1, 1]])[1]![1]!);
-    eq(k(L8, 5), inv2([[1, 2], [0, 1]])[0]![1]!);
-    eq(k(L8, 6), inv2([[3, 0], [0, -2]])[1]![1]!);
-    eq(k(L8, 10), inv2([[2, 3], [1, 2]])[0]![1]!);
-    eq(k(L8, 4), (() => { const A4 = [[1, 1], [0, 2]]; const v = apply(inv2(A4), [1, -2]); return v[0]!; })());
-    expect(det2([[1, 2], [2, 4]])).toBe(0);
+    eq(
+      k(L8, 1),
+      inv2([
+        [1, 0],
+        [0, 1],
+      ])[0]![0]!,
+    );
+    eq(
+      k(L8, 2),
+      inv2([
+        [2, 1],
+        [1, 1],
+      ])[1]![1]!,
+    );
+    eq(
+      k(L8, 5),
+      inv2([
+        [1, 2],
+        [0, 1],
+      ])[0]![1]!,
+    );
+    eq(
+      k(L8, 6),
+      inv2([
+        [3, 0],
+        [0, -2],
+      ])[1]![1]!,
+    );
+    eq(
+      k(L8, 10),
+      inv2([
+        [2, 3],
+        [1, 2],
+      ])[0]![1]!,
+    );
+    eq(
+      k(L8, 4),
+      (() => {
+        const A4 = [
+          [1, 1],
+          [0, 2],
+        ];
+        const v = apply(inv2(A4), [1, -2]);
+        return v[0]!;
+      })(),
+    );
+    expect(
+      det2([
+        [1, 2],
+        [2, 4],
+      ]),
+    ).toBe(0);
     expect(choiceLabel(k(L8, 3))).toBe("No");
-    expect(det2([[3, 1], [5, 2]])).toBe(1);
-    expect(inv2([[3, 1], [5, 2]])).toEqual([[2, -1], [-5, 3]]);
+    expect(
+      det2([
+        [3, 1],
+        [5, 2],
+      ]),
+    ).toBe(1);
+    expect(
+      inv2([
+        [3, 1],
+        [5, 2],
+      ]),
+    ).toEqual([
+      [2, -1],
+      [-5, 3],
+    ]);
   });
 
   it("lessons 9 to 12: systems, solutions, spans, bases", () => {
     // Solve 2x2 systems by Cramer's rule as an independent check of the row-reduction answers.
     const solve = (m: number[][], b: number[]) => {
       const d = det2(m);
-      return [det2([[b[0]!, m[0]![1]!], [b[1]!, m[1]![1]!]]) / d, det2([[m[0]![0]!, b[0]!], [m[1]![0]!, b[1]!]]) / d];
+      return [
+        det2([
+          [b[0]!, m[0]![1]!],
+          [b[1]!, m[1]![1]!],
+        ]) / d,
+        det2([
+          [m[0]![0]!, b[0]!],
+          [m[1]![0]!, b[1]!],
+        ]) / d,
+      ];
     };
     const L9 = "solve-by-row-reduction";
-    eq(k(L9, 1), solve([[1, 1], [2, -1]], [5, 1])[0]!);
+    eq(
+      k(L9, 1),
+      solve(
+        [
+          [1, 1],
+          [2, -1],
+        ],
+        [5, 1],
+      )[0]!,
+    );
     eq(k(L9, 2), 1 - 2 * 5);
     eq(k(L9, 3), -9 / -3);
     eq(k(L9, 5), 5 - (4 - 1));
-    eq(k(L9, 6), solve([[2, 1], [1, -1]], [8, 1])[1]!);
-    eq(k(L9, 10), solve([[1, 1], [3, -1]], [9, 7])[1]!);
-    expect(solve([[1, 2], [3, 5]], [7, 18])).toEqual([1, 3]);
+    eq(
+      k(L9, 6),
+      solve(
+        [
+          [2, 1],
+          [1, -1],
+        ],
+        [8, 1],
+      )[1]!,
+    );
+    eq(
+      k(L9, 10),
+      solve(
+        [
+          [1, 1],
+          [3, -1],
+        ],
+        [9, 7],
+      )[1]!,
+    );
+    expect(
+      solve(
+        [
+          [1, 2],
+          [3, 5],
+        ],
+        [7, 18],
+      ),
+    ).toEqual([1, 3]);
     const L10 = "one-none-or-many-solutions";
     eq(k(L10, 7), 0);
     eq(k(L10, 8), 0);
@@ -198,14 +395,40 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L10, 4), 3 - 2);
     eq(k(L10, 6), 3 - 1);
     eq(k(L10, 10), 5 - 2);
-    expect(det2([[1, 1], [2, 2]])).toBe(0);
+    expect(
+      det2([
+        [1, 1],
+        [2, 2],
+      ]),
+    ).toBe(0);
     expect(2 * 3 === 7).toBe(false); // x + y = 3 with 2x + 2y = 7: no solution
     expect(2 * 3 === 6).toBe(true); // x + y = 3 with 2x + 2y = 6: consistent
     expect(choiceLabel(k(L10, 1))).toBe("One solution");
-    expect(choiceLabel(k(L10, 2))).toBe("No solution");
-    expect(choiceLabel(k(L10, 3))).toBe("Infinitely many solutions");
+    expect(choiceLabel(k(L10, 2))).toBe(
+      "No solution, because doubling the first equation gives 6, not 7",
+    );
+    expect(choiceLabel(k(L10, 3))).toBe(
+      "Infinitely many solutions, because the second equation repeats the first",
+    );
     // A times the zero vector is the zero vector, whatever A is, so A x = 0 always has x = 0.
-    const zeroSolutions = [[[1, 1], [2, 2]], [[1, 2], [3, 4]], [[0, 0], [0, 0]], [[5, -1], [10, -2]]];
+    const zeroSolutions = [
+      [
+        [1, 1],
+        [2, 2],
+      ],
+      [
+        [1, 2],
+        [3, 4],
+      ],
+      [
+        [0, 0],
+        [0, 0],
+      ],
+      [
+        [5, -1],
+        [10, -2],
+      ],
+    ];
     for (const A of zeroSolutions) expect(apply(A, [0, 0])).toEqual([0, 0]);
     expect(choiceLabel(k(L10, 5))).toBe(
       `${yesNo(zeroSolutions.every((A) => apply(A, [0, 0]).every((x) => x === 0)))}, because A times the zero vector is always the zero vector.`,
@@ -238,26 +461,56 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     expect(rank2([1, 0], [0, 0])).toBe(1);
     expect(choiceLabel(k(L12, 2))).toBe("No");
     // (1, 0) and (0, 0): the determinant is 0, so the pair spans only a line (rank 1).
-    expect(det2([[1, 0], [0, 0]])).toBe(0);
+    expect(
+      det2([
+        [1, 0],
+        [0, 0],
+      ]),
+    ).toBe(0);
     expect(choiceLabel(k(L12, 4))).toBe(
-      `${yesNo(rank2([1, 0], [0, 0]) === 2)}, because the pair spans only a line.`,
+      `${yesNo(rank2([1, 0], [0, 0]) === 2)}, because (0, 0) adds no direction, so they span only a line.`,
     );
     expect(choiceIds(k(L12, 4))).toEqual(["b"]);
     // A zero entry does not rule out a basis: (1, 0) and (0, 1) each hold a zero.
-    expect(det2([[1, 0], [0, 1]])).not.toBe(0);
+    expect(
+      det2([
+        [1, 0],
+        [0, 1],
+      ]),
+    ).not.toBe(0);
     // 12-2-v2 (in the lesson): (2, 1) and (4, 2). (4, 2) = 2 (2, 1), so the determinant is 0.
     expect(find(k(L12, "2-v2")).prompt).toContain("(2, 1) and (4, 2)");
     expect([4, 2]).toEqual([2, 1].map((x) => 2 * x));
-    expect(det2([[2, 1], [4, 2]])).toBe(0);
+    expect(
+      det2([
+        [2, 1],
+        [4, 2],
+      ]),
+    ).toBe(0);
     expect(choiceLabel(k(L12, "2-v2"))).toBe(
-      `${yesNo(det2([[2, 1], [4, 2]]) !== 0)}, because (4, 2) is twice (2, 1), so the pair spans only a line.`,
+      `${yesNo(
+        det2([
+          [2, 1],
+          [4, 2],
+        ]) !== 0,
+      )}, because (4, 2) is twice (2, 1), so they span only a line.`,
     );
     expect(choiceIds(k(L12, "2-v2"))).toEqual(["c"]);
     // The wrong reasons: two vectors in the plane are not enough, a nonzero vector pair can still
     // lie on one line, and different lengths do not matter ((2, 1) and (0, 3) differ and span).
-    expect(det2([[2, 1], [4, 2]])).toBe(0);
+    expect(
+      det2([
+        [2, 1],
+        [4, 2],
+      ]),
+    ).toBe(0);
     expect(len([2, 1])).not.toBe(len([4, 2]));
-    expect(det2([[2, 1], [0, 3]])).not.toBe(0);
+    expect(
+      det2([
+        [2, 1],
+        [0, 3],
+      ]),
+    ).not.toBe(0);
     expect(len([2, 1])).not.toBe(len([0, 3]));
   });
 
@@ -279,29 +532,118 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
       }
       return rank;
     };
-    const A13 = [[1, 2, 0], [0, 0, 1]];
+    const A13 = [
+      [1, 2, 0],
+      [0, 0, 1],
+    ];
     eq(k(L13, 7), -5);
     eq(k(L13, 8), 5 - 2);
     eq(k(L13, 3), apply(A13, [-2, 1, 0])[0]!);
     eq(k(L13, 1), pivots(A13));
     eq(k(L13, 2), 3 - pivots(A13));
-    eq(k(L13, 5), pivots([[1, 0, 0], [0, 2, 0], [0, 0, 3]]));
-    eq(k(L13, 6), 3 - pivots([[1, 2, 3], [2, 4, 6]]));
-    eq(k(L13, 10), pivots([[1, 2], [2, 4], [3, 6]]));
+    eq(
+      k(L13, 5),
+      pivots([
+        [1, 0, 0],
+        [0, 2, 0],
+        [0, 0, 3],
+      ]),
+    );
+    eq(
+      k(L13, 6),
+      3 -
+        pivots([
+          [1, 2, 3],
+          [2, 4, 6],
+        ]),
+    );
+    eq(
+      k(L13, 10),
+      pivots([
+        [1, 2],
+        [2, 4],
+        [3, 6],
+      ]),
+    );
     expect(5 + -5).toBe(0);
-    expect(4 - pivots([[1, 3, 0, 2], [0, 0, 1, 4]])).toBe(2);
+    expect(
+      4 -
+        pivots([
+          [1, 3, 0, 2],
+          [0, 0, 1, 4],
+        ]),
+    ).toBe(2);
     expect(choiceLabel(k(L13, 4))).toBe("Columns 1 and 3");
     const L14 = "determinants-and-volume";
     eq(k(L14, 7), 5 * 2);
-    eq(k(L14, 8), det2([[5, 2], [1, 3]]));
-    eq(k(L14, 5), Math.abs(det2([[-2, 0], [0, 3]])));
-    eq(k(L14, 1), det2([[2, 1], [1, 3]]));
-    eq(k(L14, 2), det2([[1, 3], [2, 1]]));
+    eq(
+      k(L14, 8),
+      det2([
+        [5, 2],
+        [1, 3],
+      ]),
+    );
+    eq(
+      k(L14, 5),
+      Math.abs(
+        det2([
+          [-2, 0],
+          [0, 3],
+        ]),
+      ),
+    );
+    eq(
+      k(L14, 1),
+      det2([
+        [2, 1],
+        [1, 3],
+      ]),
+    );
+    eq(
+      k(L14, 2),
+      det2([
+        [1, 3],
+        [2, 1],
+      ]),
+    );
     eq(k(L14, 4), 2 * 3 * 4);
-    eq(k(L14, 3), det2([[1, 2], [2, 4]]));
-    eq(k(L14, 6), det2(mul([[2, 0], [0, 3]], [[1, 1], [0, 2]])));
-    eq(k(L14, 10), Math.abs(det2([[1, -3], [2, 2]])));
-    expect(det2([[1, 5], [2, 3]])).toBe(-7);
+    eq(
+      k(L14, 3),
+      det2([
+        [1, 2],
+        [2, 4],
+      ]),
+    );
+    eq(
+      k(L14, 6),
+      det2(
+        mul(
+          [
+            [2, 0],
+            [0, 3],
+          ],
+          [
+            [1, 1],
+            [0, 2],
+          ],
+        ),
+      ),
+    );
+    eq(
+      k(L14, 10),
+      Math.abs(
+        det2([
+          [1, -3],
+          [2, 2],
+        ]),
+      ),
+    );
+    expect(
+      det2([
+        [1, 5],
+        [2, 3],
+      ]),
+    ).toBe(-7);
     const L15 = "project-onto-a-direction";
     eq(k(L15, 7), 6);
     eq(k(L15, 8), dot([6, 2], [1, 1]) / dot([1, 1], [1, 1]));
@@ -331,14 +673,22 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L16, 8), mean([1, 2, 6]));
     eq(k(L16, 1), mean([2, 4, 9]));
     eq(k(L16, 4), sq([2, 4, 9], 5));
-    eq(k(L16, 2), [2, 4, 9].reduce((s, x) => s + (x - 5), 0));
+    eq(
+      k(L16, 2),
+      [2, 4, 9].reduce((s, x) => s + (x - 5), 0),
+    );
     eq(k(L16, 6), slope([2, 5, 8]));
     eq(k(L16, 3), slope([1, 2, 2]));
     eq(k(L16, 5), mean([1, 5, 9]));
     eq(k(L16, 10), slope([4, 3, 0]));
     expect(sq([2, 3, 10], mean([2, 3, 10]))).toBe(38);
     // Shortcut quoted in the transfer lead: (last y − first y) ÷ 2 for x = 0, 1, 2.
-    for (const ys of [[2, 5, 8], [1, 2, 2], [4, 3, 0]]) expect(slope(ys)).toBeCloseTo((ys[2]! - ys[0]!) / 2, 9);
+    for (const ys of [
+      [2, 5, 8],
+      [1, 2, 2],
+      [4, 3, 0],
+    ])
+      expect(slope(ys)).toBeCloseTo((ys[2]! - ys[0]!) / 2, 9);
   });
 
   it("lessons 17 to 20: Gram–Schmidt, eigenvectors, diagonalisation, SVD", () => {
@@ -374,38 +724,143 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
       expect(out.map((x, j) => x - l * v[j]!).every((d) => Math.abs(d) < 1e-9)).toBe(true);
       return l;
     };
-    const S = [[2, 1], [1, 2]];
-    eq(k(L18, 7), lam([[4, 0], [0, 4]], [1, 2]) === 4 ? 4 : NaN);
+    const S = [
+      [2, 1],
+      [1, 2],
+    ];
+    eq(
+      k(L18, 7),
+      lam(
+        [
+          [4, 0],
+          [0, 4],
+        ],
+        [1, 2],
+      ) === 4
+        ? 4
+        : NaN,
+    );
     eq(k(L18, 8), 6 * 1);
     eq(k(L18, 1), lam(S, [1, 1]));
     eq(k(L18, 2), lam(S, [1, -1]));
-    eq(k(L18, 3), lam([[-2, 0], [0, 3]], [1, 0]));
-    eq(k(L18, 5), lam([[4, 0], [0, 2]], [0, 1]));
-    eq(k(L18, 10), lam([[1, 2], [2, 1]], [1, -1]));
-    expect(lam([[4, 1], [2, 3]], [1, 1])).toBe(5);
-    expect(apply([[1, 2], [2, 1]], [1, -1])).toEqual([-1, 1]);
+    eq(
+      k(L18, 3),
+      lam(
+        [
+          [-2, 0],
+          [0, 3],
+        ],
+        [1, 0],
+      ),
+    );
+    eq(
+      k(L18, 5),
+      lam(
+        [
+          [4, 0],
+          [0, 2],
+        ],
+        [0, 1],
+      ),
+    );
+    eq(
+      k(L18, 10),
+      lam(
+        [
+          [1, 2],
+          [2, 1],
+        ],
+        [1, -1],
+      ),
+    );
+    expect(
+      lam(
+        [
+          [4, 1],
+          [2, 3],
+        ],
+        [1, 1],
+      ),
+    ).toBe(5);
+    expect(
+      apply(
+        [
+          [1, 2],
+          [2, 1],
+        ],
+        [1, -1],
+      ),
+    ).toEqual([-1, 1]);
     // (1, 0) is not an eigenvector of S: S(1, 0) = (2, 1).
     expect(apply(S, [1, 0])).toEqual([2, 1]);
     expect(det2([apply(S, [1, 0]), [1, 0]])).not.toBe(0);
     expect(choiceLabel(k(L18, 4))).toBe("No");
     // A v = 0 with v nonzero is A v = 0 v: an eigenvector, with eigenvalue 0.
-    expect(apply([[1, 1], [1, 1]], [1, -1])).toEqual([0, 0]);
-    expect(lam([[1, 1], [1, 1]], [1, -1])).toBe(0);
+    expect(
+      apply(
+        [
+          [1, 1],
+          [1, 1],
+        ],
+        [1, -1],
+      ),
+    ).toEqual([0, 0]);
+    expect(
+      lam(
+        [
+          [1, 1],
+          [1, 1],
+        ],
+        [1, -1],
+      ),
+    ).toBe(0);
     expect(choiceLabel(k(L18, 6))).toBe("Yes, because A v = 0v, so the eigenvalue is 0.");
     expect(choiceIds(k(L18, 6))).toEqual(["1"]);
     const L19 = "diagonalise-a-map";
     // Hook: 3 (1, 1) + (1, -1) = (4, 2).
     eq(k(L19, 7), 3 * 1 + 1);
     eq(k(L19, 8), 7);
-    eq(k(L19, 5), lam([[2, 0], [0, -1]], [1, 0]) ** 3);
+    eq(
+      k(L19, 5),
+      lam(
+        [
+          [2, 0],
+          [0, -1],
+        ],
+        [1, 0],
+      ) ** 3,
+    );
     eq(k(L19, 4), lam(S, [1, -1]));
-    eq(k(L19, 10), lam([[3, 0], [0, -2]], [0, 1]) ** 4);
-    expect(lam([[4, 1], [2, 3]], [1, 1]) ** 2).toBe(25);
+    eq(
+      k(L19, 10),
+      lam(
+        [
+          [3, 0],
+          [0, -2],
+        ],
+        [0, 1],
+      ) ** 4,
+    );
+    expect(
+      lam(
+        [
+          [4, 1],
+          [2, 3],
+        ],
+        [1, 1],
+      ) ** 2,
+    ).toBe(25);
     expect(choiceLabel(k(L19, 3))).toBe("No");
     expect(choiceLabel(k(L19, 6))).toBe("Its columns must form a basis");
     // A is P D P⁻¹ for P = [(1, 1), (1, -1)] columns and D = diag(3, 1).
-    const P = [[1, 1], [1, -1]];
-    const D = [[3, 0], [0, 1]];
+    const P = [
+      [1, 1],
+      [1, -1],
+    ];
+    const D = [
+      [3, 0],
+      [0, 1],
+    ];
     const back = mul(mul(P, D), inv2(P));
     S.forEach((row, i) => row.forEach((x, j) => expect(back[i]![j]).toBeCloseTo(x, 9)));
     const L20 = "singular-value-decomposition";
@@ -414,7 +869,12 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     const singular = (m: number[][]) => {
       const cols = m[0]!.length;
       const g = Array.from({ length: cols }, (_, i) =>
-        Array.from({ length: cols }, (_, j) => dot(m.map((r) => r[i]!), m.map((r) => r[j]!))),
+        Array.from({ length: cols }, (_, j) =>
+          dot(
+            m.map((r) => r[i]!),
+            m.map((r) => r[j]!),
+          ),
+        ),
       );
       const tr = g.reduce((s, row, i) => s + row[i]!, 0);
       const det = cols === 2 ? det2(g) : NaN;
@@ -430,14 +890,61 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
       return [Math.sqrt((t2 + disc) / 2), Math.sqrt(Math.max(0, (t2 - disc) / 2))];
     };
     eq(k(L20, 7), 4);
-    eq(k(L20, 8), singular([[-7, 0], [0, 2]])[0]!);
-    eq(k(L20, 1), singular([[3, 0], [0, -2]])[0]!);
-    eq(k(L20, 3), singular([[1, 2], [2, 4]])[1]!);
-    eq(k(L20, 6), singular([[1, 0, 0], [0, 2, 0]])[1]!);
-    eq(k(L20, 5), singular([[0, 5], [2, 0], [0, 0]])[0]!);
-    eq(k(L20, 10), singular([[-3, 0], [0, -8]])[1]!);
-    expect(singular([[-6, 0], [0, 3]]).map((x) => Math.round(x))).toEqual([6, 3]);
-    expect(singular([[1, 2], [2, 4]])[0]).toBeCloseTo(5, 9);
+    eq(
+      k(L20, 8),
+      singular([
+        [-7, 0],
+        [0, 2],
+      ])[0]!,
+    );
+    eq(
+      k(L20, 1),
+      singular([
+        [3, 0],
+        [0, -2],
+      ])[0]!,
+    );
+    eq(
+      k(L20, 3),
+      singular([
+        [1, 2],
+        [2, 4],
+      ])[1]!,
+    );
+    eq(
+      k(L20, 6),
+      singular([
+        [1, 0, 0],
+        [0, 2, 0],
+      ])[1]!,
+    );
+    eq(
+      k(L20, 5),
+      singular([
+        [0, 5],
+        [2, 0],
+        [0, 0],
+      ])[0]!,
+    );
+    eq(
+      k(L20, 10),
+      singular([
+        [-3, 0],
+        [0, -8],
+      ])[1]!,
+    );
+    expect(
+      singular([
+        [-6, 0],
+        [0, 3],
+      ]).map((x) => Math.round(x)),
+    ).toEqual([6, 3]);
+    expect(
+      singular([
+        [1, 2],
+        [2, 4],
+      ])[0],
+    ).toBeCloseTo(5, 9);
     expect(choiceLabel(k(L20, 2))).toBe("2 × 3");
     expect(choiceLabel(k(L20, 4))).toBe("Σ");
   });
@@ -470,7 +977,9 @@ describe("linear algebra story lessons 1 to 5", () => {
 
   it("cites every step it contains and no question it no longer asks", () => {
     for (const l of lessons) {
-      const citations = (bundle.authoringMetadata ?? []).find((m) => m.lessonId === l.id)!.citations;
+      const citations = (bundle.authoringMetadata ?? []).find(
+        (m) => m.lessonId === l.id,
+      )!.citations;
       const asked = new Set<string>(l.questionIds);
       for (const s of l.steps) {
         if (s.checkQuestionId) asked.add(s.checkQuestionId);
@@ -526,7 +1035,11 @@ describe("linear algebra story lessons 1 to 5", () => {
     expect(dot([1, 1], [1, -1])).toBe(0);
     expect([dot([1, 2], [2, 3]), dot([3, 1], [1, 3])]).toEqual([8, 6]);
     // Lesson 5: entries of the price matrix and the matrix applied to (1, 0).
-    const prices = [[3, 8], [5, 1], [9, 4]];
+    const prices = [
+      [3, 8],
+      [5, 1],
+      [9, 4],
+    ];
     expect([prices[2]![0], prices[0]![1], prices[1]![0]]).toEqual([9, 8, 5]);
     expect(apply(prices, [1, 0])).toEqual([3, 5, 9]);
   });
@@ -550,7 +1063,10 @@ describe("linear algebra story lessons 6 to 10", () => {
     (blocks ?? []).reduce((n, b) => n + (b.text ?? "").split(/\s+/).filter(Boolean).length, 0);
 
   it("lesson 6: recomputes the numbers the teaching screens quote", () => {
-    const A = [[2, 1], [0, 1]];
+    const A = [
+      [2, 1],
+      [0, 1],
+    ];
     expect(apply(A, [2, 2])).toEqual([6, 2]);
     expect(apply(A, [1, 0])).toEqual([2, 0]);
     expect(apply(A, [0, 1])).toEqual([1, 1]);
@@ -561,15 +1077,50 @@ describe("linear algebra story lessons 6 to 10", () => {
     // The lift (x, y) -> (x, y + 2) sends zero to (0, 2).
     expect([0, 0 + 2]).toEqual([0, 2]);
     // A linear map sending (1, 0) to (4, 1) and (0, 1) to (2, 3) sends (3, 2) to (16, 9).
-    expect(apply([[4, 2], [1, 3]], [3, 2])).toEqual([16, 9]);
+    expect(
+      apply(
+        [
+          [4, 2],
+          [1, 3],
+        ],
+        [3, 2],
+      ),
+    ).toEqual([16, 9]);
     expect([4, 1].map((x, i) => 3 * x + 2 * [2, 3][i]!)).toEqual([16, 9]);
     // The columns of A are its outputs for the axis points.
     expect(A.map((row) => row[0])).toEqual(apply(A, [1, 0]));
     expect(A.map((row) => row[1])).toEqual(apply(A, [0, 1]));
     // Skill check: T(3, 2) = 3 (2, 5) + 2 (1, -1).
-    eq(k("linear-transformations", 10), apply([[2, 1], [5, -1]], [3, 2])[0]!);
-    eq(k("linear-transformations", 7), apply([[2, 1], [0, 1]], [3, 1])[0]!);
-    eq(k("linear-transformations", 6), apply([[3, 0], [0, -2]], [-1, 4])[1]!);
+    eq(
+      k("linear-transformations", 10),
+      apply(
+        [
+          [2, 1],
+          [5, -1],
+        ],
+        [3, 2],
+      )[0]!,
+    );
+    eq(
+      k("linear-transformations", 7),
+      apply(
+        [
+          [2, 1],
+          [0, 1],
+        ],
+        [3, 1],
+      )[0]!,
+    );
+    eq(
+      k("linear-transformations", 6),
+      apply(
+        [
+          [3, 0],
+          [0, -2],
+        ],
+        [-1, 4],
+      )[1]!,
+    );
   });
 
   it("lesson 7: recomputes the numbers the teaching screens quote", () => {
@@ -578,9 +1129,22 @@ describe("linear algebra story lessons 6 to 10", () => {
     // P doubles, Q adds 3, from 5.
     expect([5 * 2 + 3, (5 + 3) * 2]).toEqual([13, 16]);
     eq(k("compose-matrix-maps", 7), (5 + 3) * 2 - (5 * 2 + 3));
-    const A = [[1, 1], [0, 1]], B = [[2, 0], [0, 1]];
-    expect(mul(A, B)).toEqual([[2, 1], [0, 1]]);
-    expect(mul(B, A)).toEqual([[2, 2], [0, 1]]);
+    const A = [
+        [1, 1],
+        [0, 1],
+      ],
+      B = [
+        [2, 0],
+        [0, 1],
+      ];
+    expect(mul(A, B)).toEqual([
+      [2, 1],
+      [0, 1],
+    ]);
+    expect(mul(B, A)).toEqual([
+      [2, 2],
+      [0, 1],
+    ]);
     // Columns of A B are A applied to the columns of B.
     expect(apply(A, [2, 0])).toEqual([2, 0]);
     expect(apply(A, [0, 1])).toEqual([1, 1]);
@@ -588,7 +1152,15 @@ describe("linear algebra story lessons 6 to 10", () => {
     // A (B v) equals (A B) v.
     expect(apply(A, apply(B, [1, 2]))).toEqual(apply(mul(A, B), [1, 2]));
     // Shapes: 2 x 3 times 3 x 2 is 2 x 2, and the reverse is 3 x 3.
-    const A23 = [[1, 2, 3], [4, 5, 6]], B32 = [[1, 0], [2, 1], [0, 3]];
+    const A23 = [
+        [1, 2, 3],
+        [4, 5, 6],
+      ],
+      B32 = [
+        [1, 0],
+        [2, 1],
+        [0, 3],
+      ];
     const shape = (m: number[][]) => [m.length, m[0]!.length];
     const tr = (m: number[][]) => m[0]!.map((_, j) => m.map((r) => r[j]!));
     expect(shape(mul(A23, B32))).toEqual([2, 2]);
@@ -597,8 +1169,32 @@ describe("linear algebra story lessons 6 to 10", () => {
     expect(shape(mul(tr(A23), tr(B32)))).toEqual([3, 3]);
     expect(tr(mul(A23, B32))).toEqual(mul(tr(B32), tr(A23)));
     // Skill check items.
-    eq(k("compose-matrix-maps", 2), mul([[2, 0], [0, 3]], [[1, 2], [0, 1]])[0]![1]!);
-    eq(k("compose-matrix-maps", 10), mul([[1, 0], [2, 1]], [[3, 1], [0, 2]])[1]![1]!);
+    eq(
+      k("compose-matrix-maps", 2),
+      mul(
+        [
+          [2, 0],
+          [0, 3],
+        ],
+        [
+          [1, 2],
+          [0, 1],
+        ],
+      )[0]![1]!,
+    );
+    eq(
+      k("compose-matrix-maps", 10),
+      mul(
+        [
+          [1, 0],
+          [2, 1],
+        ],
+        [
+          [3, 1],
+          [0, 2],
+        ],
+      )[1]![1]!,
+    );
   });
 
   it("lesson 8: recomputes the numbers the teaching screens quote", () => {
@@ -606,30 +1202,160 @@ describe("linear algebra story lessons 6 to 10", () => {
     expect([(11 + 4) / 3, 5 * 3 - 4]).toEqual([5, 11]);
     eq(k("identity-and-inverses", 7), (17 - 3) / 2);
     // Diagonal inverses are reciprocals, including a negative entry.
-    expect([inv2([[2, 0], [0, 5]])[0]![0], inv2([[2, 0], [0, 5]])[1]![1]]).toEqual([0.5, 0.2]);
+    expect([
+      inv2([
+        [2, 0],
+        [0, 5],
+      ])[0]![0],
+      inv2([
+        [2, 0],
+        [0, 5],
+      ])[1]![1],
+    ]).toEqual([0.5, 0.2]);
     expect(1 / -4).toBe(-0.25);
     // The slide with rows (1, 3), (0, 1) is undone by rows (1, -3), (0, 1).
-    expect(mul([[1, 3], [0, 1]], [[1, -3], [0, 1]])).toEqual([[1, 0], [0, 1]]);
-    expect(mul([[1, 1], [0, 1]], [[1, -1], [0, 1]])).toEqual([[1, 0], [0, 1]]);
-    expect(mul([[1, -1], [0, 1]], [[1, 1], [0, 1]])).toEqual([[1, 0], [0, 1]]);
+    expect(
+      mul(
+        [
+          [1, 3],
+          [0, 1],
+        ],
+        [
+          [1, -3],
+          [0, 1],
+        ],
+      ),
+    ).toEqual([
+      [1, 0],
+      [0, 1],
+    ]);
+    expect(
+      mul(
+        [
+          [1, 1],
+          [0, 1],
+        ],
+        [
+          [1, -1],
+          [0, 1],
+        ],
+      ),
+    ).toEqual([
+      [1, 0],
+      [0, 1],
+    ]);
+    expect(
+      mul(
+        [
+          [1, -1],
+          [0, 1],
+        ],
+        [
+          [1, 1],
+          [0, 1],
+        ],
+      ),
+    ).toEqual([
+      [1, 0],
+      [0, 1],
+    ]);
     // Worked recipe on rows (4, 1), (7, 2).
-    expect(det2([[4, 1], [7, 2]])).toBe(1);
-    expect(inv2([[4, 1], [7, 2]])).toEqual([[2, -1], [-7, 4]]);
-    expect(mul([[4, 1], [7, 2]], [[2, -1], [-7, 4]])).toEqual([[1, 0], [0, 1]]);
+    expect(
+      det2([
+        [4, 1],
+        [7, 2],
+      ]),
+    ).toBe(1);
+    expect(
+      inv2([
+        [4, 1],
+        [7, 2],
+      ]),
+    ).toEqual([
+      [2, -1],
+      [-7, 4],
+    ]);
+    expect(
+      mul(
+        [
+          [4, 1],
+          [7, 2],
+        ],
+        [
+          [2, -1],
+          [-7, 4],
+        ],
+      ),
+    ).toEqual([
+      [1, 0],
+      [0, 1],
+    ]);
     expect(dot([4, 1], [2, -7])).toBe(1);
     // No inverse: rows (1, 3), (2, 6).
-    expect(det2([[1, 3], [2, 6]])).toBe(0);
-    expect(apply([[1, 3], [2, 6]], [3, 0])).toEqual([3, 6]);
-    expect(apply([[1, 3], [2, 6]], [0, 1])).toEqual([3, 6]);
+    expect(
+      det2([
+        [1, 3],
+        [2, 6],
+      ]),
+    ).toBe(0);
+    expect(
+      apply(
+        [
+          [1, 3],
+          [2, 6],
+        ],
+        [3, 0],
+      ),
+    ).toEqual([3, 6]);
+    expect(
+      apply(
+        [
+          [1, 3],
+          [2, 6],
+        ],
+        [0, 1],
+      ),
+    ).toEqual([3, 6]);
     // Recovering an input: A = rows (3, 1), (5, 2), output (5, 9).
-    const Ainv = inv2([[3, 1], [5, 2]]);
-    expect(Ainv).toEqual([[2, -1], [-5, 3]]);
+    const Ainv = inv2([
+      [3, 1],
+      [5, 2],
+    ]);
+    expect(Ainv).toEqual([
+      [2, -1],
+      [-5, 3],
+    ]);
     expect(apply(Ainv, [5, 9])).toEqual([1, 2]);
-    expect(apply([[3, 1], [5, 2]], [1, 2])).toEqual([5, 9]);
+    expect(
+      apply(
+        [
+          [3, 1],
+          [5, 2],
+        ],
+        [1, 2],
+      ),
+    ).toEqual([5, 9]);
     // Skill check items.
-    eq(k("identity-and-inverses", 10), inv2([[2, 3], [1, 2]])[0]![1]!);
-    eq(k("identity-and-inverses", 6), inv2([[3, 0], [0, -2]])[1]![1]!);
-    expect(det2([[1, 2], [2, 4]])).toBe(0);
+    eq(
+      k("identity-and-inverses", 10),
+      inv2([
+        [2, 3],
+        [1, 2],
+      ])[0]![1]!,
+    );
+    eq(
+      k("identity-and-inverses", 6),
+      inv2([
+        [3, 0],
+        [0, -2],
+      ])[1]![1]!,
+    );
+    expect(
+      det2([
+        [1, 2],
+        [2, 4],
+      ]),
+    ).toBe(0);
   });
 
   it("lesson 9: recomputes the numbers the teaching screens quote", () => {
@@ -654,7 +1380,12 @@ describe("linear algebra story lessons 6 to 10", () => {
 
   it("lesson 10: recomputes the numbers the teaching screens quote", () => {
     // The lines: x + y = 3 holds at the three points quoted, and x - y = 1 crosses it at (2, 1).
-    for (const [x = 0, y = 0] of [[3, 0], [2, 1], [0, 3]]) expect(x + y).toBe(3);
+    for (const [x = 0, y = 0] of [
+      [3, 0],
+      [2, 1],
+      [0, 3],
+    ])
+      expect(x + y).toBe(3);
     expect([2 + 1, 2 - 1]).toEqual([3, 1]);
     // x + y = 2 and 3x + 3y = 6 are the same line.
     expect(6 / 3).toBe(2);
@@ -665,12 +1396,19 @@ describe("linear algebra story lessons 6 to 10", () => {
     expect([2 - 2 * 1, 6 - 2 * 3, 7 - 2 * 2]).toEqual([0, 0, 3]);
     // Rows for x1 + 2 x2 = 4 and 2 x1 + 4 x2 = 8 reduce to a zero row; (4, 0) and (2, 1) solve both.
     expect([2 - 2 * 1, 4 - 2 * 2, 8 - 2 * 4]).toEqual([0, 0, 0]);
-    for (const [x1 = 0, x2 = 0] of [[4, 0], [2, 1]]) {
+    for (const [x1 = 0, x2 = 0] of [
+      [4, 0],
+      [2, 1],
+    ]) {
       expect(x1 + 2 * x2).toBe(4);
       expect(2 * x1 + 4 * x2).toBe(8);
     }
     // Four unknowns, two pivots: x1 = 6 - s - t and x3 = 2 - t satisfy both equations.
-    for (const [s = 0, t = 0] of [[0, 0], [1, 2], [-3, 5]]) {
+    for (const [s = 0, t = 0] of [
+      [0, 0],
+      [1, 2],
+      [-3, 5],
+    ]) {
       expect(6 - s - t + s + t).toBe(6);
       expect(2 - t + t).toBe(2);
     }
@@ -681,7 +1419,15 @@ describe("linear algebra story lessons 6 to 10", () => {
     // Skill check items.
     eq(k("one-none-or-many-solutions", 10), 5 - 2);
     eq(k("one-none-or-many-solutions", 6), 3 - 1);
-    expect(apply([[1, 2], [3, 4]], [0, 0])).toEqual([0, 0]);
+    expect(
+      apply(
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        [0, 0],
+      ),
+    ).toEqual([0, 0]);
     expect(choiceLabel(k("one-none-or-many-solutions", 5))).toBe(
       "Yes, because A times the zero vector is always the zero vector.",
     );
@@ -722,7 +1468,11 @@ describe("linear algebra story lessons 11 to 15", () => {
     const scale = (c: number, v: number[]) => v.map((x) => c * x);
     const add = (u: number[], v: number[]) => u.map((x, i) => x + v[i]!);
     // One button: presses of (1, 2), the sum of two reachable places and a scaled one.
-    expect([2, 3, -1].map((c) => scale(c, [1, 2]))).toEqual([[2, 4], [3, 6], [-1, -2]]);
+    expect([2, 3, -1].map((c) => scale(c, [1, 2]))).toEqual([
+      [2, 4],
+      [3, 6],
+      [-1, -2],
+    ]);
     expect(add([2, 4], [-1, -2])).toEqual([1, 2]);
     expect(scale(5, [2, 4])).toEqual([10, 20]);
     // (1, 3) is off the line: its y is not double its x.
@@ -730,10 +1480,24 @@ describe("linear algebra story lessons 11 to 15", () => {
     eq(k(L, 7), 3 * 2);
     // Two buttons: 2(1, 2) + 3(1, 0), and every tile is reachable with c1 = y / 2, c2 = x - y / 2.
     expect(add(scale(2, [1, 2]), scale(3, [1, 0]))).toEqual([5, 4]);
-    for (const [x = 0, y = 0] of [[5, 4], [-3, 7], [0, 1]])
+    for (const [x = 0, y = 0] of [
+      [5, 4],
+      [-3, 7],
+      [0, 1],
+    ])
       expect(add(scale(y / 2, [1, 2]), scale(x - y / 2, [1, 0]))).toEqual([x, y]);
-    expect(det2([[1, 2], [1, 0]])).not.toBe(0);
-    expect(det2([[1, 2], [2, 4]])).toBe(0);
+    expect(
+      det2([
+        [1, 2],
+        [1, 0],
+      ]),
+    ).not.toBe(0);
+    expect(
+      det2([
+        [1, 2],
+        [2, 4],
+      ]),
+    ).toBe(0);
     // Coefficients: (4, 1) = 3(1, 0) + 1(1, 1), (7, 4) = 3(1, 0) + 4(1, 1), (5, 3) = 2(1, 0) + 3(1, 1).
     expect(add(scale(3, [1, 0]), scale(1, [1, 1]))).toEqual([4, 1]);
     expect(add(scale(3, [1, 0]), scale(4, [1, 1]))).toEqual([7, 4]);
@@ -747,9 +1511,33 @@ describe("linear algebra story lessons 11 to 15", () => {
     // Items: y = 2x holds at zero, y = 2x + 1 does not, and the skill check dimensions.
     expect(0).toBe(2 * 0);
     expect(0).not.toBe(2 * 0 + 1);
-    eq(k(L, 1), det2([[1, 2], [2, 4]]) === 0 ? 1 : 2);
-    eq(k(L, 2), det2([[1, 0], [1, 1]]) === 0 ? 1 : 2);
-    eq(k(L, 11), det2([[1, 2], [3, 1]]) === 0 ? 1 : 2);
+    eq(
+      k(L, 1),
+      det2([
+        [1, 2],
+        [2, 4],
+      ]) === 0
+        ? 1
+        : 2,
+    );
+    eq(
+      k(L, 2),
+      det2([
+        [1, 0],
+        [1, 1],
+      ]) === 0
+        ? 1
+        : 2,
+    );
+    eq(
+      k(L, 11),
+      det2([
+        [1, 2],
+        [3, 1],
+      ]) === 0
+        ? 1
+        : 2,
+    );
     expect(choiceLabel(k(L, 3))).toBe("Yes");
     expect(choiceLabel(k(L, 4))).toBe("No");
   });
@@ -759,38 +1547,129 @@ describe("linear algebra story lessons 11 to 15", () => {
     const comb = (c: number[], vs: number[][]) =>
       vs[0]!.map((_, i) => c.reduce((s, ci, j) => s + ci * vs[j]![i]!, 0));
     // Diagonal is right plus up, and right is diagonal minus up.
-    expect(comb([1, 1], [[1, 0], [0, 1]])).toEqual([1, 1]);
-    expect(comb([1, -1], [[1, 1], [0, 1]])).toEqual([1, 0]);
+    expect(
+      comb(
+        [1, 1],
+        [
+          [1, 0],
+          [0, 1],
+        ],
+      ),
+    ).toEqual([1, 1]);
+    expect(
+      comb(
+        [1, -1],
+        [
+          [1, 1],
+          [0, 1],
+        ],
+      ),
+    ).toEqual([1, 0]);
     eq(k(L, 7), 3 - 2);
     // (2, 0) in the basis (1, 1), (1, -1) and the two recipes for (3, 2).
-    expect(comb([1, 1], [[1, 1], [1, -1]])).toEqual([2, 0]);
-    expect(comb([3, 2], [[1, 0], [0, 1]])).toEqual([3, 2]);
-    expect(comb([1, 2], [[1, 0], [1, 1]])).toEqual([3, 2]);
+    expect(
+      comb(
+        [1, 1],
+        [
+          [1, 1],
+          [1, -1],
+        ],
+      ),
+    ).toEqual([2, 0]);
+    expect(
+      comb(
+        [3, 2],
+        [
+          [1, 0],
+          [0, 1],
+        ],
+      ),
+    ).toEqual([3, 2]);
+    expect(
+      comb(
+        [1, 2],
+        [
+          [1, 0],
+          [1, 1],
+        ],
+      ),
+    ).toEqual([3, 2]);
     // (5, 1) = 3(1, 1) + 2(1, -1): adding the equations gives 2 c1 = 6.
     expect((5 + 1) / 2).toBe(3);
     expect(5 - 3).toBe(2);
-    expect(comb([3, 2], [[1, 1], [1, -1]])).toEqual([5, 1]);
+    expect(
+      comb(
+        [3, 2],
+        [
+          [1, 1],
+          [1, -1],
+        ],
+      ),
+    ).toEqual([5, 1]);
     // Worked example (6, 2): c1 = 4, c2 = 2, and the faded one (4, 2): c1 = 3.
     expect([(6 + 2) / 2, (6 - 2) / 2]).toEqual([4, 2]);
     // Items: (7, 3) = c1(1, 1) + c2(2, 0) and (8, 2) = c1(1, 1) + c2(1, -1).
     eq(k(L, 6), (7 - 3) / 2);
-    expect(comb([3, 2], [[1, 1], [2, 0]])).toEqual([7, 3]);
+    expect(
+      comb(
+        [3, 2],
+        [
+          [1, 1],
+          [2, 0],
+        ],
+      ),
+    ).toEqual([7, 3]);
     eq(k(L, 10), (8 - 2) / 2);
     // Independence by determinant: (4, 1), (1, 3) and (2, 1), (1, 2) are bases, (1, 2), (2, 4) is not.
-    expect(det2([[4, 1], [1, 3]])).toBe(11);
-    eq(k(L, 5), det2([[2, 1], [1, 2]]) === 0 ? 1 : 2);
-    expect(det2([[1, 2], [2, 4]])).toBe(0);
+    expect(
+      det2([
+        [4, 1],
+        [1, 3],
+      ]),
+    ).toBe(11);
+    eq(
+      k(L, 5),
+      det2([
+        [2, 1],
+        [1, 2],
+      ]) === 0
+        ? 1
+        : 2,
+    );
+    expect(
+      det2([
+        [1, 2],
+        [2, 4],
+      ]),
+    ).toBe(0);
     // The zero vector is spare: (3, 1) and (0, 0) span a line.
-    expect(det2([[3, 1], [0, 0]])).toBe(0);
-    expect(det2([[1, 0], [0, 0]])).toBe(0);
+    expect(
+      det2([
+        [3, 1],
+        [0, 0],
+      ]),
+    ).toBe(0);
+    expect(
+      det2([
+        [1, 0],
+        [0, 0],
+      ]),
+    ).toBe(0);
     eq(k(L, 1), 2);
-    expect(choiceLabel(k(L, 4))).toBe("No, because the pair spans only a line.");
+    expect(choiceLabel(k(L, 4))).toBe(
+      "No, because (0, 0) adds no direction, so they span only a line.",
+    );
     expect(choiceIds(k(L, 4))).toEqual(["b"]);
     expect(choiceLabel(k(L, 2))).toBe("No");
     // Item 2-v2 is the one the lesson asks: (2, 1) and (4, 2) with (4, 2) = 2 (2, 1).
-    expect(det2([[2, 1], [4, 2]])).toBe(0);
+    expect(
+      det2([
+        [2, 1],
+        [4, 2],
+      ]),
+    ).toBe(0);
     expect(choiceLabel(k(L, "2-v2"))).toBe(
-      "No, because (4, 2) is twice (2, 1), so the pair spans only a line.",
+      "No, because (4, 2) is twice (2, 1), so they span only a line.",
     );
     const lesson = bundle.lessons.find((item) => item.id === L)!;
     expect(lesson.questionIds).toContain(k(L, "2-v2"));
@@ -822,67 +1701,208 @@ describe("linear algebra story lessons 11 to 15", () => {
     eq(k(L, 7), -5);
     expect(5 + -5).toBe(0);
     // B: output is x(1, 0) + y(0, 1) + z(2, 3), rank 2, and (-2, -3, 1) is in the null space.
-    const B = [[1, 0, 2], [0, 1, 3]];
+    const B = [
+      [1, 0, 2],
+      [0, 1, 3],
+    ];
     expect(apply(B, [3, 1, 2])).toEqual([7, 7]);
     expect(apply(B, [0, 0, 4])).toEqual([8, 12]);
     expect(apply(B, [-2, -3, 1])).toEqual([0, 0]);
     expect(rank(B)).toBe(2);
     expect(rank(B) + (3 - rank(B))).toBe(3);
     // A: rank 2, nullity 1, and (-2, 1, 0) is sent to zero.
-    const A = [[1, 2, 0], [0, 0, 1]];
+    const A = [
+      [1, 2, 0],
+      [0, 0, 1],
+    ];
     expect(apply(A, [-2, 1, 0])).toEqual([0, 0]);
     eq(k(L, 3), apply(A, [-2, 1, 0])[0]!);
     eq(k(L, 1), rank(A));
     eq(k(L, 2), 3 - rank(A));
     // The worked example: rank 2 and nullity 4 - 2.
-    expect(rank([[1, 3, 0, 2], [0, 0, 1, 4]])).toBe(2);
+    expect(
+      rank([
+        [1, 3, 0, 2],
+        [0, 0, 1, 4],
+      ]),
+    ).toBe(2);
     // E: rows become (0, 1, 2) and (0, 0, 1), and its columns 2 and 3 are independent.
-    const E = [[0, 1, 2], [0, 2, 5]];
-    expect([E[1]![0]! - 2 * E[0]![0]!, E[1]![1]! - 2 * E[0]![1]!, E[1]![2]! - 2 * E[0]![2]!]).toEqual([0, 0, 1]);
-    expect(det2([[1, 2], [2, 5]])).toBe(1);
+    const E = [
+      [0, 1, 2],
+      [0, 2, 5],
+    ];
+    expect([
+      E[1]![0]! - 2 * E[0]![0]!,
+      E[1]![1]! - 2 * E[0]![1]!,
+      E[1]![2]! - 2 * E[0]![2]!,
+    ]).toEqual([0, 0, 1]);
+    expect(
+      det2([
+        [1, 2],
+        [2, 5],
+      ]),
+    ).toBe(1);
     expect(rank(E)).toBe(2);
     expect(choiceLabel(k(L, 4))).toBe("Columns 1 and 3");
-    expect(det2([[1, 0], [0, 1]])).not.toBe(0);
+    expect(
+      det2([
+        [1, 0],
+        [0, 1],
+      ]),
+    ).not.toBe(0);
     // Skill check: a diagonal matrix, a repeated row and a repeated column.
-    eq(k(L, 5), rank([[1, 0, 0], [0, 2, 0], [0, 0, 3]]));
-    eq(k(L, 6), 3 - rank([[1, 2, 3], [2, 4, 6]]));
-    eq(k(L, 10), rank([[1, 2], [2, 4], [3, 6]]));
+    eq(
+      k(L, 5),
+      rank([
+        [1, 0, 0],
+        [0, 2, 0],
+        [0, 0, 3],
+      ]),
+    );
+    eq(
+      k(L, 6),
+      3 -
+        rank([
+          [1, 2, 3],
+          [2, 4, 6],
+        ]),
+    );
+    eq(
+      k(L, 10),
+      rank([
+        [1, 2],
+        [2, 4],
+        [3, 6],
+      ]),
+    );
   });
 
   it("lesson 14: recomputes the numbers the teaching screens and items quote", () => {
     const L = "determinants-and-volume";
     // Diagonal maps multiply area by a × d.
-    expect(det2([[3, 0], [0, 4]])).toBe(12);
-    expect(det2([[2, 0], [0, 2]])).toBe(4);
+    expect(
+      det2([
+        [3, 0],
+        [0, 4],
+      ]),
+    ).toBe(12);
+    expect(
+      det2([
+        [2, 0],
+        [0, 2],
+      ]),
+    ).toBe(4);
     expect(3 * 5).toBe(15);
     eq(k(L, 7), 5 * 2);
     // The parallelogram with columns (3, 2) and (1, 2): the box, the pieces and the difference.
     const box = (3 + 1) * (2 + 2);
     const pieces = 2 * ((3 * 2) / 2) + 2 * ((1 * 2) / 2) + 2 * (1 * 2);
     expect([box, pieces, box - pieces]).toEqual([16, 12, 4]);
-    expect(det2([[3, 1], [2, 2]])).toBe(box - pieces);
+    expect(
+      det2([
+        [3, 1],
+        [2, 2],
+      ]),
+    ).toBe(box - pieces);
     // Swapping rows flips the sign, and a dependent pair of rows gives zero.
-    expect(det2([[2, 2], [3, 1]])).toBe(-4);
-    expect(det2([[1, 3], [2, 6]])).toBe(0);
+    expect(
+      det2([
+        [2, 2],
+        [3, 1],
+      ]),
+    ).toBe(-4);
+    expect(
+      det2([
+        [1, 3],
+        [2, 6],
+      ]),
+    ).toBe(0);
     // Items on signs: A = diag(-2, 3), the worked example, the faded example and the swap.
-    eq(k(L, 5), Math.abs(det2([[-2, 0], [0, 3]])));
-    expect(det2([[1, 5], [2, 3]])).toBe(-7);
-    eq(k(L, 1), det2([[2, 1], [1, 3]]));
-    eq(k(L, 2), det2([[1, 3], [2, 1]]));
+    eq(
+      k(L, 5),
+      Math.abs(
+        det2([
+          [-2, 0],
+          [0, 3],
+        ]),
+      ),
+    );
+    expect(
+      det2([
+        [1, 5],
+        [2, 3],
+      ]),
+    ).toBe(-7);
+    eq(
+      k(L, 1),
+      det2([
+        [2, 1],
+        [1, 3],
+      ]),
+    );
+    eq(
+      k(L, 2),
+      det2([
+        [1, 3],
+        [2, 1],
+      ]),
+    );
     // Products: det(A B) = det A × det B for the screen's pair and the skill check's pair.
-    const A = [[3, 0], [0, 2]];
-    const Bm = [[1, 2], [0, 3]];
-    expect(mul(A, Bm)).toEqual([[3, 6], [0, 6]]);
+    const A = [
+      [3, 0],
+      [0, 2],
+    ];
+    const Bm = [
+      [1, 2],
+      [0, 3],
+    ];
+    expect(mul(A, Bm)).toEqual([
+      [3, 6],
+      [0, 6],
+    ]);
     expect(det2(mul(A, Bm))).toBe(det2(A) * det2(Bm));
     expect([det2(A), det2(Bm), det2(mul(A, Bm))]).toEqual([6, 3, 18]);
-    eq(k(L, 6), det2(mul([[2, 0], [0, 3]], [[1, 1], [0, 2]])));
-    expect(det2([[1, 0], [0, 1]])).toBe(1);
+    eq(
+      k(L, 6),
+      det2(
+        mul(
+          [
+            [2, 0],
+            [0, 3],
+          ],
+          [
+            [1, 1],
+            [0, 2],
+          ],
+        ),
+      ),
+    );
+    expect(
+      det2([
+        [1, 0],
+        [0, 1],
+      ]),
+    ).toBe(1);
     // Volume: 2 × 5 × 3 on the screen and 2 × 3 × 4 in the item.
     expect(2 * 5 * 3).toBe(30);
     eq(k(L, 4), 2 * 3 * 4);
     // Skill check: a collapse and a negative entry.
-    eq(k(L, 3), det2([[1, 2], [2, 4]]));
-    eq(k(L, 10), Math.abs(det2([[1, -3], [2, 2]])));
+    eq(
+      k(L, 3),
+      det2([
+        [1, 2],
+        [2, 4],
+      ]),
+    );
+    eq(
+      k(L, 10),
+      Math.abs(
+        det2([
+          [1, -3],
+          [2, 2],
+        ]),
+      ),
+    );
   });
 
   it("lesson 15: recomputes the numbers the teaching screens and items quote", () => {
@@ -967,7 +1987,14 @@ describe("linear algebra story lessons 16 to 20", () => {
   const singular = (m: number[][]) => {
     const g =
       m[0]!.length === 2
-        ? [0, 1].map((i) => [0, 1].map((j) => dot(m.map((r) => r[i]!), m.map((r) => r[j]!))))
+        ? [0, 1].map((i) =>
+            [0, 1].map((j) =>
+              dot(
+                m.map((r) => r[i]!),
+                m.map((r) => r[j]!),
+              ),
+            ),
+          )
         : m.map((r) => m.map((s) => dot(r, s)));
     const tr = g[0]![0]! + g[1]![1]!;
     const disc = Math.sqrt(tr * tr - 4 * det2(g));
@@ -981,12 +2008,23 @@ describe("linear algebra story lessons 16 to 20", () => {
     // Normal equations for y = c + s x at x = 0, 1, 2.
     const line = (ys: number[]) => {
       const xs = [0, 1, 2];
-      const g = [[3, 3], [3, 5]];
+      const g = [
+        [3, 3],
+        [3, 5],
+      ];
       const rhs = [dot([1, 1, 1], ys), dot(xs, ys)];
       const d = det2(g);
       return {
-        c: det2([[rhs[0]!, g[0]![1]!], [rhs[1]!, g[1]![1]!]]) / d,
-        s: det2([[g[0]![0]!, rhs[0]!], [g[1]![0]!, rhs[1]!]]) / d,
+        c:
+          det2([
+            [rhs[0]!, g[0]![1]!],
+            [rhs[1]!, g[1]![1]!],
+          ]) / d,
+        s:
+          det2([
+            [g[0]![0]!, rhs[0]!],
+            [g[1]![0]!, rhs[1]!],
+          ]) / d,
       };
     };
     // The bolt: 6, 7, 11 projects onto (1, 1, 1) at 8, and no other constant does better.
@@ -1007,7 +2045,10 @@ describe("linear algebra story lessons 16 to 20", () => {
     expect([2, 3, 10].map((x) => x - 5)).toEqual([-3, -2, 5]);
     expect(squares([2, 3, 10], 5)).toBe(38);
     eq(k(L, 4), squares([2, 4, 9], 5));
-    eq(k(L, 2), [2, 4, 9].reduce((s, x) => s + (x - 5), 0));
+    eq(
+      k(L, 2),
+      [2, 4, 9].reduce((s, x) => s + (x - 5), 0),
+    );
     expect(mean([2, 4, 9])).toBe(5);
     // The residuals off the mean are perpendicular to (1, 1, 1), so they sum to zero. The other
     // reasons fail: the misses differ in size, and squaring makes them all positive.
@@ -1015,7 +2056,9 @@ describe("linear algebra story lessons 16 to 20", () => {
     expect(dot(misses, [1, 1, 1])).toBe(0);
     expect(new Set(misses.map(Math.abs)).size).toBeGreaterThan(1);
     expect(misses.map((x) => x * x).reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
-    expect(choiceLabel(k(L, 9))).toBe("They are perpendicular to (1, 1, 1), so their entries sum to zero.");
+    expect(choiceLabel(k(L, 9))).toBe(
+      "They are perpendicular to (1, 1, 1), so their entries sum to zero.",
+    );
     expect(choiceIds(k(L, 9))).toEqual(["c"]);
     // The seedling: 3, 3, 6 at weeks 0, 1, 2.
     const seed = line([3, 3, 6]);
@@ -1032,12 +2075,21 @@ describe("linear algebra story lessons 16 to 20", () => {
     expect((6 - 3) / 2).toBe(1.5);
     expect(mean([3, 3, 6]) - 1.5).toBe(2.5);
     // The shortcut holds for any heights, and the practice items follow from it.
-    for (const ys of [[3, 3, 6], [5, 9, 7], [2, 5, 8], [1, 2, 2], [4, 3, 0]])
+    for (const ys of [
+      [3, 3, 6],
+      [5, 9, 7],
+      [2, 5, 8],
+      [1, 2, 2],
+      [4, 3, 0],
+    ])
       expect(line(ys).s).toBeCloseTo((ys[2]! - ys[0]!) / 2, 9);
     eq(k(L, 11), line([5, 9, 7]).s);
     eq(k(L, 11), (7 - 5) / 2);
     near([line([5, 9, 7]).c], [6]);
-    near([5, 9, 7].map((y, i) => y - (6 + i)), [-1, 2, -1]);
+    near(
+      [5, 9, 7].map((y, i) => y - (6 + i)),
+      [-1, 2, -1],
+    );
     eq(k(L, 6), line([2, 5, 8]).s);
     eq(k(L, 3), line([1, 2, 2]).s);
     eq(k(L, 10), line([4, 3, 0]).s);
@@ -1100,7 +2152,10 @@ describe("linear algebra story lessons 16 to 20", () => {
 
   it("lesson 18: recomputes the numbers the teaching screens and items quote", () => {
     const L = "eigenvectors-and-eigenvalues";
-    const T = [[3, 1], [0, 2]];
+    const T = [
+      [3, 1],
+      [0, 2],
+    ];
     expect(apply(T, [0, 1])).toEqual([1, 2]);
     expect(apply(T, [1, 1])).toEqual([4, 2]);
     expect(det2([apply(T, [1, 1]), [1, 1]])).not.toBe(0);
@@ -1109,32 +2164,138 @@ describe("linear algebra story lessons 16 to 20", () => {
     expect(apply(T, [1, -1])).toEqual([2, -2]);
     expect(lamOf(T, [1, -1])).toBe(2);
     // The negative and zero cases on the "flips and collapses" screen.
-    expect(apply([[-1, 0], [0, 2]], [1, 0])).toEqual([-1, 0]);
-    expect(lamOf([[-1, 0], [0, 2]], [1, 0])).toBe(-1);
-    expect(apply([[1, 1], [1, 1]], [1, -1])).toEqual([0, 0]);
+    expect(
+      apply(
+        [
+          [-1, 0],
+          [0, 2],
+        ],
+        [1, 0],
+      ),
+    ).toEqual([-1, 0]);
+    expect(
+      lamOf(
+        [
+          [-1, 0],
+          [0, 2],
+        ],
+        [1, 0],
+      ),
+    ).toBe(-1);
+    expect(
+      apply(
+        [
+          [1, 1],
+          [1, 1],
+        ],
+        [1, -1],
+      ),
+    ).toEqual([0, 0]);
     // The predict item, the worked example and the practice items.
-    eq(k(L, 7), lamOf([[4, 0], [0, 4]], [1, 2]) === 4 && apply([[4, 0], [0, 4]], [1, 2]).join() === "4,8" ? 4 : NaN);
+    eq(
+      k(L, 7),
+      lamOf(
+        [
+          [4, 0],
+          [0, 4],
+        ],
+        [1, 2],
+      ) === 4 &&
+        apply(
+          [
+            [4, 0],
+            [0, 4],
+          ],
+          [1, 2],
+        ).join() === "4,8"
+        ? 4
+        : NaN,
+    );
     expect(scale(4, [1, 2])).toEqual([4, 8]);
-    expect(lamOf([[4, 1], [2, 3]], [1, 1])).toBe(5);
-    const S = [[2, 1], [1, 2]];
+    expect(
+      lamOf(
+        [
+          [4, 1],
+          [2, 3],
+        ],
+        [1, 1],
+      ),
+    ).toBe(5);
+    const S = [
+      [2, 1],
+      [1, 2],
+    ];
     eq(k(L, 2), lamOf(S, [1, -1]));
-    eq(k(L, 3), lamOf([[-2, 0], [0, 3]], [1, 0]));
+    eq(
+      k(L, 3),
+      lamOf(
+        [
+          [-2, 0],
+          [0, 3],
+        ],
+        [1, 0],
+      ),
+    );
     expect(apply(S, [1, 0])).toEqual([2, 1]);
     expect(choiceLabel(k(L, 4))).toBe("No");
     // Skill check.
-    eq(k(L, 5), lamOf([[4, 0], [0, 2]], [0, 1]));
-    eq(k(L, 10), lamOf([[1, 2], [2, 1]], [1, -1]));
-    expect(lamOf([[1, 1], [1, 1]], [1, -1])).toBe(0);
+    eq(
+      k(L, 5),
+      lamOf(
+        [
+          [4, 0],
+          [0, 2],
+        ],
+        [0, 1],
+      ),
+    );
+    eq(
+      k(L, 10),
+      lamOf(
+        [
+          [1, 2],
+          [2, 1],
+        ],
+        [1, -1],
+      ),
+    );
+    expect(
+      lamOf(
+        [
+          [1, 1],
+          [1, 1],
+        ],
+        [1, -1],
+      ),
+    ).toBe(0);
     expect(choiceLabel(k(L, 6))).toBe("Yes, because A v = 0v, so the eigenvalue is 0.");
     expect(choiceIds(k(L, 6))).toEqual(["1"]);
     // The recap lists these factors.
-    expect([lamOf(T, [1, 0]), lamOf(T, [1, -1]), 5, lamOf(S, [1, -1]), lamOf([[-2, 0], [0, 3]], [1, 0])]).toEqual([3, 2, 5, 1, -2]);
+    expect([
+      lamOf(T, [1, 0]),
+      lamOf(T, [1, -1]),
+      5,
+      lamOf(S, [1, -1]),
+      lamOf(
+        [
+          [-2, 0],
+          [0, 3],
+        ],
+        [1, 0],
+      ),
+    ]).toEqual([3, 2, 5, 1, -2]);
   });
 
   it("lesson 19: recomputes the numbers the teaching screens and items quote", () => {
     const L = "diagonalise-a-map";
-    const S = [[2, 1], [1, 2]];
-    const T = [[3, 1], [0, 2]];
+    const S = [
+      [2, 1],
+      [1, 2],
+    ];
+    const T = [
+      [3, 1],
+      [0, 2],
+    ];
     // The opening machine is S: it triples (1, 1) and leaves (1, −1).
     expect(apply(S, [1, 1])).toEqual([3, 3]);
     expect(apply(S, [1, -1])).toEqual([1, -1]);
@@ -1148,8 +2309,14 @@ describe("linear algebra story lessons 16 to 20", () => {
     expect(apply(S, [2, 0])).toEqual([4, 2]);
     eq(k(L, 7), apply(S, [2, 0])[0]!);
     // T = P D P⁻¹ with P = [(1, 0), (1, −1)] and D = diag(3, 2).
-    const P = [[1, 1], [0, -1]];
-    const D = [[3, 0], [0, 2]];
+    const P = [
+      [1, 1],
+      [0, -1],
+    ];
+    const D = [
+      [3, 0],
+      [0, 2],
+    ];
     const PD = mul(mul(P, D), inv2(P));
     T.forEach((row, i) => row.forEach((x, j) => expect(PD[i]![j]).toBeCloseTo(x, 9)));
     near(apply(inv2(P), [4, 2]), [6, -2]);
@@ -1157,8 +2324,14 @@ describe("linear algebra story lessons 16 to 20", () => {
     near(apply(P, [18, -4]), [14, 4]);
     expect(apply(T, [4, 2])).toEqual([14, 4]);
     // Swapping the columns of P swaps D with them and keeps the product.
-    const P2 = [[1, 1], [-1, 0]];
-    const D2 = [[2, 0], [0, 3]];
+    const P2 = [
+      [1, 1],
+      [-1, 0],
+    ];
+    const D2 = [
+      [2, 0],
+      [0, 3],
+    ];
     const PD2 = mul(mul(P2, D2), inv2(P2));
     T.forEach((row, i) => row.forEach((x, j) => expect(PD2[i]![j]).toBeCloseTo(x, 9)));
     // Powers: T applied three times to (1, 0).
@@ -1171,17 +2344,51 @@ describe("linear algebra story lessons 16 to 20", () => {
     const PD2P = mul(mul(P, mul(D, D)), inv2(P));
     A2.forEach((row, i) => row.forEach((x, j) => expect(PD2P[i]![j]).toBeCloseTo(x, 9)));
     // The shear has only the x axis as eigenvectors.
-    const shear = [[1, 1], [0, 1]];
+    const shear = [
+      [1, 1],
+      [0, 1],
+    ];
     expect(apply(shear, [1, 0])).toEqual([1, 0]);
-    for (const [a, b] of [[1, 1], [2, 3], [0, 1], [-1, 2]]) {
+    for (const [a, b] of [
+      [1, 1],
+      [2, 3],
+      [0, 1],
+      [-1, 2],
+    ]) {
       const out = apply(shear, [a!, b!]);
       expect(det2([out, [a!, b!]])).not.toBe(0);
     }
     // Items.
-    expect(lamOf([[4, 1], [2, 3]], [1, 1]) ** 2).toBe(25);
-    eq(k(L, 5), lamOf([[2, 0], [0, -1]], [1, 0]) ** 3);
+    expect(
+      lamOf(
+        [
+          [4, 1],
+          [2, 3],
+        ],
+        [1, 1],
+      ) ** 2,
+    ).toBe(25);
+    eq(
+      k(L, 5),
+      lamOf(
+        [
+          [2, 0],
+          [0, -1],
+        ],
+        [1, 0],
+      ) ** 3,
+    );
     eq(k(L, 4), lamOf(S, [1, -1]));
-    eq(k(L, 10), lamOf([[3, 0], [0, -2]], [0, 1]) ** 4);
+    eq(
+      k(L, 10),
+      lamOf(
+        [
+          [3, 0],
+          [0, -2],
+        ],
+        [0, 1],
+      ) ** 4,
+    );
     expect(choiceLabel(k(L, 3))).toBe("No");
     expect(choiceLabel(k(L, 6))).toBe("Its columns must form a basis");
     expect(lamOf(S, [1, 1]) ** 2).toBe(9);
@@ -1190,10 +2397,19 @@ describe("linear algebra story lessons 16 to 20", () => {
   it("lesson 20: recomputes the numbers the teaching screens and items quote", () => {
     const L = "singular-value-decomposition";
     // The opening machine: stretch by 5 across and 3 up, then a quarter turn.
-    const stretch = [[5, 0], [0, 3]];
-    const quarter = [[0, -1], [1, 0]];
+    const stretch = [
+      [5, 0],
+      [0, 3],
+    ];
+    const quarter = [
+      [0, -1],
+      [1, 0],
+    ];
     const machine = mul(quarter, stretch);
-    expect(machine).toEqual([[0, -3], [5, 0]]);
+    expect(machine).toEqual([
+      [0, -3],
+      [5, 0],
+    ]);
     expect(apply(machine, [1, 0])).toEqual([0, 5]);
     expect(apply(machine, [0, 1])).toEqual([-3, 0]);
     near(singular(machine), [5, 3]);
@@ -1204,26 +2420,115 @@ describe("linear algebra story lessons 16 to 20", () => {
       expect(out).toBeLessThanOrEqual(5 + 1e-9);
     }
     // The predict item: stretches 4 and 2 then a turn, longest output 4.
-    near(singular(mul(quarter, [[4, 0], [0, 2]])), [4, 2]);
-    eq(k(L, 7), singular(mul(quarter, [[4, 0], [0, 2]]))[0]!);
+    near(
+      singular(
+        mul(quarter, [
+          [4, 0],
+          [0, 2],
+        ]),
+      ),
+      [4, 2],
+    );
+    eq(
+      k(L, 7),
+      singular(
+        mul(quarter, [
+          [4, 0],
+          [0, 2],
+        ]),
+      )[0]!,
+    );
     // The flip screen: rows (−5, 0) and (0, 1) have singular values 5 and 1.
-    near(singular([[-5, 0], [0, 1]]), [5, 1]);
+    near(
+      singular([
+        [-5, 0],
+        [0, 1],
+      ]),
+      [5, 1],
+    );
     // Perpendicular columns: the singular values are the column lengths.
     expect(dot([0, 5], [-3, 0])).toBe(0);
     // All ones: singular values 2 and 0, and (1, 1) is stretched by 2.
-    near(singular([[1, 1], [1, 1]]), [2, 0]);
-    expect(len(apply([[1, 1], [1, 1]], [1, 1])) / len([1, 1])).toBeCloseTo(2, 9);
-    expect(apply([[1, 1], [1, 1]], [1, -1])).toEqual([0, 0]);
+    near(
+      singular([
+        [1, 1],
+        [1, 1],
+      ]),
+      [2, 0],
+    );
+    expect(
+      len(
+        apply(
+          [
+            [1, 1],
+            [1, 1],
+          ],
+          [1, 1],
+        ),
+      ) / len([1, 1]),
+    ).toBeCloseTo(2, 9);
+    expect(
+      apply(
+        [
+          [1, 1],
+          [1, 1],
+        ],
+        [1, -1],
+      ),
+    ).toEqual([0, 0]);
     // The 3 × 2 example: columns of lengths 3 and 1.
-    near(singular([[3, 0], [0, 1], [0, 0]]), [3, 1]);
+    near(
+      singular([
+        [3, 0],
+        [0, 1],
+        [0, 0],
+      ]),
+      [3, 1],
+    );
     // Items.
-    eq(k(L, 1), singular([[3, 0], [0, -2]])[0]!);
-    expect(singular([[-6, 0], [0, 3]]).map((x) => Math.round(x))).toEqual([6, 3]);
-    eq(k(L, 3), singular([[1, 2], [2, 4]])[1]!);
-    eq(k(L, 6), singular([[1, 0, 0], [0, 2, 0]])[1]!);
+    eq(
+      k(L, 1),
+      singular([
+        [3, 0],
+        [0, -2],
+      ])[0]!,
+    );
+    expect(
+      singular([
+        [-6, 0],
+        [0, 3],
+      ]).map((x) => Math.round(x)),
+    ).toEqual([6, 3]);
+    eq(
+      k(L, 3),
+      singular([
+        [1, 2],
+        [2, 4],
+      ])[1]!,
+    );
+    eq(
+      k(L, 6),
+      singular([
+        [1, 0, 0],
+        [0, 2, 0],
+      ])[1]!,
+    );
     expect(choiceLabel(k(L, 2))).toBe("2 × 3");
-    eq(k(L, 5), singular([[0, 5], [2, 0], [0, 0]])[0]!);
-    eq(k(L, 10), singular([[-3, 0], [0, -8]])[1]!);
+    eq(
+      k(L, 5),
+      singular([
+        [0, 5],
+        [2, 0],
+        [0, 0],
+      ])[0]!,
+    );
+    eq(
+      k(L, 10),
+      singular([
+        [-3, 0],
+        [0, -8],
+      ])[1]!,
+    );
     expect(choiceLabel(k(L, 4))).toBe("Σ");
   });
 
