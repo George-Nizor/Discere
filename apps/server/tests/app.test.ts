@@ -276,6 +276,41 @@ describe("Discere API", () => {
     }
   });
 
+  it("keeps a hidden course out of the list unless hidden courses are asked for", async () => {
+    // electronics-foundations is hidden in the shipped content while its rewrite is unfinished.
+    const fixture = archivedContentRoot("first-aid", ["history", "electronics-foundations"]);
+    const shown = process.env["DISCERE_SHOW_HIDDEN_COURSES"];
+    const listedIds = async () => {
+      const server = await createApp({
+        dbPath: ":memory:",
+        migrate: true,
+        revealDelayMs: 0,
+        contentRoot: fixture.root,
+      });
+      try {
+        const list = await server.app.inject({ method: "GET", url: "/api/courses" });
+        const detail = await server.app.inject({
+          method: "GET",
+          url: "/api/courses/electronics-foundations",
+        });
+        expect(detail.statusCode).toBe(200);
+        return list.json().courses.map((course: { id: string }) => course.id);
+      } finally {
+        await server.app.close();
+      }
+    };
+    try {
+      delete process.env["DISCERE_SHOW_HIDDEN_COURSES"];
+      expect(await listedIds()).toEqual(["history"]);
+      process.env["DISCERE_SHOW_HIDDEN_COURSES"] = "1";
+      expect([...(await listedIds())].sort()).toEqual(["electronics-foundations", "history"]);
+    } finally {
+      if (shown === undefined) delete process.env["DISCERE_SHOW_HIDDEN_COURSES"];
+      else process.env["DISCERE_SHOW_HIDDEN_COURSES"] = shown;
+      fixture.remove();
+    }
+  });
+
   it("serves a course asset and refuses to escape its own directory", async () => {
     const asset = await app.inject({
       method: "GET",

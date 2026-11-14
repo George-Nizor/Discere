@@ -133,6 +133,18 @@ function learnerSteps(lesson: LessonBeat, bundle: CourseBundle): LearnerStep[] {
  * Every course bundle under `content/`, with the lookups the routes need. Nothing here knows
  * the name of a particular course: a directory holding a valid bundle becomes a course.
  */
+/**
+ * Whether the library shows a course. Archived courses never appear. Hidden ones wait for their
+ * rewrite, and appear when `DISCERE_SHOW_HIDDEN_COURSES=1`, which the test runs set so every
+ * course is still exercised.
+ */
+function listed(bundle: CourseBundle): boolean {
+  const visibility = bundle.course.catalogueVisibility;
+  if (visibility === "archived") return false;
+  if (visibility === "hidden") return process.env["DISCERE_SHOW_HIDDEN_COURSES"] === "1";
+  return true;
+}
+
 export class ContentRepository {
   private readonly byCourseId: Map<string, LoadedCourse>;
 
@@ -162,14 +174,12 @@ export class ContentRepository {
   }
 
   get listedBundles(): CourseBundle[] {
-    return this.courses
-      .filter((item) => item.bundle.course.catalogueVisibility !== "archived")
-      .map((item) => item.bundle);
+    return this.courses.filter((item) => listed(item.bundle)).map((item) => item.bundle);
   }
 
   isListed(courseId: string): boolean {
-    const course = this.bundle(courseId)?.course;
-    return Boolean(course && course.catalogueVisibility !== "archived");
+    const bundle = this.bundle(courseId);
+    return Boolean(bundle && listed(bundle));
   }
 
   get concepts(): Concept[] {
@@ -183,8 +193,8 @@ export class ContentRepository {
   }
 
   get defaultCourseId(): string {
-    if (this.byCourseId.has("maths-foundations")) return "maths-foundations";
-    const first = this.courses[0];
+    if (this.isListed("maths-foundations")) return "maths-foundations";
+    const first = this.courses.find((course) => listed(course.bundle)) ?? this.courses[0];
     if (!first) throw new Error("Discere loaded no courses.");
     return first.bundle.course.id;
   }
