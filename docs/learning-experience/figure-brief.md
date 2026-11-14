@@ -89,12 +89,12 @@ case is right. Keep PNGs out of the repository.
 
 ## Files and commands
 
-- Edit the lesson drafts at `content/<course>/.authoring/migration/<lesson-id>.json` in place: add
-  `diagram` to a teaching step or to `intro.hook`. Remove a wishlist entry from the course's
+- Edit `content/<course>/bundle.json` with a Node script (write it back with
+  `JSON.stringify(bundle, null, 2) + "\n"`): add `diagram` to a teaching step or to `intro.hook`. Remove a wishlist entry from the course's
   `figure-wishlist.md` once you have drawn it; add a line saying which are left and why.
 - Citations: a figure does not need one of its own; the step's existing citation covers it.
-- Apply and validate: `pnpm tsx scripts/lesson-migration/scaffold.ts <course-id> --apply`. Clear
-  every error; list warnings in your report. Then run your course's test and
+- Validate: `pnpm validate:content`. Clear every error; list warnings in your report. A course
+  with `review/publication.json` needs `npx tsx scripts/rebind-review.ts` afterwards. Then run your course's test and
   `pnpm --filter @discere/curriculum typecheck`.
 - Other agents are drawing for other courses at the same time. Touch only your course's `.authoring`
   folder (and the one test file only if a count in it must change). Do not run `curate`, do not

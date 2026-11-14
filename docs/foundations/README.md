@@ -76,8 +76,10 @@ pnpm smoke
 LD_LIBRARY_PATH=/tmp/discere-browser-libs/usr/lib/x86_64-linux-gnu pnpm e2e
 ```
 
-Imported lessons stage in `.authoring/candidate.json`; only `pnpm curate publish <course>` updates
-runtime content after editorial approval matches the exact hash. Do not run old scratch generators
+(October 2026; since November bundles are edited directly and the candidate step is gone; see
+`docs/authoring/README.md`.) Imported lessons stage in `.authoring/candidate.json`; only
+`pnpm curate publish <course>` updates runtime content after editorial approval matches the exact
+hash. Do not run old scratch generators
 over reviewed content. A changed lesson needs new review and updated citations before publication.
 
 Independent tests recompute all Maths numeric answers and recall values, enumerate Logic assignments,

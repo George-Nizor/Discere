@@ -1116,7 +1116,7 @@ tool and tab are hidden. When it says `suggested`, the tool is highlighted.
 ### Gold lesson
 
 - Maths Foundations 1.2.0, lesson 1, is published through `pnpm curate review` and `publish`.
-  Its source is `scripts/prepare-maths-gold-lesson.ts`, and its review record is in
+  Its source was `scripts/prepare-maths-gold-lesson.ts` (removed 14 November 2026), and its review record is in
   `content/maths-foundations/review/publication.json`.
 - The two items that asked for inverse operations moved to lesson 3, keeping their ids.
 - `packages/curriculum/tests/maths-gold-lesson.test.ts` recomputes every key.

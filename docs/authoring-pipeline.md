@@ -1,6 +1,10 @@
-# The authoring pipeline
+# The authoring pipeline (legacy)
 
-`scripts/author.ts`, run as `pnpm author <command>`, is the documented path for adding content to
+Not used since October 2026: it writes the old lesson shape, with no opener or recap. Courses are
+now written and changed as `docs/authoring/README.md` describes. This page is kept because the
+script and its tests still exist.
+
+`scripts/author.ts`, run as `pnpm author <command>`, was the documented path for adding content to
 a course. It exists so that generated material is subject to the same gates as hand-written
 material, and so that nothing reaches a learner without a human deciding it should.
 
