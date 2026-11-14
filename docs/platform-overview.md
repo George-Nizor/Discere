@@ -79,21 +79,20 @@ Basics (6 lessons each), Electronics (5) and Logic (8). Most courses have 12 to 
 Every course has been through about ten whole-library passes (`docs/content-history.md`). What
 differs between courses is the last pass their questions had.
 
-**36 courses had a full question rewrite** (35 listed, plus Drawing): computing, software, data
-and AI, the humanities, and Technical Writing and Speaking. Their questions put material in front
-of the learner (a log, a schema, a passage, a casualty, a plan) and ask for a judgement. They have
-about 10 to 12 order and sort questions each, quote real sources where the subject has them, and
-build wrong options from real mistakes. In most of them fewer than 20% of prompts are bare one-liners.
-This is the standard to aim for.
+**41 courses had a full question rewrite** (40 listed, plus Drawing): computing, software, data
+and AI, the humanities, Technical Writing and Speaking, and, after a blind review on 14 November,
+Earth Science, Biology, Creative and Game Writing, Writing Longer Pieces and Materials. Their
+questions put material in front of the learner (a log, a schema, a passage, a data table, a
+casualty, a plan) and ask for a judgement. They have about 10 to 12 order and sort questions each,
+quote real sources where the subject has them, and build wrong options from real mistakes.
 
-**30 courses had a targeted pass**: maths, the sciences, engineering, CS Basics, Systems
-Programming, Python, SQL, TypeScript, Rust, and three writing courses. Their teaching was
-judged sound and their answers marked correctly. Multiple choice no longer gives the answer away,
-every wrong option has feedback and every question has two hints. They have no order or sort
-questions (except the writing courses), and in most of them 25 to 88% of prompts are bare. In maths,
-physics, chemistry and engineering that is mostly fine, because working out the number is the
-skill. Biology, Python, TypeScript and Systems Programming practise easier things than their
-subjects ask: arithmetic in Biology, plain sums and short traces in Python.
+**25 courses had a targeted pass and then passed the blind review**: maths, physics, chemistry,
+astronomy, engineering, CS Basics, Python, SQL, TypeScript, Rust, Systems Programming and English.
+In the review, a reviewer judged 24 random questions per course without knowing which courses had
+been rewritten, with four fully rewritten courses mixed in as controls. These 25 had 0 to 3 weak
+questions in 24, the same as the controls (0 to 2). Their questions are plainer: mostly working out
+a number or choosing between ideas, with no order or sort questions, which suits subjects where the
+calculation is the skill. The weak questions the review named were rewritten one by one.
 
 **2 courses were written new on 14 November** (How the Body Works and The Roman Republic) from
 fetched source packs, with a check that no run of eight words is copied from the sources.

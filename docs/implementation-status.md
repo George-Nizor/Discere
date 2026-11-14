@@ -13,6 +13,17 @@ Older release notes name plans and briefs (`docs/expansion-plan-2026-11.md`,
 `docs/writing-calibration/...`) that were deleted on 14 November 2026 once their work had
 shipped. They are in the git history.
 
+Release 1.20.0 tests whether the courses that had only the targeted pass are good enough, and
+rewrites the ones that are not. A reviewer judged 24 random questions from each of the 30 courses,
+with four fully rewritten courses mixed in blind as controls. 25 courses had 0 to 3 weak questions
+in 24, as the controls did (0 to 2); the 25 weak questions named were rewritten one by one. Five
+courses had 5 to 7 and had the full question rewrite: Earth and Environmental Science (real NOAA,
+NASA, USGS and IPCC data to read), Biology (experiment design and data tables in place of
+arithmetic), Materials and Manufacturing (diagnosis and selection in place of naming terms), and
+Creative and Game Writing and Writing Longer Pieces (choosing a revision in place of word-count
+sums). The Roman Republic is filed under History. `docs/new-subjects.md` proposes the next courses,
+and `docs/authoring/open-sources.md` lists the open sources to write them from.
+
 Release 1.19.1 puts How the Body Works under Science and The Roman Republic under History,
 language and writing on the Courses page (both had shown under More courses, with no subject),
 and drops the slogan under the Courses heading. Behind it, the repository was cleaned up: the
