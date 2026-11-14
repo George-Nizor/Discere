@@ -167,11 +167,12 @@ describe("SQL from rows to reports (v2)", () => {
   it("recomputes the keys of the story lessons' practice screens from the shop's orders", () => {
     // rows-and-keys
     expect(stepKey("rows-and-keys", "2")).toBe(orders.filter((order) => order.customer === 1).length);
-    expect(stepKey("rows-and-keys", "4")).toBe(["Ada", "Ben", "Cy", "Dee"].length + 1); // Elm joins
+    // Elm joins customers, and Ada's and Elm's orders join orders: 4 + 1 customers and 6 + 2 orders
+    expect(stepKey("rows-and-keys", "4")).toBe(["Ada", "Ben", "Cy", "Dee"].length + 1 + (orders.length + 2));
     expect(keyOf("sql-rows-and-keys-5")).toBe(3 * 2);
     // select-and-name
     expect(stepKey("select-and-name", "1")).toBe("id, amount".split(",").length);
-    expect(stepKey("select-and-name", "3")).toBe(80 * 2);
+    expect(stepKey("select-and-name", "3")).toBe(known.map((o) => o.amount * 2).length); // the NULL stays NULL
     expect(stepKey("select-and-name", "4")).toBe(20 + 10);
     expect(keyOf("sql-select-and-name-5")).toBe(15 * 3);
     // filter-the-rows

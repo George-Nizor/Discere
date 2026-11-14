@@ -2264,7 +2264,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Had x been a String, the program would not have compiled. Whether a line moves or copies depends on the type alone."
+              "text": "Had `x` been a `String`, the line `let y = x;` would have moved it and the program would not have compiled. Whether a line moves or copies depends on the type alone."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2274,10 +2274,10 @@
           "diagram": {
             "type": "rust_program",
             "runtime": "Rust 1.93.1",
-            "code": "fn main() {\n    let x = 7;\n    let y = x;\n    println!(\"{}\", x * y);\n}",
+            "code": "fn main() {\n    let mut x = 7;\n    let y = x;\n    x = x + 1;\n    println!(\"{}\", x * y);\n}",
             "outcome": {
               "kind": "output",
-              "stdout": "49"
+              "stdout": "56"
             }
           }
         },
@@ -10233,17 +10233,17 @@
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "i32 values are copied, so x is still usable after the second line.",
-        "Multiply x by y.",
-        "Both hold 7."
+        "An `i32` is `Copy`, so `let y = x;` gives `y` a value of its own.",
+        "After the copy, changing `x` does not change `y`.",
+        "When the last line runs, `x` holds 8 and `y` holds 7."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 49,
+        "value": 56,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "`x` is 7, `y` is a copy of it, and `x * y` = 7 * 7 = 49."
+        "workedAnswer": "`y` is a copy of 7, so it stays 7 when `x` becomes 8, and `x * y` = 8 * 7 = 56."
       },
       "sourceIds": [
         "book-ownership",
@@ -10251,20 +10251,28 @@
         "rbe-scope-raii",
         "error-index"
       ],
-      "onCorrect": "49. Neither name was moved, because copying an i32 leaves the original intact.",
+      "onCorrect": "56. `let y = x;` copied the 7, so `y` kept it when `x` became 8. Copying an `i32` leaves both names usable and independent.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              7
+              64
             ]
           },
-          "feedback": "That is the value of one name. The program multiplies x by y."
+          "feedback": "That treats `y` as following `x`. For an `i32`, `let y = x;` copies the value, so `y` stays 7 when `x` changes."
         },
         {
           "match": {
             "numeric": [
-              14
+              49
+            ]
+          },
+          "feedback": "That uses the old value of `x`. The line `x = x + 1;` runs before the print, so `x` holds 8 by then."
+        },
+        {
+          "match": {
+            "numeric": [
+              15
             ]
           },
           "feedback": "That adds the two values, but the program multiplies them."

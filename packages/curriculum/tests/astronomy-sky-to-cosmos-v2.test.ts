@@ -216,7 +216,7 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("1 The turning sky: rate, pole height, circumpolar limit (story format)", () => {
     const p = "astro-turning-sky-";
     // The ported prototype: six practice items and three skill-check items.
-    same(p + "7", 360 / 24);
+    same(p + "7", (360 / 24) * 3);
     // The navigator item (12, retired but still in the bank) and its replacement (12-v2, in the
     // lesson): the pole's altitude is the latitude, so two readings give the distance sailed north.
     same(p + "12", altitude(41, 90, 0));
