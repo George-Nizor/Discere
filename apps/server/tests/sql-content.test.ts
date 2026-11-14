@@ -52,12 +52,14 @@ const unionIds = [...new Set([...paid, ...large].map((order) => order.id))].sort
 const numericChecks: Record<string, Record<number, number>> = {
   "rows-and-keys": {
     2: orders.filter((order) => order.customer === 1).length,
-    4: customers.length + 1,
+    // Elm signs up, and Ada's and Elm's orders are recorded: 4 + 1 customers and 6 + 2 orders.
+    4: customers.length + 1 + (orders.length + 2),
     5: 3 * 2,
   },
   "select-and-name": {
     1: ["id", "amount"].length,
-    3: orders.find((order) => order.id === 101)!.amount! * 2,
+    // amount * 2 shows a number for every order whose amount is known, and NULL for the rest.
+    3: orders.filter((order) => order.amount !== null).length,
     4: orders.find((order) => order.id === 102)!.amount! + 10,
     5: 15 * 3,
   },

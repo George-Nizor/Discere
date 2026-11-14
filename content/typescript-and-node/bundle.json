@@ -5368,7 +5368,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Starting them together would reduce this to the longest task alone."
+              "text": "Starting them together would reduce this to 50 ms, the longest task alone."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -14231,37 +14231,37 @@
         "unhandled-rejection",
         "abort"
       ],
-      "prompt": "Four independent tasks each take 40 ms. They are awaited one after another in a for loop.\nIgnoring overhead, how many milliseconds until all four have finished?",
+      "prompt": "`const run = (ms) => new Promise(r => setTimeout(r, ms));`\n`for (const ms of [40, 30, 50, 20]) { await run(ms); }`\nIgnoring overhead, how many milliseconds until the loop has finished?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Does the second task start before the first ends?",
-        "In a loop, each await finishes before the next task begins.",
+        "Each `await` pauses the loop until its task has finished.",
+        "So `run` is called for the next number only after the previous task is done.",
         "Add the four durations."
       ],
       "sourceIds": [
         "mdn-promise",
         "node-api"
       ],
-      "onCorrect": "Sequential awaits add up, so the total is the sum of the durations.",
+      "onCorrect": "Each `await` finishes before the loop calls `run` again, so the delays add up: 40 + 30 + 50 + 20 = 140 ms.",
       "skill": "time-the-awaits",
       "calculator": "off",
       "answerAuthority": {
         "kind": "numeric",
-        "value": 160,
+        "value": 140,
         "unit": "",
         "absoluteTolerance": 1e-9,
         "relativeTolerance": 0,
-        "workedAnswer": "Each task starts when the one before it has finished, so the times add: 40 + 40 + 40 + 40 = 160 ms."
+        "workedAnswer": "Each `await` finishes before the loop calls `run` again, so the times add: 40 + 30 + 50 + 20 = 140 ms."
       },
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              40
+              50
             ]
           },
-          "feedback": "That is the time for one task. In a loop the next one starts only after the previous one."
+          "feedback": "That is the longest task, which is the total when all four are started together. In this loop each `run` call starts only after the previous `await` has finished."
         },
         {
           "match": {
@@ -14269,7 +14269,7 @@
               120
             ]
           },
-          "feedback": "All four tasks have to finish, so there are four delays to add."
+          "feedback": "All four tasks have to finish, so all four delays are added, including the last 20 ms."
         }
       ]
     },

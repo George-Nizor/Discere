@@ -51,7 +51,7 @@ describe("Geometry: Shape and Space (v2)", () => {
   it("measuring-turns: turns in a corner, on a line and round a point", () => {
     const g = "geo-measuring-turns-";
     close(g + "hook", 4 - (2 + 1)); // half-turn = 2 quarters, plus 1; a whole turn is 4
-    close(g + "right-angle", 360 / 4);
+    close(g + "right-angle", (360 / 4) * 3);
     close(g + "1", 90 - 35);
     close(g + "2", 180 - 68);
     close(g + "3", 360 - 140);

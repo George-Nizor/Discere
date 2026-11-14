@@ -48,6 +48,7 @@ end checks, hints, feedback and cards.
 | 10 to 11 Nov | 1.13.0 | Questions and sources | Answers marked as their prompts ask; every source address checked; 18 courses cite the section behind each lesson; writing tasks in the five writing courses; code exercises in Python, SQL and the first five TypeScript lessons |
 | 11 to 14 Nov | 1.13.0 to 1.17.0 | Questions, 36 courses | Full question rewrite: material in front of the learner, judgement questions, order and sort, quoted sources, misconception distractors, option lengths |
 | 14 Nov | 1.19.0 | Questions, the other 30 courses | Targeted pass: option lengths, feedback on every wrong option, two hints per question; a fuller pass with order and sort questions on the three writing courses |
+| 14 Nov | 1.20.0 | Questions, 30 courses reviewed | Blind review of 24 random questions per targeted-pass course, with four fully rewritten courses as controls. 25 courses matched the controls (0 to 3 weak questions in 24); their 25 named weak questions were rewritten one by one. The 5 below the bar (5 to 7 weak in 24) had the full question rewrite: Earth Science, Biology, Creative and Game Writing, Writing Longer Pieces, Materials |
 
 So the twenty October courses have had their lessons written from scratch three times
 (6 October, 16 October and 1.3.0), and every course has been through about ten whole-library
@@ -74,14 +75,15 @@ first-draft generators were removed, and the ledger and library report were adde
 
 ## Where each course stands
 
-- **36 courses had the full question rewrite** (35 listed, plus Drawing). Their questions put
-  material in front of the learner, use order and sort, quote sources where the subject has them,
-  and have misconception distractors with feedback.
-- **30 courses had the targeted pass.** Their teaching and numeric questions were judged sound;
-  multiple choice no longer gives the answer away by length, every wrong option has feedback and
-  every question has two hints. They have no order or sort questions (except the three writing
-  courses), and many prompts are bare: maths, physics and chemistry by nature, Biology, Python,
-  TypeScript and Systems Programming less defensibly.
+- **41 courses had the full question rewrite** (40 listed, plus Drawing): 36 between 11 and 14
+  November, and 5 more on 14 November after the blind review. Their questions put material in
+  front of the learner, use order and sort, quote sources where the subject has them, and have
+  misconception distractors with feedback.
+- **25 courses had the targeted pass and then passed the blind review**: maths, physics,
+  chemistry, astronomy, engineering, CS Basics, the programming languages and English. Their weak
+  questions came out at the same rate as in fully rewritten courses (0 to 3 in 24), so they were
+  not rewritten; the weak questions the review named were fixed one by one. Many of their prompts
+  are bare numbers, which is what practice looks like in those subjects.
 - **2 new courses** were written to the current standard from fetched sources.
 
 `docs/library.md` has the numbers per course. `docs/platform-overview.md` gives the assessment

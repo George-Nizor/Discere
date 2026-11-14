@@ -144,7 +144,10 @@ describe("questions in The Web: HTML, CSS and JavaScript", () => {
     };
     expect(ratio("#777777").toFixed(2)).toBe("4.48");
     expect(ratio("#707070").toFixed(2)).toBe("4.95");
-    expect(get("accessible-and-fast-predict-contrast").prompt).toContain("4.48:1");
+    expect(ratio("#888888").toFixed(2)).toBe("3.54");
+    const quoted = get("accessible-and-fast-predict-contrast").choices!.map((c) => c.label).join("|");
+    expect(quoted).toContain("4.48:1");
+    expect(quoted).toContain("3.54:1");
     expect(get("accessible-and-fast-compute-ratio").prompt).toContain("4.95:1");
   });
 

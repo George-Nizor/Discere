@@ -29,7 +29,6 @@ const numericKey = (id: string): number => {
 
 const complement = (strand: string) =>
   [...strand].map((base) => ({ A: "T", T: "A", C: "G", G: "C" })[base]).join("");
-const differences = (a: string, b: string) => [...a].filter((base, i) => base !== b[i]).length;
 const percent = (part: number, whole: number) => (part / whole) * 100;
 
 type Blocks = ReadonlyArray<{ kind: string; text?: string }> | undefined;
@@ -88,86 +87,28 @@ const roomsAfter = (left: number, right: number, minutes: number) => {
   return rows;
 };
 
+// The numeric questions the 14 November 2026 rewrite kept, each recomputed from its arithmetic.
+// The rewrite itself is checked in biology-questions.test.ts.
 const expected: Record<string, number> = {
-  // Inside a cell has no numeric items.
-  "diffusion-and-membranes-hook": (20 + 4) / 2,
   "diffusion-and-membranes-2": (10 + 6) / 2,
-  // Items 3 and 7 are choices now; they are recomputed in "recomputes the converted items" below.
-  "diffusion-and-membranes-4": 8 + 8,
-  // 4-v2: 9 on the left and 5 on the right, 14 in all; with 8 on the left the right holds 14 − 8.
-  "diffusion-and-membranes-4-v2": 9 + 5 - 8,
-  "diffusion-and-membranes-6": 14 - (14 + 2) / 2,
-  "water-across-a-membrane-hook": 6 / 4,
   "water-across-a-membrane-3": 12 / 2,
-  "water-across-a-membrane-dilute": 20 / 10,
-  "water-across-a-membrane-5": 8 / 2 / (8 / 1),
+  "water-across-a-membrane-hook": 6 / 4,
   "water-across-a-membrane-8": 20 / 2,
-  "enzymes-and-evidence-2": Math.max(2, 8, 12, 3),
-  "enzymes-and-evidence-4": 27 - 9,
-  "enzymes-and-evidence-7": (9 - 3) * 5,
-  "light-to-sugar-photo-check": 6,
-  "light-to-sugar-4": 8 - 8,
-  "light-to-sugar-6": 3 * 6,
-  "light-to-sugar-8": 4 * 6,
+  "light-to-sugar-2": 5 * 6,
   "fuel-to-cell-work-2": 2 * 6,
-  "fuel-to-cell-work-4": 20 - 11,
-  "fuel-to-cell-work-blank": 9 - 2,
-  "fuel-to-cell-work-8": 5 * 6,
-  "copying-dna-3": 2,
-  // 3-v2: one molecule is copied to two, and each of those two is copied again.
-  "copying-dna-3-v2": [1]
-    .flatMap((molecule) => [molecule, molecule])
-    .flatMap((molecule) => [molecule, molecule]).length,
-  // Item 4 is a choice now: recomputed below.
-  "copying-dna-6": 6 * 2,
-  "copying-dna-8": 40,
-  // 8-v2: the new strand pairs G with C, so its G count is the template's C count.
-  "copying-dna-8-v2": [
-    ...complement("A".repeat(10) + "T".repeat(6) + "C".repeat(8) + "G".repeat(12)),
-  ].filter((base) => base === "G").length,
-  "mitosis-and-growth-2": 6 * 2,
-  // Item 3 is a choice now: recomputed below.
-  "mitosis-and-growth-4": 2 ** 3,
-  "mitosis-and-growth-blank": (8 / 2) * 2 + 8 / 2,
-  "mitosis-and-growth-7": 10 / 2,
   "mitosis-and-growth-8": 2 ** 4,
-  "meiosis-and-gametes-1": 3 * 2,
-  "meiosis-and-gametes-3": 4 / 2,
   // 6-v2: each of 4 homologous pairs can go either way into a gamete, so 2 × 2 × 2 × 2 combinations.
   "meiosis-and-gametes-6-v2": [1, 2, 3, 4].reduce((combinations) => combinations * 2, 1),
-  "meiosis-and-gametes-7": 23 * 2,
-  "meiosis-and-gametes-9": 12 / 2,
   "predicting-inheritance-2": percent(1, 4),
-  "predicting-inheritance-5": percent(2, 4),
   "predicting-inheritance-7": percent(3, 4),
-  "mutation-and-variation-2": differences("AATG", "AACG"),
-  "mutation-and-variation-7": 600,
-  "mutation-and-variation-9": differences("ACGTAC", "TCGAAG"),
   "natural-selection-1": percent(10, 10 + 30),
   "natural-selection-3": percent(30, 50) - percent(15, 50),
-  "natural-selection-env-b": percent(8, 40),
-  "natural-selection-env-b-v2": percent(6, 40),
-  "natural-selection-6": percent(18, 18 + 42),
-  "reading-food-webs-3": 2,
-  "reading-food-webs-6": 3 + 1,
-  "energy-between-levels-1": 1000 * 0.1,
   "energy-between-levels-2": 2000 * 0.1 * 0.1,
-  "energy-between-levels-3": 5000 * 0.2,
   "energy-between-levels-4": 300 / 0.1,
   // 5-v2: 1200 kJ of the 8000 kJ reaches the herbivores, as a percentage.
   "energy-between-levels-5-v2": percent(1200, 8000),
-  "energy-between-levels-6": 8000 * 0.1 ** 3,
-  "energy-between-levels-7": 50 / 0.1,
-  "energy-between-levels-8": 6000 * 0.1 * 0.1,
   "population-limits-hook": [0, 1, 2, 3, 4, 5, 6].find((day) => 2 ** day > 20)!,
-  "population-limits-3": 12 - 12,
   "population-limits-5": 70 + 16 - 9,
-  "population-limits-7": 120 + 30 - 45,
-  "population-limits-8": 6 * 2 ** 4,
-  "ecological-evidence-hook": 19 - 4 - (22 - 12),
-  "ecological-evidence-5": 9 - 6,
-  "ecological-evidence-7": (7 + 9 + 11) / 3,
-  "ecological-evidence-mean": (3 + 6 + 12) / 3,
 };
 
 const v2Lessons = bundle.lessons.filter((lesson) => lesson.intro);
@@ -235,12 +176,6 @@ describe("Biology: from cells to ecosystems (v2)", () => {
     barrier("diffusion-and-membranes-7", 9, 3, "the dye cannot cross");
     expect(choice("diffusion-and-membranes-3").marked.id).toBe("b");
     expect(choice("diffusion-and-membranes-7").marked.id).toBe("a");
-    // 4-v2: the slips are the left value, the original right value and the whole system.
-    expect(
-      byId
-        .get("bio-diffusion-and-membranes-4-v2")!
-        .misconceptions!.flatMap((m) => m.match.numeric ?? []),
-    ).toEqual([8, 5, 9 + 5]);
     // Copying: 4 chromosomes become 4 chromosomes of 2 chromatids each, so 8 DNA molecules.
     const chromosomes = 4;
     const chromatidsEach = 2;
@@ -259,10 +194,6 @@ describe("Biology: from cells to ecosystems (v2)", () => {
       `A complete set of ${chromosomes} chromosomes`,
       `A set of ${chromosomes * chromatidsEach} chromosomes, one for each chromatid`,
     ]);
-    // 8-v2's slips are the template's own counts of G, A and T.
-    expect(
-      byId.get("bio-copying-dna-8-v2")!.misconceptions!.flatMap((m) => m.match.numeric ?? []),
-    ).toEqual([12, 10, 6]);
     // The optimum is the temperature with the highest rate among those offered.
     const rates: Record<number, number> = { 20: 4, 30: 10, 45: 7, 60: 2 };
     const fastest = Object.entries(rates).sort(([, a], [, b]) => b - a)[0]![0];
@@ -276,11 +207,6 @@ describe("Biology: from cells to ecosystems (v2)", () => {
         .get("bio-energy-between-levels-5-v2")!
         .misconceptions!.flatMap((m) => m.match.numeric ?? []),
     ).toEqual([1200 / 8000, Math.round((8000 / 1200) * 10) / 10, 100 - percent(1200, 8000)]);
-    expect(
-      byId
-        .get("bio-natural-selection-env-b-v2")!
-        .misconceptions!.flatMap((m) => m.match.numeric ?? []),
-    ).toEqual([6, 100 - percent(6, 40), percent(20, 40)]);
     // Water goes to the side with the more concentrated solute: left 6 in volume 2 (3 a unit)
     // against right 8 in volume 4 (2 a unit).
     const sides = { left: 6 / 2, right: 8 / 4 };
@@ -332,12 +258,10 @@ describe("Biology: from cells to ecosystems (v2)", () => {
       ];
     };
     for (const [lessonId, ids] of Object.entries({
-      "diffusion-and-membranes": ["diffusion-and-membranes-4-v2"],
       "water-across-a-membrane": ["water-across-a-membrane-6-v2", "water-across-a-membrane-7-v2"],
-      "copying-dna": ["copying-dna-3-v2", "copying-dna-8-v2"],
       "meiosis-and-gametes": ["meiosis-and-gametes-6-v2"],
       "mutation-and-variation": ["mutation-and-variation-4-v2", "mutation-and-variation-7-v2"],
-      "natural-selection": ["natural-selection-4-v2", "natural-selection-env-b-v2"],
+      "natural-selection": ["natural-selection-4-v2"],
       "energy-between-levels": ["energy-between-levels-5-v2"],
       "population-limits": ["population-limits-4-v2", "population-limits-6-v2"],
       "ecological-evidence": ["ecological-evidence-4-v2"],

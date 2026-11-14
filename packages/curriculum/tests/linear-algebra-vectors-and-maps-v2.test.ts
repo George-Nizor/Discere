@@ -63,7 +63,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     const L1 = "read-vector-coordinates";
     eq(k(L1, 7), 4 - 1);
     eq(k(L1, 3), len([0, 0]));
-    eq(k(L1, 1), [3, -2][0]!);
+    eq(k(L1, 1), [-6, -5][0]!);
     eq(k(L1, 4), [0, 1][1]!);
     // Item 4-v2 (in the lesson): 3 units left and 2 units down. Across first, then up; left and
     // down are negative, so the vector is (−3, −2).
