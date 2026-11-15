@@ -619,6 +619,24 @@ for a stray semicolon; a Python project task with pandas and an SQL project task
 sandbox helper's own tests (`tools/windows-sandbox/test.sh`) cover blocked network, blocked user
 folders, and the memory, CPU, wall-clock and process limits.
 
+## Read aloud's voice
+
+Read aloud speaks in George, a British voice from Kokoro-82M, run in the engine on onnxruntime's
+CPU backend (`apps/server/src/speech/`). The model, 326 MB at a pinned Hugging Face revision and
+checked by SHA-256, is downloaded into `<data>/voice/` the first time Read aloud is pressed; until
+it is ready, or whenever the engine cannot speak, the browser's voice reads as before.
+
+- `POST /api/speech/sentences` splits a screen into sentences after turning inline maths, glossary
+  links and symbols into words. The interface then asks `POST /api/speech` for each sentence and
+  plays it while the next is made.
+- Each sentence is kept as a WAV in `<data>/voice/cache/`, keyed by its text and the voice, so a
+  sentence heard before plays at once and an edited lesson re-renders only what changed. The
+  cache stays under 1 GB by dropping the clips played least recently.
+- Measured in WSL on the CPU: the first sentence after a start takes about 2 seconds, including
+  loading the model, and later ones about 1 second for 7 seconds of speech.
+- The Windows bundle carries onnxruntime's Windows x64 binaries (about 43 MB); the release smoke
+  test loads them.
+
 ## Home and You release
 
 George's 2 October homepage request is implemented. Home, Courses and You are the three primary

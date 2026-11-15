@@ -40,6 +40,11 @@ says what is wrong now and how it was measured, so nobody has to redo a pass to 
   and Psychology's inline check questions are bare recall; English's 36 have no hints and 18 have
   no feedback on wrong options.
 - **Cybersecurity** cites NIST SP 800-63B and SP 800-61 Revision 2, both superseded.
+- **Read aloud does not always pause where a reader would.** George, the voice added in November,
+  pauses only at punctuation, and lesson sentences written for the eye run long: the first
+  correlation screen in Psychology reads its 33-word last sentence in one breath. Shorter
+  sentences or a comma at the natural break would fix it, and helps silent readers too. Listen to
+  a few screens per course before rewriting anything; the voice is good enough to ship as it is.
 - **Licences.** OpenStax books are CC BY-NC-SA, which suits private use; NHS and WHO pages are
   paraphrased, never quoted.
 
@@ -63,6 +68,10 @@ says what is wrong now and how it was measured, so nobody has to redo a pass to 
 - The release zip ships `content/*/.authoring/` and `review/history/`.
 - 40 stylesheets with tokens redefined in five layers.
 - Nothing has been tried with a screen reader.
+- Read aloud downloads its 326 MB voice silently on the first press and reads with the browser's
+  voice until it is ready; nothing in Settings shows the download or offers to remove it. Inline
+  maths is spoken by rules in `apps/server/src/speech/text.ts` that cover what the courses use
+  now; a new notation needs a rule there.
 
 ## Ideas, not started
 
