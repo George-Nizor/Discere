@@ -109,6 +109,11 @@ jobs:
             $runtimes = Invoke-RestMethod http://127.0.0.1:49399/api/code-runtimes
             if (($runtimes.runtimes | Where-Object { $_.state -ne 'missing' }).Count -gt 0) { throw 'The code runtimes did not report as installable.' }
             if (-not (Test-Path (Join-Path $data 'discere.sqlite'))) { throw 'The database was not created in the data folder.' }
+            $voice = Invoke-RestMethod http://127.0.0.1:49399/api/speech/status
+            if ($voice.state -ne 'missing') { throw "Read aloud's voice did not report as downloadable." }
+            # The voice model is fetched on first use, but its runtime ships here, so it must load.
+            & 'dist/release/stage/runtime/node.exe' -e "require('./dist/release/stage/node_modules/onnxruntime-node'); console.log('onnxruntime loads')"
+            if ($LASTEXITCODE -ne 0) { throw 'onnxruntime-node did not load from the bundle.' }
             Write-Output "Discere $($health.courses) courses, health ok"
           } finally {
             Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
