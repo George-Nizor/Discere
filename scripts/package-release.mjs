@@ -180,13 +180,20 @@ for (const part of ["package.json", "LICENSE", "lib", "prebuilds/win32-x64.node"
 // Read aloud's voice runs on onnxruntime, another Node-API addon. Only its Windows x64 binaries
 // ship (onnxruntime.dll, the binding, and the DirectML libraries the binding links against); the
 // voice model itself is downloaded on first use. onnxruntime-common is its JavaScript half.
-const packageRoot = (name, from) =>
-  path.dirname(
-    spawnSync(process.execPath, ["-p", `require.resolve('${name}/package.json')`], {
-      cwd: from,
-      encoding: "utf8",
-    }).stdout.trim(),
-  );
+// Resolved through the package's main file, because onnxruntime-common does not export its
+// package.json, and walked up to the folder named after the package.
+const packageRoot = (name, from) => {
+  const entry = spawnSync(process.execPath, ["-p", `require.resolve('${name}')`], {
+    cwd: from,
+    encoding: "utf8",
+  }).stdout.trim();
+  let folder = path.dirname(entry);
+  while (entry && path.basename(folder) !== name && path.dirname(folder) !== folder)
+    folder = path.dirname(folder);
+  if (!entry || path.basename(folder) !== name)
+    throw new Error(`Could not find the ${name} package from ${from}.`);
+  return folder;
+};
 const onnx = packageRoot("onnxruntime-node", path.join(root, "apps/server"));
 for (const part of ["package.json", "README.md", "dist", "bin/napi-v6/win32/x64"])
   cpSync(path.join(onnx, part), path.join(stage, "node_modules/onnxruntime-node", part), {
