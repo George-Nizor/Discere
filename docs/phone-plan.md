@@ -15,6 +15,8 @@ from the PC matters.
 
 ## Where this stands (16 November 2026)
 
+How the homelab copy is run and updated is now in `docs/homelab.md`; this section is the history.
+
 On the `feature/homelab-phone` branch, not merged, and running on the homelab:
 
 - Discere runs as a systemd user service on port 8790, put there by `scripts/deploy-homelab.sh`,
