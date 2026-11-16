@@ -41,8 +41,10 @@ sudo -u "$DEPLOYER" XDG_RUNTIME_DIR="/run/user/$DEPLOYER_UID" \
 # 4. Copy the data and the settings across. The old copies are left where they were.
 if [ -d "$OLD/data" ] && [ -z "$(ls -A "$ROOT/data")" ]; then
   cp -a "$OLD/data/." "$ROOT/data/"
-  chown -R discere:discere "$ROOT/data"
 fi
+# cp -a carries the old folder's permissions over, which let any local user read the database.
+chown -R discere:discere "$ROOT/data"
+chmod -R u+rwX,g-w,o-rwx "$ROOT/data"
 if [ ! -f "$ROOT/discere.env" ]; then
   if [ -f "$OLD/discere.env" ]; then cp "$OLD/discere.env" "$ROOT/discere.env"
   else cp "$HERE/discere.env.example" "$ROOT/discere.env"; fi
