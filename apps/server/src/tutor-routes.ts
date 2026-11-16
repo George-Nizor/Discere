@@ -163,6 +163,30 @@ export async function registerTutorRoutes(
   app.get("/api/tutor/status", async (): Promise<TutorStatus> => buildTutorStatus(runtime));
 
   /**
+   * Loads a local tutor model ahead of the first question. Answers at once; the load carries on
+   * in the background, and asking again while it loads does nothing more. Only a hosted
+   * openai-compatible endpoint configured with `DISCERE_AI_WARM=1` does anything here, because
+   * warming a paid API would spend money on nothing.
+   */
+  let warming: Promise<void> | undefined;
+  let warmedAt = 0;
+  app.post("/api/tutor/warm", async () => {
+    const provider = runtime.provider;
+    const enabled = process.env["DISCERE_AI_WARM"]?.trim() === "1";
+    if (!enabled || !provider.warm) return { warming: false };
+    // A model stays loaded for several minutes after use, so a request within five minutes of the
+    // last warm-up is answered without another call.
+    if (!warming && Date.now() - warmedAt > 5 * 60_000) {
+      warmedAt = Date.now();
+      warming = provider.warm().finally(() => {
+        warming = undefined;
+        warmedAt = Date.now();
+      });
+    }
+    return { warming: true };
+  });
+
+  /**
    * Deliberately a live generation: the owner asked for proof the OpenAI link works, and only
    * a real round trip is proof. It runs the same provider, schema and prompt builder as a
    * tutor question, and stops before the acceptance gate — a probe reports whether the link
@@ -544,11 +568,7 @@ export async function registerTutorRoutes(
       );
     const draft = store.reviseEssay(essayId);
     if (!draft)
-      throw new HttpError(
-        409,
-        "Submit your writing before revising it.",
-        "ESSAY_NOT_SUBMITTED",
-      );
+      throw new HttpError(409, "Submit your writing before revising it.", "ESSAY_NOT_SUBMITTED");
     const earlier = store.listEssayVersions(essayId);
     return {
       ...draft,
@@ -563,20 +583,23 @@ export async function registerTutorRoutes(
     };
   });
 
-  app.get("/api/essays/:essayId/versions/:version", async (request): Promise<EssayVersionResponse> => {
-    const { essayId, version } = EssayVersionParamsSchema.parse(request.params);
-    essayStage(essayId);
-    const found = store.listEssayVersions(essayId).find((entry) => entry.version === version);
-    if (!found)
-      throw new HttpError(404, "That version was not found.", "ESSAY_VERSION_NOT_FOUND");
-    return {
-      essayId,
-      version: found.version,
-      content: found.content,
-      wordCount: wordCount(found.content),
-      submittedAt: found.submittedAt,
-      assessment: found.assessment ? assessmentResponse(found.assessment, null, version) : null,
-    };
-  });
+  app.get(
+    "/api/essays/:essayId/versions/:version",
+    async (request): Promise<EssayVersionResponse> => {
+      const { essayId, version } = EssayVersionParamsSchema.parse(request.params);
+      essayStage(essayId);
+      const found = store.listEssayVersions(essayId).find((entry) => entry.version === version);
+      if (!found)
+        throw new HttpError(404, "That version was not found.", "ESSAY_VERSION_NOT_FOUND");
+      return {
+        essayId,
+        version: found.version,
+        content: found.content,
+        wordCount: wordCount(found.content),
+        submittedAt: found.submittedAt,
+        assessment: found.assessment ? assessmentResponse(found.assessment, null, version) : null,
+      };
+    },
+  );
 }
 import { genericTutorContext } from "./generic-tutor-context.js";

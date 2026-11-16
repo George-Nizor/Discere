@@ -64,11 +64,9 @@ export function chooseTier(input: RoutingInput): RoutingDecision {
   if (SMART_OPERATIONS.has(input.operation))
     return { tier: "smart", reason: `${input.operation} judges or writes material` };
   if (input.operation === "edit_style") return { tier: "fast", reason: "style repair" };
-  if (input.promptText.length > LONG_PROMPT_CHARS)
-    return { tier: "smart", reason: "long context" };
+  if (input.promptText.length > LONG_PROMPT_CHARS) return { tier: "smart", reason: "long context" };
   const question = input.question ?? learnerQuestion(input.promptText);
-  if (question.length > LONG_QUESTION_CHARS)
-    return { tier: "smart", reason: "long question" };
+  if (question.length > LONG_QUESTION_CHARS) return { tier: "smart", reason: "long question" };
   if (DEEP_QUESTION.test(question)) return { tier: "smart", reason: "asks for reasoning" };
   return { tier: "fast", reason: "short tutoring turn" };
 }

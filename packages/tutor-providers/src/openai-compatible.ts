@@ -78,6 +78,36 @@ export class OpenAICompatibleTutorProvider extends PipelineTutorProvider {
     this.label = `OpenAI-compatible API (${new URL(this.baseUrl).host})`;
   }
 
+  /**
+   * A one-token request, which makes a local server such as Ollama load the model. The homelab's
+   * models sit on a spinning disk and take minutes to load, longer than a tutor turn may wait, so
+   * the interface calls this when a lesson opens. Both tiers are warmed when they differ.
+   */
+  async warm(): Promise<void> {
+    const models = [...new Set([this.fastModel, this.smartModel])];
+    await Promise.all(
+      models.map((model) =>
+        this.fetchImpl(`${this.baseUrl}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(this.apiKey ? { authorization: `Bearer ${this.apiKey}` } : {}),
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "user", content: "ok" }],
+            max_tokens: 1,
+            ...(this.reasoningEffort ? { reasoning_effort: this.reasoningEffort } : {}),
+          }),
+          signal: AbortSignal.timeout(10 * 60_000),
+        }).then(
+          (response) => response.body?.cancel(),
+          () => undefined,
+        ),
+      ),
+    );
+  }
+
   protected modelFor(tier: ModelTier): string {
     return tier === "fast" ? this.fastModel : this.smartModel;
   }

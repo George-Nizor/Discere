@@ -44,7 +44,12 @@ interface ClaudeResult {
   structured_output?: unknown;
   session_id?: string;
   total_cost_usd?: number;
-  usage?: { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number };
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    cache_read_input_tokens?: number;
+    cache_creation_input_tokens?: number;
+  };
   modelUsage?: Record<string, unknown>;
 }
 
@@ -68,13 +73,19 @@ export class ClaudeTutorProvider extends PipelineTutorProvider {
   constructor(options: ClaudeProviderOptions = {}) {
     super();
     const env = process.env;
-    this.binary = options.binary ?? (env["DISCERE_CLAUDE_BIN"]?.trim() || resolveCliCommand("claude", env));
-    this.fastModel = options.fastModel ?? (env["DISCERE_CLAUDE_FAST_MODEL"]?.trim() || CLAUDE_DEFAULT_FAST_MODEL);
-    this.smartModel = options.smartModel ?? (env["DISCERE_CLAUDE_SMART_MODEL"]?.trim() || CLAUDE_DEFAULT_SMART_MODEL);
+    this.binary =
+      options.binary ?? (env["DISCERE_CLAUDE_BIN"]?.trim() || resolveCliCommand("claude", env));
+    this.fastModel =
+      options.fastModel ?? (env["DISCERE_CLAUDE_FAST_MODEL"]?.trim() || CLAUDE_DEFAULT_FAST_MODEL);
+    this.smartModel =
+      options.smartModel ??
+      (env["DISCERE_CLAUDE_SMART_MODEL"]?.trim() || CLAUDE_DEFAULT_SMART_MODEL);
     this.effort = options.effort ?? (env["DISCERE_CLAUDE_EFFORT"]?.trim() || "low");
     this.routing = options.routing ?? resolveRoutingMode(env["DISCERE_AI_ROUTING"]);
     this.scratchDirectory =
-      options.scratchDirectory ?? (env["DISCERE_CLAUDE_SCRATCH"]?.trim() || path.join(os.homedir(), ".local/share/discere/claude-scratch"));
+      options.scratchDirectory ??
+      (env["DISCERE_CLAUDE_SCRATCH"]?.trim() ||
+        path.join(os.homedir(), ".local/share/discere/claude-scratch"));
     this.defaultTimeoutMs = options.timeoutMs ?? 120_000;
     this.killGraceMs = options.killGraceMs ?? 5_000;
   }
@@ -93,7 +104,13 @@ export class ClaudeTutorProvider extends PipelineTutorProvider {
   }
 
   /** The command line for one generation. Exposed for tests; never includes learner text. */
-  buildArguments(input: { tier: ModelTier; schema: unknown; sessionId: string | undefined; persist: boolean; imageDirectory?: string }): string[] {
+  buildArguments(input: {
+    tier: ModelTier;
+    schema: unknown;
+    sessionId: string | undefined;
+    persist: boolean;
+    imageDirectory?: string;
+  }): string[] {
     this.assertSession(input.sessionId);
     const args = [
       "-p",
@@ -110,9 +127,11 @@ export class ClaudeTutorProvider extends PipelineTutorProvider {
     // Haiku has no effort control; the capable model runs at the configured (low) effort.
     if (input.tier === "smart" && this.effort && !/haiku/i.test(this.smartModel))
       args.push("--effort", this.effort);
-    if (input.imageDirectory) args.push("--tools", "Read", "--allowedTools", "Read", "--add-dir", input.imageDirectory);
+    if (input.imageDirectory)
+      args.push("--tools", "Read", "--allowedTools", "Read", "--add-dir", input.imageDirectory);
     else args.push("--tools", "");
-    if (input.schema !== undefined) args.push("--json-schema", JSON.stringify(withoutDialect(input.schema)));
+    if (input.schema !== undefined)
+      args.push("--json-schema", JSON.stringify(withoutDialect(input.schema)));
     if (input.sessionId) args.push("--resume", input.sessionId);
     else if (!input.persist) args.push("--no-session-persistence");
     return args;
@@ -120,7 +139,9 @@ export class ClaudeTutorProvider extends PipelineTutorProvider {
 
   protected async execute(input: DriverInput): Promise<DriverOutput> {
     mkdirSync(this.scratchDirectory, { recursive: true });
-    const runDirectory = input.images.length ? path.join(this.scratchDirectory, ".runs", randomUUID()) : undefined;
+    const runDirectory = input.images.length
+      ? path.join(this.scratchDirectory, ".runs", randomUUID())
+      : undefined;
     try {
       let prompt = input.prompt;
       if (runDirectory) {
@@ -150,8 +171,13 @@ export class ClaudeTutorProvider extends PipelineTutorProvider {
         signal: input.signal,
         // Claude Code thinks by default. A short tutoring turn on the fast model does not need
         // it: measured, thinking made a Haiku turn take 43 s and cost more than Sonnet at low effort.
-        env: { ...process.env, MAX_THINKING_TOKENS: input.tier === "fast" ? "0" : (process.env["MAX_THINKING_TOKENS"] ?? "") },
-        missingHint: "Install Claude Code (https://claude.com/claude-code) and sign in, or set DISCERE_CLAUDE_BIN.",
+        env: {
+          ...process.env,
+          MAX_THINKING_TOKENS:
+            input.tier === "fast" ? "0" : (process.env["MAX_THINKING_TOKENS"] ?? ""),
+        },
+        missingHint:
+          "Install Claude Code (https://claude.com/claude-code) and sign in, or set DISCERE_CLAUDE_BIN.",
       });
       return parseClaudeResult(stdout, diagnostics, this.modelFor(input.tier));
     } finally {
@@ -171,24 +197,37 @@ export function withoutDialect(schema: unknown): unknown {
 }
 
 /** Reads the CLI's `--output-format json` result object. */
-export function parseClaudeResult(stdout: string, diagnostics: string, requestedModel: string): DriverOutput {
+export function parseClaudeResult(
+  stdout: string,
+  diagnostics: string,
+  requestedModel: string,
+): DriverOutput {
   let result: ClaudeResult;
   try {
     const lines = stdout.trim().split("\n");
     result = JSON.parse(lines[lines.length - 1] ?? "") as ClaudeResult;
   } catch (error) {
-    throw new TutorProviderError("PROVIDER_OUTPUT_INVALID", "Claude Code did not return its JSON result.", {
-      provider: "claude",
-      diagnostics: (diagnostics || stdout).slice(0, 4_000),
-      cause: error,
-    });
+    throw new TutorProviderError(
+      "PROVIDER_OUTPUT_INVALID",
+      "Claude Code did not return its JSON result.",
+      {
+        provider: "claude",
+        diagnostics: (diagnostics || stdout).slice(0, 4_000),
+        cause: error,
+      },
+    );
   }
   if (result.is_error || (result.subtype && result.subtype !== "success")) {
-    const message = typeof result.result === "string" && result.result ? result.result : (result.subtype ?? "error");
+    const message =
+      typeof result.result === "string" && result.result
+        ? result.result
+        : (result.subtype ?? "error");
     const signedOut = /log ?in|auth|credential|api key/i.test(message);
     throw new TutorProviderError(
       signedOut ? "PROVIDER_UNAVAILABLE" : "PROVIDER_EXITED",
-      signedOut ? "Claude Code is not signed in. Run `claude` once and log in." : `Claude Code reported an error: ${message}`,
+      signedOut
+        ? "Claude Code is not signed in. Run `claude` once and log in."
+        : `Claude Code reported an error: ${message}`,
       { provider: "claude", diagnostics: message.slice(0, 4_000) },
     );
   }
@@ -197,10 +236,14 @@ export function parseClaudeResult(stdout: string, diagnostics: string, requested
       ? JSON.stringify(result.structured_output)
       : (result.result ?? "");
   if (!text.trim())
-    throw new TutorProviderError("PROVIDER_OUTPUT_MISSING", "Claude Code returned an empty answer.", {
-      provider: "claude",
-      diagnostics: diagnostics.slice(0, 4_000),
-    });
+    throw new TutorProviderError(
+      "PROVIDER_OUTPUT_MISSING",
+      "Claude Code returned an empty answer.",
+      {
+        provider: "claude",
+        diagnostics: diagnostics.slice(0, 4_000),
+      },
+    );
   const model = Object.keys(result.modelUsage ?? {})[0] ?? requestedModel;
   const usage = result.usage ?? {};
   return {
@@ -208,7 +251,10 @@ export function parseClaudeResult(stdout: string, diagnostics: string, requested
     ...(result.session_id ? { sessionId: result.session_id } : {}),
     model,
     ...(typeof result.total_cost_usd === "number" ? { costUsd: result.total_cost_usd } : {}),
-    inputTokens: (usage.input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0),
+    inputTokens:
+      (usage.input_tokens ?? 0) +
+      (usage.cache_read_input_tokens ?? 0) +
+      (usage.cache_creation_input_tokens ?? 0),
     outputTokens: usage.output_tokens ?? 0,
   };
 }

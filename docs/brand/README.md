@@ -10,6 +10,7 @@ Aligned on 6 October 2026, following Instrumenta `brand/ALIGNMENT.md`. George ap
 | Fonts (Commissioner, Fraunces, Spline Sans Mono) with OFL licences and `fonts.css` | `brand/fonts/` | `apps/web/src/styles/fonts/brand/` |
 | The Discere book icon (full, 24, 16, animated) | `brand/icons/svg/discere*.svg` | `apps/web/src/brand/` |
 | Discere palette (`accent #5E9EFD`, `secondary #ADD3FF`, `deep #234C88`, `ink #0C1626`) | `brand/tokens.json` | `--accent*` in `apps/web/src/styles/brilliant.css` |
+| The book icon at 256 and 512 px, for the phone app's home-screen icon (copied at Instrumenta e0856b2, 16 November 2026) | `brand/icons/png/discere-256.png`, `discere-512.png` | `apps/web/public/icons/` |
 
 Regenerate in Instrumenta (`uv run brand/scripts/build-brand.py`) and copy again; never edit the
 copied files.

@@ -3,10 +3,10 @@ import { useDocumentTitle } from "../lib/document-title.js";
 import type { CalculatorPolicy, LearnerStage, Source } from "@discere/contracts";
 import { useAmbientAccent } from "../fx/ambient-accent.js";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { errorCode, errorDetail, errorMessage } from "../api/client.js";
-import { saveJourneyProgress } from "../api/endpoints.js";
+import { saveJourneyProgress, warmTutor } from "../api/endpoints.js";
 import { queryKeys, useCourse, useJourney, useJourneyProgress } from "../api/queries.js";
 import { paths } from "../lib/paths.js";
 import { useExperience } from "../study/experience.js";
@@ -73,6 +73,11 @@ function LessonJourney({
   const { mode } = useTutoringMode();
   const { prepare } = useExperience();
   const journey = useJourney(courseId, lessonId);
+  // A local tutor model can take minutes to load from disk, so it starts loading as the lesson
+  // opens rather than when the first question is asked.
+  useEffect(() => {
+    warmTutor();
+  }, [lessonId]);
   const progress = useJourneyProgress(courseId, lessonId);
   const course = useCourse(courseId);
   useAmbientAccent(course.data?.course.accent);
@@ -413,35 +418,35 @@ function LessonJourney({
               </Notice>
             }
           >
-          <StageCanvas
-            // Each stage owns its own working state. Keying by stage id means moving between two
-            // stages of the same type starts the second one clean, rather than showing the first
-            // stage's answer, hints, and result.
-            key={`${current.stage.id}:${rewind}`}
-            courseId={courseId}
-            lessonId={lessonId}
-            questionLed={questionLed}
-            sources={journey.data.sources}
-            nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
-            onComplete={() => void complete(current, following?.stage.id ?? null)}
-            onSkip={() => void complete(current, following?.stage.id ?? null, "skipped_optional")}
-            onStepChange={(stepId, stepIndex) =>
-              saveStepPosition(current.stage.id, stepId, stepIndex)
-            }
-            savedInteractionState={
-              progress.data?.stages.find((entry) => entry.stageId === current.stage.id)
-                ?.interactionState
-            }
-            returnLink={
-              returnTo && returnTo.index !== current.index
-                ? {
-                    label: `Back to ${returnTo.stage.title}`,
-                    onSelect: () => goToStage(returnTo.stage.id),
-                  }
-                : null
-            }
-            stage={current.stage}
-          />
+            <StageCanvas
+              // Each stage owns its own working state. Keying by stage id means moving between two
+              // stages of the same type starts the second one clean, rather than showing the first
+              // stage's answer, hints, and result.
+              key={`${current.stage.id}:${rewind}`}
+              courseId={courseId}
+              lessonId={lessonId}
+              questionLed={questionLed}
+              sources={journey.data.sources}
+              nextLesson={upcoming ? { id: upcoming.id, title: upcoming.title } : null}
+              onComplete={() => void complete(current, following?.stage.id ?? null)}
+              onSkip={() => void complete(current, following?.stage.id ?? null, "skipped_optional")}
+              onStepChange={(stepId, stepIndex) =>
+                saveStepPosition(current.stage.id, stepId, stepIndex)
+              }
+              savedInteractionState={
+                progress.data?.stages.find((entry) => entry.stageId === current.stage.id)
+                  ?.interactionState
+              }
+              returnLink={
+                returnTo && returnTo.index !== current.index
+                  ? {
+                      label: `Back to ${returnTo.stage.title}`,
+                      onSelect: () => goToStage(returnTo.stage.id),
+                    }
+                  : null
+              }
+              stage={current.stage}
+            />
           </ErrorBoundary>
         </main>
         {focusedQuestion ? <PlayerFooterSurface /> : null}

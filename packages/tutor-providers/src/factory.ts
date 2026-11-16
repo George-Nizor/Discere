@@ -6,7 +6,10 @@ import { ClaudeTutorProvider, type ClaudeProviderOptions } from "./claude.js";
 import { CodexTutorProvider, type CodexProviderOptions } from "./codex.js";
 import { CompanionTutorProvider } from "./companion-provider.js";
 import { MockTutorProvider } from "./mock.js";
-import { OpenAICompatibleTutorProvider, type OpenAICompatibleOptions } from "./openai-compatible.js";
+import {
+  OpenAICompatibleTutorProvider,
+  type OpenAICompatibleOptions,
+} from "./openai-compatible.js";
 import type { TutorProvider } from "./types.js";
 
 /** Used when nothing is configured and no model can be detected. */
