@@ -56,7 +56,10 @@ describe("tutor panel", () => {
       await screen.findByText("Put the supplied voltage above the resistance."),
     ).toBeInTheDocument();
     expect(screen.getByText("Which two values belong in the division?")).toBeInTheDocument();
-    expect(calls.at(-1)?.body).toMatchObject({ mode: "coach", lessonId: "lesson" });
+    expect(calls.findLast((call) => call.key === "POST /api/tutor/ask")?.body).toMatchObject({
+      mode: "coach",
+      lessonId: "lesson",
+    });
   });
 
   it("asks to be shown, then steps through the example on its figure", async () => {
