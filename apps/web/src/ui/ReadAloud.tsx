@@ -49,6 +49,45 @@ export function setVoiceChoice(choice: VoiceChoice): void {
   }
 }
 
+const DEVICE_VOICE_KEY = "discere.deviceVoice";
+
+function storedDeviceVoice(): string | null {
+  try {
+    return window.localStorage.getItem(DEVICE_VOICE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The device's English voices, the better ones first. On Android, Google's speech engine offers
+ * several voices per accent, and the ones marked "network" are its higher-quality voices; the
+ * browser picks an ordinary one unless told otherwise, which is why the default sounds flat.
+ */
+export function deviceVoices(): SpeechSynthesisVoice[] {
+  if (!canSpeak()) return [];
+  const rank = (voice: SpeechSynthesisVoice) =>
+    (/network|natural|neural|online|enhanced|premium/i.test(`${voice.name} ${voice.voiceURI}`)
+      ? 0
+      : 2) + (voice.localService ? 1 : 0);
+  return window.speechSynthesis
+    .getVoices()
+    .filter((voice) => voice.lang.toLowerCase().startsWith("en"))
+    .sort(
+      (a, b) => rank(a) - rank(b) || a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name),
+    );
+}
+
+function applyDeviceVoice(utterance: SpeechSynthesisUtterance): void {
+  const wanted = storedDeviceVoice();
+  if (!wanted) return;
+  const voice = window.speechSynthesis.getVoices().find((item) => item.voiceURI === wanted);
+  if (voice) {
+    utterance.voice = voice;
+    utterance.lang = voice.lang;
+  }
+}
+
 let voiceStatus: Promise<SpeechStatus | null> | undefined;
 
 /** The engine's voice, asked once and asked again only after a download was started. */
@@ -149,6 +188,7 @@ export function useReadAloud(text: string): {
     current.handedOver = true;
     const utterance = new SpeechSynthesisUtterance(passage);
     utterance.rate = 0.95;
+    applyDeviceVoice(utterance);
     const finish = () => {
       if (reading.current === current) {
         reading.current = null;
@@ -292,6 +332,66 @@ export function ReadAloudVoiceSetting() {
           <option value="device">This device's voice</option>
         </select>
       </label>
+      {choice === "device" ? <DeviceVoicePicker /> : null}
     </section>
+  );
+}
+
+/** Lists the device's English voices, keeps the one chosen, and plays a sample of it. */
+function DeviceVoicePicker() {
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>(() => deviceVoices());
+  const [chosen, setChosen] = useState<string>(() => storedDeviceVoice() ?? "");
+  useEffect(() => {
+    // Chrome loads the voice list after the page, and says so with this event.
+    const update = () => setVoices(deviceVoices());
+    window.speechSynthesis.addEventListener("voiceschanged", update);
+    update();
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", update);
+  }, []);
+  function sample(): void {
+    const utterance = new SpeechSynthesisUtterance(
+      "Drawing well starts with confident lines. This is how I will read your lessons.",
+    );
+    utterance.rate = 0.95;
+    applyDeviceVoice(utterance);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+  return (
+    <>
+      <label className="practice-setting-row">
+        <span>
+          <strong>Device voice</strong>
+          <small>
+            On Android, voices marked network are Google's better ones and need a connection. More
+            can be added in Android's Text-to-speech settings.
+          </small>
+        </span>
+        <select
+          aria-label="Device voice"
+          value={chosen}
+          onChange={(event) => {
+            const next = event.currentTarget.value;
+            try {
+              if (next) window.localStorage.setItem(DEVICE_VOICE_KEY, next);
+              else window.localStorage.removeItem(DEVICE_VOICE_KEY);
+            } catch {
+              // Without storage the device's default voice reads.
+            }
+            setChosen(next);
+          }}
+        >
+          <option value="">The device's default</option>
+          {voices.map((voice) => (
+            <option key={voice.voiceURI} value={voice.voiceURI}>
+              {voice.name} ({voice.lang})
+            </option>
+          ))}
+        </select>
+      </label>
+      <button className="button button-secondary" onClick={sample} type="button">
+        Play a sample
+      </button>
+    </>
   );
 }

@@ -8,6 +8,7 @@ import { CopyButton } from "../ui/CopyButton.js";
 import { humaniseId } from "../lib/format.js";
 import { Notice } from "../ui/Feedback.js";
 import { Illustration } from "../ui/Illustration.js";
+import { ReadAloudButton } from "../ui/ReadAloud.js";
 import { InlineRichText } from "../ui/RichText.js";
 import {
   loadTutorConversation,
@@ -70,6 +71,11 @@ function ReplyView({ exchange, accent }: { exchange: TutorExchange; accent: stri
         <p className="tutor-follow-up">
           <strong>Back to you.</strong> {exchange.reply.followUpQuestion}
         </p>
+        <ReadAloudButton
+          className="button button-quiet tutor-read-aloud"
+          label="Read this reply"
+          text={`${exchange.reply.answer} ${exchange.reply.followUpQuestion}`}
+        />
         {exchange.reply.uncertainty.length > 0 ? (
           <div>
             <h3 className="panel-subhead">The tutor wasn’t sure about</h3>
