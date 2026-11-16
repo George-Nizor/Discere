@@ -130,14 +130,28 @@ export function seccompFilter(): Buffer {
     [0x06, 0, 0, errno(ENOSYS)],
   ];
   const refused = [
-    57, 58, // fork, vfork
-    41, 53, // socket, socketpair
-    101, 310, 311, // ptrace, process_vm_readv, process_vm_writev
-    155, 161, 165, 166, // pivot_root, chroot, mount, umount2
-    272, 308, // unshare, setns
-    321, 298, 323, 425, // bpf, perf_event_open, userfaultfd, io_uring_setup
-    246, 169, // kexec_load, reboot
-    248, 249, 250, // add_key, request_key, keyctl
+    57,
+    58, // fork, vfork
+    41,
+    53, // socket, socketpair
+    101,
+    310,
+    311, // ptrace, process_vm_readv, process_vm_writev
+    155,
+    161,
+    165,
+    166, // pivot_root, chroot, mount, umount2
+    272,
+    308, // unshare, setns
+    321,
+    298,
+    323,
+    425, // bpf, perf_event_open, userfaultfd, io_uring_setup
+    246,
+    169, // kexec_load, reboot
+    248,
+    249,
+    250, // add_key, request_key, keyctl
   ];
   for (const number of refused) rows.push([0x15, 0, 1, number], [0x06, 0, 0, errno(EPERM)]);
   rows.push([0x06, 0, 0, ALLOW]);
@@ -244,7 +258,16 @@ const LIBRARIES = [
   "usr/lib64",
   "/lib64",
 ];
-const CLOSED = ["--proc", "/proc", "--remount-ro", "/proc", "--dev", "/dev", "--remount-ro", "/dev"];
+const CLOSED = [
+  "--proc",
+  "/proc",
+  "--remount-ro",
+  "/proc",
+  "--dev",
+  "/dev",
+  "--remount-ro",
+  "/dev",
+];
 
 export interface TypeScriptRuntimeOptions {
   bubblewrap?: string;
@@ -343,8 +366,7 @@ export class IsolatedTypeScriptRuntime implements TypeScriptRuntime {
             10000,
             { stdout: 262144, stderr: 16384 },
           );
-          if (ran.timedOut)
-            return { error: "limit", message: "Checking the types took too long." };
+          if (ran.timedOut) return { error: "limit", message: "Checking the types took too long." };
           // The compiler exits 0 with nothing to report, and 1 or 2 with errors on stdout.
           const diagnostics = parseTypeScriptDiagnostics(ran.stdout);
           if (ran.exitCode === 0 || (diagnostics.length > 0 && !ran.signal && !ran.overflow))

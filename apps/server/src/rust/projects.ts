@@ -21,6 +21,7 @@ import type { DiscereStore } from "../db/store.js";
 import { HttpError } from "../errors.js";
 import { mark, present, runCases } from "./grading.js";
 import type { RustRuntime } from "./runtime.js";
+import { learnerId } from "../learner.js";
 
 export class RustProjectRepository {
   constructor(readonly collections: RustProjectCollection[]) {}
@@ -41,7 +42,6 @@ export class RustProjectRepository {
   }
 }
 
-const USER = "local-user";
 const StateSchema = z
   .object({
     code: z.string(),
@@ -101,7 +101,7 @@ export class RustProjectService {
   private row(id: string): Row {
     const row = this.store.database
       .prepare("SELECT * FROM rust_project_sessions WHERE id = ? AND user_id = ?")
-      .get(id, USER) as Row | undefined;
+      .get(id, learnerId()) as Row | undefined;
     if (!row) throw new HttpError(404, "This project was not found.", "RUST_PROJECT_NOT_FOUND");
     return row;
   }
@@ -110,7 +110,7 @@ export class RustProjectService {
       .prepare(
         "SELECT * FROM rust_project_sessions WHERE user_id = ? AND course_id = ? AND project_id = ? AND project_hash = ?",
       )
-      .get(USER, courseId, project.id, hash(project)) as Row | undefined;
+      .get(learnerId(), courseId, project.id, hash(project)) as Row | undefined;
   }
   summaries(courseId: string) {
     const collection = this.repository.collections.find((c) => c.courseId === courseId);
@@ -155,7 +155,7 @@ export class RustProjectService {
         )
         .run(
           id,
-          USER,
+          learnerId(),
           courseId,
           projectId,
           hash(definition),
@@ -248,7 +248,9 @@ export class RustProjectService {
   }
   private repeated(id: string, input: RustProjectAction) {
     const previous = this.store.database
-      .prepare("SELECT request_json FROM rust_project_actions WHERE session_id = ? AND request_id = ?")
+      .prepare(
+        "SELECT request_json FROM rust_project_actions WHERE session_id = ? AND request_id = ?",
+      )
       .get(id, input.requestId) as { request_json: string } | undefined;
     if (!previous) return false;
     if (previous.request_json !== JSON.stringify(input))
@@ -281,10 +283,18 @@ export class RustProjectService {
         "RUST_RESPONSE_LOCKED",
       );
     if (exam && ["hint", "reveal_start", "reveal_confirm"].includes(input.action))
-      throw new HttpError(403, "Hints and solutions are unavailable during an exam.", "EXAM_GUARDRAIL");
+      throw new HttpError(
+        403,
+        "Hints and solutions are unavailable during an exam.",
+        "EXAM_GUARDRAIL",
+      );
     if (input.action === "finish") {
       if (!exam)
-        throw new HttpError(403, "Continue through the project tasks to finish.", "RUST_FINISH_MODE");
+        throw new HttpError(
+          403,
+          "Continue through the project tasks to finish.",
+          "RUST_FINISH_MODE",
+        );
       if (!closed && input.code !== undefined) state.code = input.code;
     }
     if (["save", "run", "check"].includes(input.action)) {
@@ -331,7 +341,11 @@ export class RustProjectService {
       if (!correct && !exam) state.assisted = true;
     } else if (input.action === "hint") {
       if (state.hints >= task.hints.length)
-        throw new HttpError(409, "All hints for this task are already open.", "RUST_HINTS_EXHAUSTED");
+        throw new HttpError(
+          409,
+          "All hints for this task are already open.",
+          "RUST_HINTS_EXHAUSTED",
+        );
       state.hints += 1;
       state.assisted = true;
     } else if (input.action === "reveal_start") {
@@ -348,7 +362,11 @@ export class RustProjectService {
       };
     } else if (input.action === "reveal_confirm") {
       if (!state.reveal || input.token !== state.reveal.token)
-        throw new HttpError(404, "This worked-program request is no longer active.", "RUST_REVEAL_NOT_FOUND");
+        throw new HttpError(
+          404,
+          "This worked-program request is no longer active.",
+          "RUST_REVEAL_NOT_FOUND",
+        );
       if (input.confirmation?.trim().toLowerCase() !== "show answer")
         throw new HttpError(400, "Type 'show answer' to confirm.", "CONFIRMATION_MISMATCH");
       if (this.store.now() < state.reveal.availableAt)
@@ -398,7 +416,7 @@ export class RustProjectService {
           current === definition.tasks.length ? this.store.now() : null,
           xp,
           id,
-          USER,
+          learnerId(),
         );
       this.store.database
         .prepare(

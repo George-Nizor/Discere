@@ -17,8 +17,8 @@ import type { DiscereStore } from "../db/store.js";
 import { HttpError } from "../errors.js";
 import type { SqlProjectRepository } from "./repository.js";
 import { sameSqlResult, type SqlRuntime } from "./runtime.js";
+import { learnerId } from "../learner.js";
 
-const USER = "local-user";
 const StateSchema = z
   .object({
     query: z.string(),
@@ -80,7 +80,7 @@ export class SqlProjectService {
   private row(id: string): Row {
     const row = this.store.database
       .prepare("SELECT * FROM sql_project_sessions WHERE id = ? AND user_id = ?")
-      .get(id, USER) as Row | undefined;
+      .get(id, learnerId()) as Row | undefined;
     if (!row) throw new HttpError(404, "This project was not found.", "SQL_PROJECT_NOT_FOUND");
     return row;
   }
@@ -89,7 +89,7 @@ export class SqlProjectService {
       .prepare(
         "SELECT * FROM sql_project_sessions WHERE user_id = ? AND course_id = ? AND project_id = ? AND project_hash = ?",
       )
-      .get(USER, courseId, project.id, hash(project)) as Row | undefined;
+      .get(learnerId(), courseId, project.id, hash(project)) as Row | undefined;
   }
   summaries(courseId: string) {
     const collection = this.repository.collections.find((c) => c.courseId === courseId);
@@ -134,7 +134,7 @@ export class SqlProjectService {
         )
         .run(
           id,
-          USER,
+          learnerId(),
           courseId,
           projectId,
           hash(definition),
@@ -406,7 +406,7 @@ export class SqlProjectService {
           current === definition.tasks.length ? this.store.now() : null,
           xp,
           id,
-          USER,
+          learnerId(),
         );
       this.store.database
         .prepare(

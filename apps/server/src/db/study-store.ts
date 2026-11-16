@@ -33,8 +33,8 @@ import {
   studyDays,
 } from "@discere/progression-engine";
 import type Database from "better-sqlite3";
+import { learnerId } from "../learner.js";
 
-const USER = "local-user";
 const FREEZE_CAP = 2;
 type EventInput = Omit<StudyEvent, "occurredAt" | "updatedAt" | "xp">;
 export class StudyStore {
@@ -62,12 +62,12 @@ export class StudyStore {
       .prepare(
         "INSERT OR IGNORE INTO study_preferences (user_id, time_zone, sound) VALUES (?, ?, 1)",
       )
-      .run(USER, defaults.timeZone);
+      .run(learnerId(), defaults.timeZone);
     const row = this.database
       .prepare(
         "SELECT time_zone AS timeZone, daily_goal AS dailyGoal, motion, celebrations, sound, companion, theme, backdrop FROM study_preferences WHERE user_id = ?",
       )
-      .get(USER) as Record<string, unknown>;
+      .get(learnerId()) as Record<string, unknown>;
     return StudyPreferencesSchema.parse({
       ...row,
       celebrations: Boolean(row["celebrations"]),
@@ -92,7 +92,7 @@ export class StudyStore {
         Number(next.companion ?? true),
         next.theme ?? "dark",
         next.backdrop ?? "galaxy",
-        USER,
+        learnerId(),
       );
     return next;
   }
@@ -106,7 +106,7 @@ export class StudyStore {
       updated_at = excluded.updated_at, correct = excluded.correct, independent = excluded.independent,
       qualifying = MAX(learning_events.qualifying, excluded.qualifying)`)
       .run(
-        USER,
+        learnerId(),
         input.key,
         input.kind,
         input.referenceId,
@@ -121,7 +121,7 @@ export class StudyStore {
     return Boolean(
       this.database
         .prepare("SELECT 1 FROM learning_events WHERE user_id = ? AND event_key = ?")
-        .get(USER, key),
+        .get(learnerId(), key),
     );
   }
   /**
@@ -135,12 +135,12 @@ export class StudyStore {
     const insert = (key: string, xp: number) => {
       this.database
         .prepare("UPDATE user_profiles SET xp = xp + ?, updated_at = ? WHERE id = ?")
-        .run(xp, now, USER);
+        .run(xp, now, learnerId());
       this.database
         .prepare(
           "INSERT INTO learning_events (user_id, event_key, kind, reference_id, occurred_at, updated_at, xp) VALUES (?, ?, 'reward', ?, ?, ?, ?)",
         )
-        .run(USER, key, referenceId, now, now, xp);
+        .run(learnerId(), key, referenceId, now, now, xp);
     };
     insert(`reward:${randomUUID()}`, amount);
     const bonus = this.activeBoost(now) ? boostBonus(amount) : 0;
@@ -155,7 +155,7 @@ export class StudyStore {
         .prepare(
           "SELECT started_at AS startedAt, ends_at AS endsAt FROM xp_boosts WHERE user_id = ? AND started_at <= ? AND ends_at > ? ORDER BY started_at DESC LIMIT 1",
         )
-        .get(USER, now, now) as { startedAt: string; endsAt: string } | undefined) ?? null
+        .get(learnerId(), now, now) as { startedAt: string; endsAt: string } | undefined) ?? null
     );
   }
   private balance(item: InventoryItemId): number {
@@ -164,7 +164,7 @@ export class StudyStore {
         .prepare(
           "SELECT COALESCE(SUM(delta), 0) AS total FROM inventory_ledger WHERE user_id = ? AND item = ?",
         )
-        .get(USER, item) as { total: number }
+        .get(learnerId(), item) as { total: number }
     ).total;
   }
   /** Idempotent by key: a replayed grant or spend changes nothing. */
@@ -174,13 +174,17 @@ export class StudyStore {
         .prepare(
           "INSERT OR IGNORE INTO inventory_ledger (user_id, entry_key, item, delta, reason, occurred_at) VALUES (?, ?, ?, ?, ?, ?)",
         )
-        .run(USER, key, item, delta, reason, this.now()).changes > 0
+        .run(learnerId(), key, item, delta, reason, this.now()).changes > 0
     );
   }
   private freezeCharges(): number {
-    this.database.prepare("INSERT OR IGNORE INTO streak_wallet (user_id) VALUES (?)").run(USER);
+    this.database
+      .prepare("INSERT OR IGNORE INTO streak_wallet (user_id) VALUES (?)")
+      .run(learnerId());
     return (
-      this.database.prepare("SELECT charges FROM streak_wallet WHERE user_id = ?").get(USER) as {
+      this.database
+        .prepare("SELECT charges FROM streak_wallet WHERE user_id = ?")
+        .get(learnerId()) as {
         charges: number;
       }
     ).charges;
@@ -210,7 +214,7 @@ export class StudyStore {
       const ends = new Date(Date.parse(now) + XP_BOOST.minutes * 60_000).toISOString();
       this.database
         .prepare("INSERT INTO xp_boosts (user_id, started_at, ends_at) VALUES (?, ?, ?)")
-        .run(USER, now, ends);
+        .run(learnerId(), now, ends);
       return { activated: true, reason: null, inventory: this.inventory(this.freezeCharges()) };
     })();
   }
@@ -240,7 +244,7 @@ export class StudyStore {
       const next = ids.map((id) => (id === questId ? replacement : id));
       this.database
         .prepare("UPDATE daily_quest_sets SET quest_ids = ? WHERE user_id = ? AND date = ?")
-        .run(JSON.stringify(next), USER, summary.today);
+        .run(JSON.stringify(next), learnerId(), summary.today);
       this.grant(`swap-use:${randomUUID()}`, "quest-swap", -1, `${questId}->${replacement}`);
       return { swapped: true, reason: null, quests: this.buildSummary().quests! };
     })();
@@ -249,11 +253,11 @@ export class StudyStore {
   private rewardLevels(level: number): void {
     const row = this.database
       .prepare("SELECT level_rewarded AS level FROM game_state WHERE user_id = ?")
-      .get(USER) as { level: number } | undefined;
+      .get(learnerId()) as { level: number } | undefined;
     if (!row) {
       this.database
         .prepare("INSERT INTO game_state (user_id, level_rewarded) VALUES (?, ?)")
-        .run(USER, level);
+        .run(learnerId(), level);
       return;
     }
     if (level <= row.level) return;
@@ -261,7 +265,7 @@ export class StudyStore {
       this.grant(`level:${reached}`, "xp-boost", 1, `level ${reached}`);
     this.database
       .prepare("UPDATE game_state SET level_rewarded = ? WHERE user_id = ?")
-      .run(level, USER);
+      .run(level, learnerId());
   }
 
   events(): StudyEvent[] {
@@ -269,7 +273,7 @@ export class StudyStore {
       .prepare(
         "SELECT event_key AS key, kind, reference_id AS referenceId, occurred_at AS occurredAt, updated_at AS updatedAt, xp, correct, independent, qualifying FROM learning_events WHERE user_id = ? ORDER BY occurred_at, rowid",
       )
-      .all(USER) as Array<StudyEvent>;
+      .all(learnerId()) as Array<StudyEvent>;
     return rows.map((row) => ({
       ...row,
       correct: Boolean(row.correct),
@@ -296,7 +300,7 @@ export class StudyStore {
   private claimedRarity(today: string): ChestRarity | null {
     const row = this.database
       .prepare("SELECT reason FROM inventory_ledger WHERE user_id = ? AND entry_key = ?")
-      .get(USER, `chest:${today}:opened`) as { reason: string } | undefined;
+      .get(learnerId(), `chest:${today}:opened`) as { reason: string } | undefined;
     if (row) return ChestRaritySchema.parse(row.reason);
     // Chests opened before rarities existed were the plain kind.
     return this.has(`chest:${today}`) ? "common" : null;
@@ -310,7 +314,7 @@ export class StudyStore {
     const preferences = this.preferences();
     const stored = this.database
       .prepare("SELECT quest_ids AS ids FROM daily_quest_sets WHERE user_id = ? AND date = ?")
-      .get(USER, today) as { ids: string } | undefined;
+      .get(learnerId(), today) as { ids: string } | undefined;
     const quests = dailyQuests(events, {
       today,
       timeZone: preferences.timeZone,
@@ -327,7 +331,12 @@ export class StudyStore {
         .prepare(
           "INSERT OR IGNORE INTO daily_quest_sets (user_id, date, quest_ids, created_at) VALUES (?, ?, ?, ?)",
         )
-        .run(USER, today, JSON.stringify(quests.quests.map((quest) => quest.id)), this.now());
+        .run(
+          learnerId(),
+          today,
+          JSON.stringify(quests.quests.map((quest) => quest.id)),
+          this.now(),
+        );
     return quests;
   }
   /**
@@ -351,12 +360,12 @@ export class StudyStore {
       const { rarity, xp, items } = before.chest;
       this.database
         .prepare("UPDATE user_profiles SET xp = xp + ?, updated_at = ? WHERE id = ?")
-        .run(xp, now, USER);
+        .run(xp, now, learnerId());
       this.database
         .prepare(
           "INSERT INTO learning_events (user_id, event_key, kind, reference_id, occurred_at, updated_at, xp) VALUES (?, ?, 'reward', ?, ?, ?, ?)",
         )
-        .run(USER, `chest:${today}`, `chest:${today}`, now, now, xp);
+        .run(learnerId(), `chest:${today}`, `chest:${today}`, now, now, xp);
       this.grant(`chest:${today}:opened`, "chest", 1, rarity);
       const granted: ChestClaim["items"] = [];
       for (const item of items) {
@@ -365,7 +374,7 @@ export class StudyStore {
           if (charges >= FREEZE_CAP) continue;
           this.database
             .prepare("UPDATE streak_wallet SET charges = ? WHERE user_id = ?")
-            .run(Math.min(FREEZE_CAP, charges + item.count), USER);
+            .run(Math.min(FREEZE_CAP, charges + item.count), learnerId());
           this.grant(`chest:${today}:${item.id}`, item.id, 0, "added to the streak wallet");
         } else this.grant(`chest:${today}:${item.id}`, item.id, item.count, `${rarity} chest`);
         granted.push(item);
@@ -380,9 +389,9 @@ export class StudyStore {
     })();
   }
   private totalXp(): number {
-    const row = this.database.prepare("SELECT xp FROM user_profiles WHERE id = ?").get(USER) as
-      | { xp: number }
-      | undefined;
+    const row = this.database
+      .prepare("SELECT xp FROM user_profiles WHERE id = ?")
+      .get(learnerId()) as { xp: number } | undefined;
     return row?.xp ?? 0;
   }
 
@@ -396,10 +405,12 @@ export class StudyStore {
     const events = this.events().filter((event) => event.occurredAt <= now);
     const days = studyDays(events, now, preferences.timeZone);
     const realDates = new Set(days.filter((day) => day.qualified).map((day) => day.date));
-    this.database.prepare("INSERT OR IGNORE INTO streak_wallet (user_id) VALUES (?)").run(USER);
+    this.database
+      .prepare("INSERT OR IGNORE INTO streak_wallet (user_id) VALUES (?)")
+      .run(learnerId());
     const wallet = this.database
       .prepare("SELECT charges, rewarded_days AS rewardedDays FROM streak_wallet WHERE user_id = ?")
-      .get(USER) as { charges: number; rewardedDays: number };
+      .get(learnerId()) as { charges: number; rewardedDays: number };
     const rewardedDays = Math.floor(realDates.size / 7) * 7;
     const charges = Math.min(
       2,
@@ -409,7 +420,7 @@ export class StudyStore {
       (
         this.database
           .prepare("SELECT date FROM streak_protections WHERE user_id = ? AND date < ?")
-          .all(USER, today) as Array<{ date: string }>
+          .all(learnerId(), today) as Array<{ date: string }>
       ).map((row) => row.date),
     );
     const recovery = recoverStudyStreak(realDates, protectedDates, today, charges);
@@ -418,14 +429,14 @@ export class StudyStore {
         .prepare(
           "INSERT OR IGNORE INTO streak_protections (user_id, date, created_at) VALUES (?, ?, ?)",
         )
-        .run(USER, date, now);
+        .run(learnerId(), date, now);
       protectedDates.add(date);
     }
     this.database
       .prepare(
         "UPDATE streak_wallet SET charges = ?, rewarded_days = MAX(rewarded_days, ?) WHERE user_id = ?",
       )
-      .run(recovery.remaining, rewardedDays, USER);
+      .run(recovery.remaining, rewardedDays, learnerId());
     const streakDates = new Set([...realDates, ...protectedDates]);
     const byDate = new Map(days.map((day) => [day.date, day]));
     const dayAt = (date: string): StudyDay => ({

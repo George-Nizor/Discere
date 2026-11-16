@@ -52,7 +52,8 @@ export const unavailable = (message = UNAVAILABLE): RustRunResult => ({
 });
 
 export const MAIN_DECLARATION = /\bfn\s+main\s*\(/g;
-export const HARNESS_TAIL = '\n#[path = "discere_check.rs"]\nmod discere_check;\nfn main() {\n    discere_check::run();\n}\n';
+export const HARNESS_TAIL =
+  '\n#[path = "discere_check.rs"]\nmod discere_check;\nfn main() {\n    discere_check::run();\n}\n';
 
 /** Trims rustc's output so a learner never sees a host path. */
 export function cleanDiagnostics(text: string, hostPaths: string[] = []): string {
@@ -425,7 +426,11 @@ export function samePrinted(actual: string, expected: string): boolean {
  */
 export function sameDebug(actual: string, expected: string): boolean {
   const number = /^-?\d+(?:\.\d+)?(?:e-?\d+)?$/;
-  if (number.test(actual) && number.test(expected) && expected.includes(".") === actual.includes(".")) {
+  if (
+    number.test(actual) &&
+    number.test(expected) &&
+    expected.includes(".") === actual.includes(".")
+  ) {
     const a = Number(actual),
       b = Number(expected);
     return Math.abs(a - b) <= Math.max(1e-9, 1e-9 * Math.abs(b));

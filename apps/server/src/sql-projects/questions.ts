@@ -104,7 +104,8 @@ export async function assessSql(
   for (const [index, item] of task.cases.entries()) {
     const executed = await runtime.execute(query, item.tables);
     if ("error" in executed) {
-      if (executed.error === "runtime") throw new HttpError(503, executed.message, "SQL_UNAVAILABLE");
+      if (executed.error === "runtime")
+        throw new HttpError(503, executed.message, "SQL_UNAVAILABLE");
       const run = RustTaskRunSchema.parse({ ...failedRun(executed), passed, total });
       return {
         correct: false,
@@ -113,7 +114,9 @@ export async function assessSql(
         feedback:
           executed.error === "limit"
             ? executed.message
-            : (index === 0 ? "SQLite could not run the query" : where(index) + ", SQLite could not run the query") +
+            : (index === 0
+                ? "SQLite could not run the query"
+                : where(index) + ", SQLite could not run the query") +
               ". The console shows what it said. An error is not counted as a wrong answer.",
       };
     }
@@ -128,7 +131,10 @@ export async function assessSql(
         actual: verdict.actual!,
       };
       difference =
-        where(index) + ", " + verdict.difference!.charAt(0).toLowerCase() + verdict.difference!.slice(1);
+        where(index) +
+        ", " +
+        verdict.difference!.charAt(0).toLowerCase() +
+        verdict.difference!.slice(1);
     }
   }
   const run = RustTaskRunSchema.parse({

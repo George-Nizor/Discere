@@ -73,6 +73,7 @@ import type { SqlRuntime } from "./sql-projects/runtime.js";
 import { assessTypeScript, typescriptReady, typescriptTask } from "./typescript/questions.js";
 import type { TypeScriptRuntime } from "./typescript/runtime.js";
 import type { TopicMapRepository } from "./topic-maps.js";
+import { learnerId } from "./learner.js";
 
 /** The product version Instrumenta shows, from the root package.json of a checkout or a bundle. */
 const DISCERE_VERSION = (
@@ -180,8 +181,16 @@ export async function registerRoutes(
   app: FastifyInstance,
   dependencies: RouteDependencies,
 ): Promise<void> {
-  const { content, store, topicMaps, revealDelayMs, rustRuntime, pythonRuntime, sqlRuntime, typescriptRuntime } =
-    dependencies;
+  const {
+    content,
+    store,
+    topicMaps,
+    revealDelayMs,
+    rustRuntime,
+    pythonRuntime,
+    sqlRuntime,
+    typescriptRuntime,
+  } = dependencies;
 
   /** Concept mastery, named the way the course names each concept. */
   function conceptProgressWithTitles() {
@@ -433,9 +442,9 @@ export async function registerRoutes(
       ? (
           store.database
             .prepare(
-              `SELECT COUNT(DISTINCT card_id) AS count FROM review_sessions WHERE user_id = 'local-user' AND rated = 1 AND card_id IN (${[...cardIds].map(() => "?").join(",")})`,
+              `SELECT COUNT(DISTINCT card_id) AS count FROM review_sessions WHERE user_id = ? AND rated = 1 AND card_id IN (${[...cardIds].map(() => "?").join(",")})`,
             )
-            .get(...cardIds) as { count: number }
+            .get(learnerId(), ...cardIds) as { count: number }
         ).count
       : 0;
     return {
@@ -585,7 +594,11 @@ export async function registerRoutes(
     try {
       const stage = journey.stages.find((item) => item.id === body.stageId);
       if (body.state === "skipped_optional" && stage && !stage.optional)
-        throw new HttpError(409, "This part of the lesson cannot be skipped.", "STAGE_NOT_OPTIONAL");
+        throw new HttpError(
+          409,
+          "This part of the lesson cannot be skipped.",
+          "STAGE_NOT_OPTIONAL",
+        );
       if (body.state === "completed" && stage) {
         if (stage.type === "quiz" && !store.hasQuestionEvidence(stage.questionId))
           throw new HttpError(
@@ -1207,7 +1220,9 @@ export async function registerRoutes(
     const body = AttemptBodySchema.parse(request.body);
     const question = content.getQuestion(body.questionId);
     if (!question) throw new HttpError(404, "Question not found.", "QUESTION_NOT_FOUND");
-    const allowedMisses = body.lesson ? lessonMissLimit(question, body.lesson, body.mode) : undefined;
+    const allowedMisses = body.lesson
+      ? lessonMissLimit(question, body.lesson, body.mode)
+      : undefined;
     const previous = body.attemptId
       ? store.getAttempt(body.attemptId)
       : store.getOpenAttempt(question.id, body.mode);
@@ -1322,7 +1337,10 @@ export async function registerRoutes(
       // closes as wrong. Either way it comes back in review.
       if (body.mode !== "exam") store.recordLessonExplanation(saved.id);
       queueMissedQuestion(question);
-    } else if (saved.correct && (evidence.credit === "recovered" || evidence.credit === "assisted")) {
+    } else if (
+      saved.correct &&
+      (evidence.credit === "recovered" || evidence.credit === "assisted")
+    ) {
       // Right in the end, but not from memory alone: after a miss, a hint, the tutor or Direct
       // mode. Getting there once does not show it will stick, so it is asked again tomorrow.
       queueMissedQuestion(question);

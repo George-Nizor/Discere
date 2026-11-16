@@ -192,7 +192,11 @@ export async function assessTypeScript(
           verdict.error.error === "limit"
             ? verdict.error.message
             : (index > 0
-                ? "Test " + (index + 1) + " of " + total + " stopped with an error" +
+                ? "Test " +
+                  (index + 1) +
+                  " of " +
+                  total +
+                  " stopped with an error" +
                   (given ? ", with `" + given + "`. " : ". ")
                 : "It stopped with an error, so no test could finish. ") +
               "The console shows what went wrong. An error is not counted as a wrong answer.",
@@ -229,12 +233,20 @@ export async function assessTypeScript(
         total +
         " failed. " +
         (task.target.call
-          ? "`" + failed.given + "` should return `" + failed.expected + "`, but it returned `" + failed.actual + "`."
+          ? "`" +
+            failed.given +
+            "` should return `" +
+            failed.expected +
+            "`, but it returned `" +
+            failed.actual +
+            "`."
           : (failed.given ? "With `" + failed.given + "`, the" : "The") +
             " program should end with `" +
             failed.expected +
             "`, but " +
-            (failed.actual.includes(" = ") ? "it ends with `" + failed.actual + "`." : failed.actual.replace(/^(\S+) /u, "`$1` ") + "."))
+            (failed.actual.includes(" = ")
+              ? "it ends with `" + failed.actual + "`."
+              : failed.actual.replace(/^(\S+) /u, "`$1` ") + "."))
       : typeFault
         ? "The values are right, but the types are not what was asked for. " + typeFault
         : "It passes all " + total + " tests.",
