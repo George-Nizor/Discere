@@ -168,6 +168,14 @@ export async function registerTutorRoutes(
    * openai-compatible endpoint configured with `DISCERE_AI_WARM=1` does anything here, because
    * warming a paid API would spend money on nothing.
    */
+  /**
+   * `DISCERE_TUTOR_CONTEXT=compact` sends a small model the lesson as an outline rather than in
+   * full. A packet for pasting elsewhere always carries the full lesson.
+   */
+  const compactContext = () =>
+    process.env["DISCERE_TUTOR_CONTEXT"]?.trim() === "compact" &&
+    runtime.provider.generatesInProcess;
+
   let warming: Promise<void> | undefined;
   let warmedAt = 0;
   app.post("/api/tutor/warm", async () => {
@@ -208,6 +216,8 @@ export async function registerTutorRoutes(
         lesson,
         { question: "Reply with one short sentence confirming you received this.", mode: "coach" },
         undefined,
+        undefined,
+        compactContext(),
       ),
     };
     const startedAt = Date.now();
@@ -275,6 +285,7 @@ export async function registerTutorRoutes(
         { question: body.question, mode: body.mode },
         focusConceptIds,
         body.intent === "show" ? { figure: tutorFigureFor(lesson, question.id) } : undefined,
+        compactContext(),
       ),
     };
 
