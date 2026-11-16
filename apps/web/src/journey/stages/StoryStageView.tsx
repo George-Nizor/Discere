@@ -63,23 +63,33 @@ function figureShowsResults(step: LearnerStep, answered: boolean): boolean {
 }
 
 /** The text a learner hears from Read aloud: the whole screen, choices included (audit m1). */
+/** A heading or a worked line read aloud needs a full stop, or the voice runs it into the next. */
+export function spokenSentence(text: string): string {
+  const trimmed = text.trim();
+  return /[.!?:;]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
+/**
+ * What Read aloud says for a step. Inline maths keeps its dollar delimiters: Discere's voice
+ * turns e^x between them into "e to the x", and the browser's voice has them removed first.
+ */
 export function stepReadAloudText(step: LearnerStep | undefined): string {
   if (!step) return "";
   const parts: string[] = [];
-  if (step.headline) parts.push(step.headline);
+  if (step.headline) parts.push(spokenSentence(step.headline));
   for (const block of step.blocks) {
     if (block.kind === "equation") continue;
     parts.push(block.kind === "definition" ? `${block.term}: ${block.text}` : block.text);
   }
   for (const line of step.workedSteps ?? [])
-    parts.push(line.math ? `${line.text} ${line.math}` : line.text);
+    parts.push(spokenSentence(line.math ? `${line.text} $${line.math}$` : line.text));
   if (step.question) {
     parts.push(questionSpokenText(step.question));
     step.question.choices?.forEach((choice, index) =>
       parts.push(`Option ${String.fromCharCode(65 + index)}: ${choice.label}.`),
     );
   }
-  return parts.join(" ").replaceAll("$", "");
+  return parts.join(" ");
 }
 
 /** The opener (spec §3.1): the lesson's title, its hook, the promise and the time it takes. */
@@ -277,11 +287,7 @@ function StepScreen({
       {headline ? (
         // A worked or faded example's headline is its problem, so it reads as the task in body
         // text; a teaching screen's headline is a short title naming its topic.
-        <h1
-          className={
-            hasLines ? "step-headline step-task" : "step-headline step-title"
-          }
-        >
+        <h1 className={hasLines ? "step-headline step-task" : "step-headline step-title"}>
           <InlineRichText text={headline} />
         </h1>
       ) : null}

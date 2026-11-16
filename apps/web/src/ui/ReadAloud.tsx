@@ -24,6 +24,31 @@ function canPlayAudio(): boolean {
   return typeof window !== "undefined" && typeof window.Audio === "function";
 }
 
+/** The browser's voice cannot read maths markup, so the dollar delimiters go. */
+function browserText(text: string): string {
+  return stripEmphasis(text).replaceAll("$", "");
+}
+
+/** Which voice reads, chosen per device: a phone may sound better with its own. */
+export type VoiceChoice = "discere" | "device";
+const VOICE_KEY = "discere.readAloudVoice";
+
+export function voiceChoice(): VoiceChoice {
+  try {
+    return window.localStorage.getItem(VOICE_KEY) === "device" ? "device" : "discere";
+  } catch {
+    return "discere";
+  }
+}
+
+export function setVoiceChoice(choice: VoiceChoice): void {
+  try {
+    window.localStorage.setItem(VOICE_KEY, choice);
+  } catch {
+    // Without storage the default voice reads; nothing else depends on it.
+  }
+}
+
 let voiceStatus: Promise<SpeechStatus | null> | undefined;
 
 /** The engine's voice, asked once and asked again only after a download was started. */
@@ -137,7 +162,7 @@ export function useReadAloud(text: string): {
   }
 
   async function speakWithEngine(current: Reading): Promise<void> {
-    const passage = stripEmphasis(text);
+    const passage = browserText(text);
     const { sentences } = await requestJson<SpeechSentencesResponse>("/api/speech/sentences", {
       method: "POST",
       body: JSON.stringify({ text }),
@@ -183,6 +208,10 @@ export function useReadAloud(text: string): {
     reading.current = current;
     setSpeaking(true);
     void (async () => {
+      if (voiceChoice() === "device" && browserVoice) {
+        speakWithBrowser(browserText(text), current);
+        return;
+      }
       const status = canPlayAudio() ? await engineVoice() : null;
       if (current.cancelled) return;
       if (status?.state === "ready") {
@@ -193,12 +222,12 @@ export function useReadAloud(text: string): {
           // The engine stopped before the browser took over, for instance while splitting the
           // passage, so the browser reads all of it.
           if (!current.cancelled && !current.handedOver)
-            speakWithBrowser(stripEmphasis(text), current);
+            speakWithBrowser(browserText(text), current);
         }
         return;
       }
       void startVoiceDownload(status);
-      speakWithBrowser(stripEmphasis(text), current);
+      speakWithBrowser(browserText(text), current);
     })();
   }
 
@@ -230,5 +259,39 @@ export function ReadAloudButton({
       <AudioLines aria-hidden="true" size={22} />
       <span className="lesson-tool-label">{speaking ? "Stop reading" : label}</span>
     </button>
+  );
+}
+
+/** The Settings card that picks between George and the device's own voice. */
+export function ReadAloudVoiceSetting() {
+  const [choice, setChoice] = useState<VoiceChoice>(() => voiceChoice());
+  if (!canSpeak()) return null;
+  return (
+    <section aria-labelledby="read-aloud-heading" className="settings-card practice-settings">
+      <h2 className="settings-card-title" id="read-aloud-heading">
+        Read aloud
+      </h2>
+      <label className="practice-setting-row">
+        <span>
+          <strong>Voice</strong>
+          <small>
+            George is Discere's own voice. This device's voice is the one your phone or computer
+            already has. The choice is kept on this device only.
+          </small>
+        </span>
+        <select
+          aria-label="Read aloud voice"
+          value={choice}
+          onChange={(event) => {
+            const next = event.currentTarget.value as VoiceChoice;
+            setVoiceChoice(next);
+            setChoice(next);
+          }}
+        >
+          <option value="discere">George</option>
+          <option value="device">This device's voice</option>
+        </select>
+      </label>
+    </section>
   );
 }

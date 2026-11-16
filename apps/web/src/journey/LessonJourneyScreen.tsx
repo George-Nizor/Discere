@@ -37,7 +37,7 @@ import { questionSpokenText } from "./stages/QuestionBlock.js";
 import { QuizStageView } from "./stages/QuizStageView.js";
 import { RecapStageView } from "./stages/RecapStageView.js";
 import { ReviewStageView } from "./stages/ReviewStageView.js";
-import { StoryStageView, stepReadAloudText } from "./stages/StoryStageView.js";
+import { spokenSentence, StoryStageView, stepReadAloudText } from "./stages/StoryStageView.js";
 
 export function LessonJourneyScreen() {
   const { courseId, lessonId, stageId } = useParams();
@@ -279,7 +279,7 @@ function LessonJourney({
           ? stepReadAloudText(activeStepView)
           : current.stage.intro
             ? [
-                current.stage.title,
+                spokenSentence(current.stage.title),
                 ...current.stage.intro.hook.blocks.map((block) =>
                   block.kind === "equation"
                     ? ""

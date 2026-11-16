@@ -7,6 +7,7 @@ import { probeTutor } from "../api/endpoints.js";
 import { queryKeys, useCapabilities, useTutorStatus } from "../api/queries.js";
 import { Notice } from "../ui/Feedback.js";
 import { StudyPreferences } from "../study/StudyPreferences.js";
+import { ReadAloudVoiceSetting } from "../ui/ReadAloud.js";
 
 const PROVIDER_LABELS: Record<TutorStatus["provider"], string> = {
   claude: "Claude Code",
@@ -365,6 +366,7 @@ export function SettingsScreen() {
     <main className="page" id="stage">
       <h1>Settings</h1>
       <StudyPreferences />
+      <ReadAloudVoiceSetting />
       <TutorSettings />
       <section aria-labelledby="capability-heading" className="settings-card">
         <h2 className="settings-card-title" id="capability-heading">
