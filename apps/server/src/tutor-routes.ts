@@ -261,8 +261,17 @@ export async function registerTutorRoutes(
     }),
   );
 
-  app.post("/api/tutor/ask", async (request): Promise<TutorAskResponse> => {
+  app.post("/api/tutor/ask", async (request, reply): Promise<TutorAskResponse> => {
     const body = TutorAskRequestSchema.parse(request.body);
+    // A learner who leaves before the answer arrives closes the connection. The model's work is
+    // then stopped, rather than left running: a local model answers one request at a time, so an
+    // abandoned question would hold up everyone queued behind it.
+    const abandoned = new AbortController();
+    // The response's own `close` fires both when it finishes and when the connection drops;
+    // only the second leaves it unfinished.
+    reply.raw.once("close", () => {
+      if (!reply.raw.writableFinished) abandoned.abort();
+    });
     if (body.mode === "exam") {
       throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
     }
@@ -328,7 +337,7 @@ export async function registerTutorRoutes(
         ],
         timeoutMs: runtime.askTimeoutMs,
         ...(body.sessionId === undefined ? {} : { sessionId: body.sessionId }),
-        signal: abort.signal,
+        signal: AbortSignal.any([abort.signal, abandoned.signal]),
       });
     } catch (error) {
       if (error instanceof TutorProviderError && signInLikely(error))
