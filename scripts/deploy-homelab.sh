@@ -1,39 +1,47 @@
 #!/usr/bin/env bash
-# Puts the committed code on the homelab and (re)starts Discere there. See docs/homelab.md.
+# Puts the committed code on the homelab and restarts Discere there. See docs/homelab.md.
+#
 #   scripts/deploy-homelab.sh
-# HOMELAB_SSH picks another machine: HOMELAB_SSH=user@host scripts/deploy-homelab.sh
+#
+# The machine comes from HOMELAB_SSH, or from the first line of `.homelab` at the repository root
+# (git ignores it), as user@host. This repository is public, so the address is kept out of it.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-TARGET="${HOMELAB_SSH:-gnizorid@192.168.0.11}"
+TARGET="${HOMELAB_SSH:-$(head -n1 .homelab 2>/dev/null || true)}"
+if [ -z "$TARGET" ]; then
+  echo "Say which machine: HOMELAB_SSH=user@host, or put user@host in .homelab." >&2
+  exit 1
+fi
 SHA=$(git rev-parse --short HEAD)
 PNPM="npx -y pnpm@$(node -p "require('./package.json').packageManager.split('@')[1]")"
+ROOT=/srv/discere
 
 if [ -n "$(git status --porcelain)" ]; then
   echo "Uncommitted changes are not deployed: this sends commit $SHA." >&2
 fi
 
+ssh -o BatchMode=yes "$TARGET" "test -f $ROOT/discere.env" || {
+  echo "The homelab has no $ROOT/discere.env. Run deploy/homelab/setup-service-user.sh there once (docs/homelab.md)." >&2
+  exit 1
+}
+
 # Each deploy unpacks into its own folder; `current` moves only once the build has passed, so a
-# failed build leaves the running copy alone. The data folder and settings live outside them.
+# failed build leaves the running copy alone. Data and settings live outside the releases.
 git archive --format=tar HEAD |
-  ssh -o BatchMode=yes "$TARGET" "set -e; mkdir -p discere/releases discere/data; rm -rf discere/releases/$SHA; mkdir discere/releases/$SHA; tar -x -C discere/releases/$SHA"
+  ssh -o BatchMode=yes "$TARGET" "set -e; rm -rf $ROOT/releases/$SHA; mkdir $ROOT/releases/$SHA; tar -x -C $ROOT/releases/$SHA"
 
 ssh -o BatchMode=yes "$TARGET" "set -e
-  cd discere/releases/$SHA
+  cd $ROOT/releases/$SHA
   $PNPM install --frozen-lockfile --reporter=silent
   $PNPM --filter @discere/web build >/dev/null
-  cd ~/discere
-  [ -f discere.env ] || cp releases/$SHA/deploy/homelab/discere.env.example discere.env
-  ln -sfn releases/$SHA current
-  mkdir -p ~/.config/systemd/user
-  cp current/deploy/homelab/discere.service ~/.config/systemd/user/discere.service
-  systemctl --user daemon-reload
-  systemctl --user enable discere.service >/dev/null 2>&1
-  systemctl --user restart discere.service
+  chmod -R go+rX .
+  ln -sfn releases/$SHA $ROOT/current
+  sudo -n /usr/bin/systemctl restart discere.service
   # Keeps the running release and the one before it.
-  ls -1t releases | tail -n +3 | xargs -r -I{} rm -rf releases/{}"
+  cd $ROOT/releases && ls -1t | tail -n +3 | xargs -r rm -rf"
 
-PORT=$(ssh -o BatchMode=yes "$TARGET" "grep -E '^PORT=' discere/discere.env | cut -d= -f2")
+PORT=$(ssh -o BatchMode=yes "$TARGET" "grep -E '^PORT=' $ROOT/discere.env | cut -d= -f2" 2>/dev/null || true)
 echo "Waiting for Discere on the homelab ..."
 for _ in $(seq 1 60); do
   if ssh -o BatchMode=yes "$TARGET" "curl -fsS -m 3 http://127.0.0.1:${PORT:-8790}/api/health" >/dev/null 2>&1; then
@@ -42,5 +50,5 @@ for _ in $(seq 1 60); do
   fi
   sleep 2
 done
-echo "Discere did not answer. Check: ssh $TARGET journalctl --user -u discere -n 50" >&2
+echo "Discere did not answer. Check on the homelab: journalctl -u discere -n 50" >&2
 exit 1
