@@ -33,6 +33,7 @@ import { createTutorRuntime, type TutorRuntimeOptions } from "./tutor-provider.j
 import { registerTutorRoutes } from "./tutor-routes.js";
 import { registerWebRoot, resolveWebRoot } from "./web-root.js";
 import { registerWorkingsReviewRoutes } from "./workings-routes.js";
+import { deviceSavesEnabled, registerLearnerHook } from "./device-saves.js";
 
 export interface AppOptions {
   dbPath?: string;
@@ -59,6 +60,8 @@ export interface AppOptions {
   webRoot?: string;
   /** Host names accepted besides the loopback ones. Defaults to `DISCERE_ALLOWED_HOSTS`. */
   allowedHosts?: string[];
+  /** One save per browser (a hosted copy). Defaults to `DISCERE_DEVICE_SAVES=1`. */
+  deviceSaves?: boolean;
   /** Read aloud's voice. Defaults to one kept in the data directory. */
   speech?: SpeechService;
 }
@@ -100,6 +103,13 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     ...(options.clock === undefined ? {} : { clock: options.clock }),
   });
   store.initialiseConcepts(content.concepts);
+  registerLearnerHook(app, {
+    deviceSaves: options.deviceSaves ?? deviceSavesEnabled(),
+    prepareLearner: () => {
+      store.ensureLearner();
+      store.initialiseConcepts(content.concepts);
+    },
+  });
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {
       return reply.status(400).send({

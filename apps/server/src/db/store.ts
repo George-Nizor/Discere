@@ -180,7 +180,7 @@ export class DiscereStore {
     this.database.pragma("foreign_keys = ON");
     if (options.migrate === true) runMigrations(this.database);
     else assertSchemaReady(this.database, databasePath);
-    this.ensureUser();
+    this.ensureLearner();
     this.study = new StudyStore(this.database, () => this.now());
   }
 
@@ -189,7 +189,8 @@ export class DiscereStore {
     return this.clock().toISOString();
   }
 
-  private ensureUser(): void {
+  /** Creates the current learner's profile if it does not exist yet. */
+  ensureLearner(): void {
     const timestamp = this.now();
     const learnerName = process.env["DISCERE_LEARNER_NAME"]?.trim() || "Learner";
     this.database
