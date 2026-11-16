@@ -13,6 +13,33 @@ been started.
 The sensible order is route 1 first, because it is close to free, and route 2 when learning away
 from the PC matters.
 
+## Where this stands (16 November 2026)
+
+Paused to save usage. On the `feature/homelab-phone` branch, not merged:
+
+- Discere runs on the homelab as a systemd user service on port 8790, put there by
+  `scripts/deploy-homelab.sh`, with its settings in `~/discere/discere.env` and data in
+  `~/discere/data`. It installs from Chrome (manifest and v2 icons).
+- The tutor runs on the homelab's Ollama (RTX 2070) with Gemma 3 4B: `DISCERE_AI_OUTPUT=json`,
+  `DISCERE_AI_REASONING_EFFORT=none`, `DISCERE_TUTOR_CONTEXT=compact` and `DISCERE_AI_WARM=1`.
+  Three real questions took 9 to 16 seconds and all passed Discere's checks. A cold model takes
+  minutes to load from the homelab's spinning disk; prompts over about 8,000 tokens stall Ollama
+  0.20.2 on the CPU, which is why the tutor sends a lesson outline. Ollama's compose file was
+  changed to an `f16` cache and a 16,384-token context (backup beside it).
+- `discere.georgenizoridis.com` routes to the Jellyfin tunnel but has no ingress line, so it
+  answers 404. George does not want Cloudflare Access. Before the address goes live Discere needs
+  a login of its own, because its server holds the learner's progress (Iron Odyssey's does not).
+
+**Other people testing it** is the bigger change, and the reason for the pause. Most progress
+tables already carry a `user_id`, but every caller passes the constant `local-user`
+(`db/study-store.ts`, `notebook.ts`, `course-checks.ts` and others). Multi-user needs accounts
+(Google sign-in, as Iron Odyssey has), the user threaded through the store and every route, the
+remaining tables given a `user_id`, and a queue for the tutor, since the 2070 answers one person
+at a time. Roughly two to three sessions. A single shared password is the small version for
+George alone.
+
+Not built yet: the voice switch between George and the phone's own voice.
+
 ## What the app depends on
 
 The web app talks to the server through about 26 groups of `/api/…` calls, all with relative
