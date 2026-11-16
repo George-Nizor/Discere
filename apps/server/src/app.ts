@@ -122,7 +122,9 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
       // A server-side fault leaves a trace even though the learner only sees one sentence.
       // Provider diagnostics used to be attached to the error and then dropped here.
       if (error.statusCode >= 500) {
-        app.log.error({ code: error.code, detail: error.detail }, error.message);
+        app.log.error({ code: error.code, detail: error.detail ?? error.logDetail }, error.message);
+      } else if (error.logDetail) {
+        app.log.warn({ code: error.code, detail: error.logDetail }, error.message);
       }
       return reply.status(error.statusCode).send({
         code: error.code,
