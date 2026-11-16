@@ -11,11 +11,11 @@ There is no fork. Both copies run the code on `main`; what differs is their sett
 | | The PC copy | The homelab copy |
 | --- | --- | --- |
 | Who uses it | George, on Windows | George's phone, and a couple of testers |
-| Address | Opened by Instrumenta on 127.0.0.1 | `https://discere.georgenizoridis.com` |
+| Address | Opened by Instrumenta on 127.0.0.1 | A public HTTPS address through a Cloudflare tunnel (`DISCERE_ALLOWED_HOSTS` in the homelab's settings) |
 | Comes from | A Windows release (`v<version>` tag on `main`), installed and updated by Instrumenta | `scripts/deploy-homelab.sh`, run by hand from a checkout |
-| Settings | `launch.env` in `instrumenta/product.json`, shipped in the release | `~/discere/discere.env` on the homelab, not in git |
-| Progress | One learner, `local-user`, in `%LOCALAPPDATA%\Discere` | One save per browser, in `~/discere/data` |
-| Tutor | Claude Code on Windows | Gemma 3 4B on the homelab's Ollama (RTX 2070) |
+| Settings | `launch.env` in `instrumenta/product.json`, shipped in the release | `/srv/discere/discere.env` on the homelab, not in git |
+| Progress | One learner, `local-user`, in `%LOCALAPPDATA%\Discere` | One save per browser, in `/srv/discere/data` |
+| Tutor | Claude Code on Windows | Gemma 3 4B on the homelab's Ollama (an 8 GB GPU) |
 | Read aloud | George (Kokoro) on the PC's CPU, browser voice as fallback | George on the homelab's CPU, with a choice of the phone's own voice |
 | Code practice | Rust, Python and SQL through the Windows sandbox | Not available: Bubblewrap is not installed on the homelab |
 
@@ -30,9 +30,10 @@ clears the site's data in their browser starts again, though the old save stays 
 2. **PC:** bump `package.json`, commit to `main` and push a `v<version>` tag. The release workflow
    builds and publishes it, and Instrumenta installs it (`CLAUDE.md` in the workspace parent has
    the details).
-3. **Homelab:** from a checkout of `main`, run `scripts/deploy-homelab.sh`. It sends the committed
+3. **Homelab:** from a checkout of `main` that has a `.homelab` file (`user@host`), run
+   `scripts/deploy-homelab.sh`. It sends the committed
    `HEAD` of that checkout (never uncommitted work), installs and builds on the homelab, switches
-   `~/discere/current` to the new release, restarts the service and waits for it to answer. A
+   `/srv/discere/current` to the new release, restarts the service and waits for it to answer. A
    failed build leaves the running release alone. The previous release is kept beside it.
 
 The homelab does not update itself, so step 3 is easy to forget. Deploying from a feature branch
@@ -46,7 +47,7 @@ its own voice, and a tutor question in flight fails; both recover on the next tr
 Every hosted behaviour is off unless its setting is on, so the PC copy is unaffected by all of
 this. The template is `deploy/homelab/discere.env.example`. **The deploy script copies it only on
 the first deploy**: when a new setting is added to the template, add it to
-`~/discere/discere.env` on the homelab by hand, or it stays off there.
+`/srv/discere/discere.env` on the homelab by hand, or it stays off there.
 
 | Setting | What it does | Code |
 | --- | --- | --- |
@@ -57,23 +58,35 @@ the first deploy**: when a new setting is added to the template, add it to
 | `DISCERE_AI_REASONING_EFFORT=none` | Stops a thinking model reasoning before every reply | same |
 | `DISCERE_TUTOR_CONTEXT=compact` | Sends the lesson as an outline of at most 9,000 characters instead of the full lesson (23,000 typical, half of it diagram SVG) | `lessonOutline` in `apps/server/src/companion.ts` |
 | `DISCERE_AI_WARM=1` | Loads the model as a lesson opens | `/api/tutor/warm` in `tutor-routes.ts` |
-| `DISCERE_TUTOR_ASK_TIMEOUT_MS=180000` | Room for a model still loading | `tutor-provider.ts` |
+| `DISCERE_TUTOR_ASK_TIMEOUT_MS=90000` | Under Cloudflare's 100-second limit, so a slow answer ends in Discere's own message | `tutor-provider.ts` |
 | `DISCERE_IMAGE_GENERATION=off` | No Codex CLI on the homelab | `capabilities.ts` |
 
 ## The homelab itself
 
-- **Machine:** `gnizorid@192.168.0.11`, Ubuntu 24.04, 12 cores, 15 GB, RTX 2070 (8 GB), models on
-  a spinning disk. Node 22 is installed system-wide.
-- **Service:** a systemd user service (the user lingers, so it runs without a login).
-  `systemctl --user status discere`, `journalctl --user -u discere -n 50`. Port 8790 on 127.0.0.1.
-- **Layout:** `~/discere/releases/<commit>`, `~/discere/current` (link to the running one),
-  `~/discere/discere.env`, `~/discere/data` (database, backups, George's voice and its cache).
-- **Tunnel:** the existing cloudflared tunnel that serves Jellyfin and Iron Odyssey has an ingress
-  line for `discere.georgenizoridis.com` → `http://127.0.0.1:8790` in `/etc/cloudflared/config.yml`
-  (needs `sudo`; George edits it). No Cloudflare Access: George does not want it.
-- **Ollama:** a separate container, `~/ollama/docker-compose.yml`, shared with Open WebUI. Changed
-  for Discere on 16 November 2026 to `OLLAMA_KV_CACHE_TYPE=f16` and
-  `OLLAMA_CONTEXT_LENGTH=16384`; the previous file is `docker-compose.yml.bak-2026-11-16`.
+This repository is public, so the homelab's address, its ssh login and its public hostname are
+kept out of it. They live in the homelab's own settings file and in `.homelab` (git ignores it)
+in a checkout that deploys; the owner's workspace notes outside the repository name them too.
+
+- **Service:** a system service, `discere.service`, run as its own user, `discere`, which has no
+  sudo, no docker and no login shell. The unit (`deploy/homelab/discere.service`) lets it write
+  only to its data folder. `systemctl status discere`, `journalctl -u discere -n 50`. It listens on
+  127.0.0.1 only (port 8790 in the template).
+- **Layout:** `/srv/discere/releases/<commit>` (owned by the deploying user, read-only to
+  Discere), `/srv/discere/current` (link to the running one), `/srv/discere/discere.env`,
+  `/srv/discere/data` (database, backups, George's voice and its cache; Discere's alone).
+- **Deploying:** the deploying user may run `systemctl restart discere.service` without a
+  password (`/etc/sudoers.d/discere-deploy`) and nothing else. A change to the unit file itself
+  is installed by running `deploy/homelab/setup-service-user.sh` again, which is safe to repeat.
+- **First setup** (done on 16 November 2026): copy `deploy/homelab` to the homelab and run
+  `sudo bash setup-service-user.sh "$USER"` there. It creates the user and folders, copies the
+  data and settings from the earlier per-user service in `~/discere` (left in place, to remove
+  by hand), installs the service and the sudoers line, and starts it.
+- **Tunnel:** a cloudflared tunnel on the same machine forwards the public hostname to
+  `http://127.0.0.1:8790` (an ingress line in `/etc/cloudflared/config.yml`, edited by the owner
+  with sudo). There is no Cloudflare Access, by the owner's choice.
+- **Ollama:** a separate container shared with other tools, reached on 127.0.0.1:11434. For
+  Discere it was set to `OLLAMA_KV_CACHE_TYPE=f16` and `OLLAMA_CONTEXT_LENGTH=16384` on
+  16 November 2026, with the previous compose file kept beside it.
 
 ## Known behaviour of the local tutor
 
@@ -85,9 +98,15 @@ Measured on 16 November 2026; the reasoning is in `docs/phone-plan.md`.
   grinds, and it keeps grinding after the request is abandoned. Hence the compact lesson outline,
   and the ask route stopping a generation when its learner leaves. If the tutor goes slow for
   everyone, `docker restart ollama` clears it.
-- After weeks of uptime the Ollama container can lose the GPU (`nvidia-smi` inside it fails with
-  "Failed to initialize NVML"). The symptom is a tutor that answers at a few words a second.
-  `docker restart ollama` restores it.
+- The Ollama container loses the GPU whenever the host runs `systemctl daemon-reload` (a known
+  Docker and NVIDIA problem with the systemd cgroup driver): `ollama ps` then says `100% CPU`,
+  `nvidia-smi` inside the container fails with "Failed to initialize NVML", and the tutor crawls.
+  Installing or changing any system service does a reload, including
+  `setup-service-user.sh`. `docker restart ollama` restores it. The lasting fix is a Docker
+  daemon setting, which restarts every container and so is the owner's call.
+- The tutor's time limit is 90 seconds, under Cloudflare's 100. A request still running when
+  Cloudflare gives up comes back as Cloudflare's error page (524 or 502), which the app reads as
+  the engine being down. For the same reason the engine never answers 502 itself.
 - Gemma 3 4B was the only one of four local models both fast and right on the tutor prompt. Qwen
   3.5 4B made up a different fraction; Gemma 4 E2B read prompts too slowly on this card.
 - Small models slip in ways Claude does not. The tutor's checks still apply to every reply.

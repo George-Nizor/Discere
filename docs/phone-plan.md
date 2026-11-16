@@ -17,17 +17,16 @@ from the PC matters.
 
 How the homelab copy is run and updated is now in `docs/homelab.md`; this section is the history.
 
-On the `feature/homelab-phone` branch, not merged, and running on the homelab:
+Merged in 1.22.0 and running on the homelab:
 
-- Discere runs as a systemd user service on port 8790, put there by `scripts/deploy-homelab.sh`,
-  with its settings in `~/discere/discere.env` and data in `~/discere/data`. It installs from
-  Chrome (manifest and v2 icons).
+- Discere runs on the homelab, put there by `scripts/deploy-homelab.sh` (`docs/homelab.md`). It
+  installs from Chrome (manifest and v2 icons).
 - **One save per browser, no sign-in** (`DISCERE_DEVICE_SAVES=1`), as Iron Odyssey's hosted copy
   works: a random id in a cookie, and progress kept under it in place of `local-user`
   (`apps/server/src/learner.ts`, `device-saves.ts`). The PC copy is unchanged. George decided
   against Cloudflare Access; the address is public and anyone opening it gets an empty save of
   their own.
-- **The tutor** runs on the homelab's Ollama (RTX 2070) with Gemma 3 4B: `DISCERE_AI_OUTPUT=json`,
+- **The tutor** runs on the homelab's Ollama with Gemma 3 4B: `DISCERE_AI_OUTPUT=json`,
   `DISCERE_AI_REASONING_EFFORT=none`, `DISCERE_TUTOR_CONTEXT=compact` (a lesson outline, because
   prompts over about 8,000 tokens stall Ollama 0.20.2 on the CPU) and `DISCERE_AI_WARM=1` (the
   model loads as a lesson opens; from the homelab's spinning disk a cold load takes minutes).
@@ -36,7 +35,7 @@ On the `feature/homelab-phone` branch, not merged, and running on the homelab:
 - **Read aloud**: George is downloaded on the homelab (3.6 seconds for a first sentence there).
   Settings has a Read aloud card to choose George or the device's own voice.
 
-**To go live:** add the ingress line for `discere.georgenizoridis.com` to
+**To go live:** add the ingress line for the public hostname to
 `/etc/cloudflared/config.yml` (service `http://127.0.0.1:8790`) and restart cloudflared. The DNS
 record exists already.
 

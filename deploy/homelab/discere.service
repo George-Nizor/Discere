@@ -1,15 +1,37 @@
-# Discere on the homelab, as a systemd user service (the user lingers, so it runs without a login).
-# Installed by scripts/deploy-homelab.sh; see docs/homelab.md.
+# Discere as a system service under its own unprivileged user, `discere`.
+# Installed by deploy/homelab/setup-service-user.sh; see docs/homelab.md.
+#
+# The user has no sudo, no docker and no login shell, and the service can write only to its own
+# data folder, so a fault in Discere reaches nothing else on the machine.
 [Unit]
 Description=Discere learning workspace
 After=network-online.target
+Wants=network-online.target
 
 [Service]
-WorkingDirectory=%h/discere/current/apps/server
-EnvironmentFile=%h/discere/discere.env
-ExecStart=%h/discere/current/apps/server/node_modules/.bin/tsx src/index.ts
+User=discere
+Group=discere
+WorkingDirectory=/srv/discere/current/apps/server
+EnvironmentFile=/srv/discere/discere.env
+Environment=HOME=/srv/discere/data
+ExecStart=/srv/discere/current/apps/server/node_modules/.bin/tsx src/index.ts
 Restart=on-failure
 RestartSec=5
 
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/discere/data
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0027
+
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

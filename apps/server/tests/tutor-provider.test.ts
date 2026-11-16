@@ -287,7 +287,7 @@ describe("direct tutor generation", () => {
       },
     });
 
-    expect(response.statusCode).toBe(502);
+    expect(response.statusCode).toBe(422);
     expect(response.json().code).toBe("TUTOR_WRITING_GATE");
     expect(response.body).not.toContain("0.025");
   });

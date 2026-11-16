@@ -96,10 +96,11 @@ From a checkout the server runs TypeScript through `tsx`, and its build command 
 
 ## Where Discere runs
 
-The same code runs as the Windows release (Instrumenta) and as a hosted copy on George's homelab
-at `discere.georgenizoridis.com`, for his phone and a few testers. They differ only in settings;
+The same code runs as the Windows release (Instrumenta) and as a hosted copy on George's homelab,
+for his phone and a few testers. They differ only in settings;
 the homelab is updated by `scripts/deploy-homelab.sh`, not by a release. Read `docs/homelab.md`
-before changing deployment, settings, the tutor provider, saves or Read aloud.
+before changing deployment, settings, the tutor provider, saves or Read aloud. The repository is
+public: keep the homelab's addresses, hostnames and logins out of it.
 
 ## Change discipline
 
