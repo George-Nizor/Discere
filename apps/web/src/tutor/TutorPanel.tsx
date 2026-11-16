@@ -1,6 +1,6 @@
 import { defaultAccent } from "../lib/tokens.js";
 import type { TutoringMode } from "@discere/contracts";
-import { Loader2, X } from "lucide-react";
+import { Loader2, SendHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { errorCode, errorDetail, errorMessage } from "../api/client.js";
 import { askTutor, importTutorReply } from "../api/endpoints.js";
@@ -159,6 +159,13 @@ function TutorPanelConversation({
   useEffect(() => {
     saveTutorConversation(lessonId, conversation);
   }, [conversation, lessonId]);
+  // Like a messaging app, the newest exchange (or the thinking line) stays in view.
+  const body = useRef<HTMLDivElement>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scrolls when the thread grows or a reply starts.
+  useEffect(() => {
+    const element = body.current;
+    if (element) element.scrollTop = element.scrollHeight;
+  }, [thread.length, busy]);
 
   useEffect(() => {
     if (docked) return;
@@ -328,7 +335,7 @@ function TutorPanelConversation({
           </header>
         )}
 
-        <div className="tutor-body">
+        <div className="tutor-body" ref={body}>
           {thread.length === 0 && !packet ? (
             <p className="muted">
               The tutor sees this lesson and the concepts it teaches. It answers within the rules of
@@ -411,18 +418,25 @@ function TutorPanelConversation({
           {question.trim().length > 1 ? (
             <button
               aria-busy={busy}
-              className="button button-primary"
+              aria-label={thread.length > 0 ? "Ask a follow-up" : "Ask the tutor"}
+              className="button button-primary tutor-send"
               disabled={busy}
               onClick={() => void ask()}
               type="button"
             >
-              {busy ? <Loader2 aria-hidden="true" className="spin" size={16} /> : null}
-              {thread.length > 0 ? "Ask a follow-up" : "Ask the tutor"}
+              {busy ? (
+                <Loader2 aria-hidden="true" className="spin" size={16} />
+              ) : (
+                <SendHorizontal aria-hidden="true" className="tutor-send-icon" size={18} />
+              )}
+              <span className="tutor-send-label">
+                {thread.length > 0 ? "Ask a follow-up" : "Ask the tutor"}
+              </span>
             </button>
           ) : (
             <button
               aria-busy={busy}
-              className="button button-secondary"
+              className="button button-secondary tutor-show"
               disabled={busy}
               onClick={() => void ask("show")}
               type="button"
