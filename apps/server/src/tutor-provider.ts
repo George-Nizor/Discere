@@ -64,7 +64,7 @@ function firstDiagnosticLine(diagnostics: string | undefined): string | undefine
 export function tutorProviderHttpError(error: TutorProviderError): HttpError {
   // A withheld reply names the rules it broke, so the log says why without a rerun.
   const broken = [...new Set(error.violations.map((violation) => violation.ruleId))].join(", ");
-  const detail = firstDiagnosticLine(error.diagnostics) ?? (broken ? `Broke: ${broken}` : undefined);
+  const detail = firstDiagnosticLine(error.diagnostics);
   const options = (code: string) => ({ code, ...(detail === undefined ? {} : { detail }) });
   switch (error.code) {
     case "PROVIDER_TIMEOUT":
@@ -77,7 +77,17 @@ export function tutorProviderHttpError(error: TutorProviderError): HttpError {
     // a provider that failed, is the engine working and reporting, so it uses a status that
     // passes through untouched.
     case "PROVIDER_WRITING_GATE":
-      return new HttpError(422, error.message, options("TUTOR_WRITING_GATE"));
+      // The answer check is the commonest gate with a small model, which tends to solve the
+      // question it was asked to hint at. The learner gets a plain reason; the rule goes to the log.
+      if (error.violations.some((violation) => violation.ruleId.startsWith("ANS")))
+        return new HttpError(422, "The tutor's reply gave the answer away, so it was held back.", {
+          code: "TUTOR_ANSWER_WITHHELD",
+          ...(broken ? { logDetail: `Broke: ${broken}` } : {}),
+        });
+      return new HttpError(422, error.message, {
+        code: "TUTOR_WRITING_GATE",
+        ...(broken ? { logDetail: `Broke: ${broken}` } : {}),
+      });
     case "PROVIDER_ABORTED":
       return new HttpError(499, error.message, options("TUTOR_PROVIDER_ABORTED"));
     // A bad session identifier is a fault in the request, not in the provider.

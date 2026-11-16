@@ -275,6 +275,20 @@ export async function registerTutorRoutes(
     if (body.mode === "exam") {
       throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
     }
+    const smallTalk = body.intent === "show" ? null : smallTalkReply(body.question);
+    if (smallTalk) {
+      lessonAndQuestion(body.lessonId);
+      return {
+        status: "answered",
+        provider: runtime.id,
+        operation: "tutor_reply",
+        requestId: randomUUID(),
+        accepted: true,
+        issues: [],
+        reply: smallTalk,
+        sessionId: body.sessionId ?? null,
+      };
+    }
     let { lesson, question } = lessonAndQuestion(body.lessonId);
     ({ lesson, question } = genericTutorContext(
       content,
@@ -623,3 +637,4 @@ export async function registerTutorRoutes(
   );
 }
 import { genericTutorContext } from "./generic-tutor-context.js";
+import { smallTalkReply } from "./small-talk.js";
