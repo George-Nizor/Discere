@@ -58,7 +58,7 @@ the first deploy**: when a new setting is added to the template, add it to
 | `DISCERE_AI_REASONING_EFFORT=none` | Stops a thinking model reasoning before every reply | same |
 | `DISCERE_TUTOR_CONTEXT=compact` | Sends the lesson as an outline of at most 9,000 characters instead of the full lesson (23,000 typical, half of it diagram SVG) | `lessonOutline` in `apps/server/src/companion.ts` |
 | `DISCERE_AI_WARM=1` | Loads the model as a lesson opens | `/api/tutor/warm` in `tutor-routes.ts` |
-| `DISCERE_TUTOR_ASK_TIMEOUT_MS=180000` | Room for a model still loading | `tutor-provider.ts` |
+| `DISCERE_TUTOR_ASK_TIMEOUT_MS=90000` | Under Cloudflare's 100-second limit, so a slow answer ends in Discere's own message | `tutor-provider.ts` |
 | `DISCERE_IMAGE_GENERATION=off` | No Codex CLI on the homelab | `capabilities.ts` |
 
 ## The homelab itself
@@ -98,9 +98,15 @@ Measured on 16 November 2026; the reasoning is in `docs/phone-plan.md`.
   grinds, and it keeps grinding after the request is abandoned. Hence the compact lesson outline,
   and the ask route stopping a generation when its learner leaves. If the tutor goes slow for
   everyone, `docker restart ollama` clears it.
-- After weeks of uptime the Ollama container can lose the GPU (`nvidia-smi` inside it fails with
-  "Failed to initialize NVML"). The symptom is a tutor that answers at a few words a second.
-  `docker restart ollama` restores it.
+- The Ollama container loses the GPU whenever the host runs `systemctl daemon-reload` (a known
+  Docker and NVIDIA problem with the systemd cgroup driver): `ollama ps` then says `100% CPU`,
+  `nvidia-smi` inside the container fails with "Failed to initialize NVML", and the tutor crawls.
+  Installing or changing any system service does a reload, including
+  `setup-service-user.sh`. `docker restart ollama` restores it. The lasting fix is a Docker
+  daemon setting, which restarts every container and so is the owner's call.
+- The tutor's time limit is 90 seconds, under Cloudflare's 100. A request still running when
+  Cloudflare gives up comes back as Cloudflare's error page (524 or 502), which the app reads as
+  the engine being down. For the same reason the engine never answers 502 itself.
 - Gemma 3 4B was the only one of four local models both fast and right on the tutor prompt. Qwen
   3.5 4B made up a different fraction; Gemma 4 E2B read prompts too slowly on this card.
 - Small models slip in ways Claude does not. The tutor's checks still apply to every reply.
