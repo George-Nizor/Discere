@@ -15,30 +15,28 @@ from the PC matters.
 
 ## Where this stands (16 November 2026)
 
-Paused to save usage. On the `feature/homelab-phone` branch, not merged:
+On the `feature/homelab-phone` branch, not merged, and running on the homelab:
 
-- Discere runs on the homelab as a systemd user service on port 8790, put there by
-  `scripts/deploy-homelab.sh`, with its settings in `~/discere/discere.env` and data in
-  `~/discere/data`. It installs from Chrome (manifest and v2 icons).
-- The tutor runs on the homelab's Ollama (RTX 2070) with Gemma 3 4B: `DISCERE_AI_OUTPUT=json`,
-  `DISCERE_AI_REASONING_EFFORT=none`, `DISCERE_TUTOR_CONTEXT=compact` and `DISCERE_AI_WARM=1`.
-  Three real questions took 9 to 16 seconds and all passed Discere's checks. A cold model takes
-  minutes to load from the homelab's spinning disk; prompts over about 8,000 tokens stall Ollama
-  0.20.2 on the CPU, which is why the tutor sends a lesson outline. Ollama's compose file was
-  changed to an `f16` cache and a 16,384-token context (backup beside it).
-- `discere.georgenizoridis.com` routes to the Jellyfin tunnel but has no ingress line, so it
-  answers 404. George does not want Cloudflare Access. Before the address goes live Discere needs
-  a login of its own, because its server holds the learner's progress (Iron Odyssey's does not).
+- Discere runs as a systemd user service on port 8790, put there by `scripts/deploy-homelab.sh`,
+  with its settings in `~/discere/discere.env` and data in `~/discere/data`. It installs from
+  Chrome (manifest and v2 icons).
+- **One save per browser, no sign-in** (`DISCERE_DEVICE_SAVES=1`), as Iron Odyssey's hosted copy
+  works: a random id in a cookie, and progress kept under it in place of `local-user`
+  (`apps/server/src/learner.ts`, `device-saves.ts`). The PC copy is unchanged. George decided
+  against Cloudflare Access; the address is public and anyone opening it gets an empty save of
+  their own.
+- **The tutor** runs on the homelab's Ollama (RTX 2070) with Gemma 3 4B: `DISCERE_AI_OUTPUT=json`,
+  `DISCERE_AI_REASONING_EFFORT=none`, `DISCERE_TUTOR_CONTEXT=compact` (a lesson outline, because
+  prompts over about 8,000 tokens stall Ollama 0.20.2 on the CPU) and `DISCERE_AI_WARM=1` (the
+  model loads as a lesson opens; from the homelab's spinning disk a cold load takes minutes).
+  Answers take 9 to 16 seconds. Requests queue one at a time, and one whose learner has left is
+  stopped. Ollama's compose file uses an `f16` cache and a 16,384-token context (backup beside it).
+- **Read aloud**: George is downloaded on the homelab (3.6 seconds for a first sentence there).
+  Settings has a Read aloud card to choose George or the device's own voice.
 
-**Other people testing it** is the bigger change, and the reason for the pause. Most progress
-tables already carry a `user_id`, but every caller passes the constant `local-user`
-(`db/study-store.ts`, `notebook.ts`, `course-checks.ts` and others). Multi-user needs accounts
-(Google sign-in, as Iron Odyssey has), the user threaded through the store and every route, the
-remaining tables given a `user_id`, and a queue for the tutor, since the 2070 answers one person
-at a time. Roughly two to three sessions. A single shared password is the small version for
-George alone.
-
-Not built yet: the voice switch between George and the phone's own voice.
+**To go live:** add the ingress line for `discere.georgenizoridis.com` to
+`/etc/cloudflared/config.yml` (service `http://127.0.0.1:8790`) and restart cloudflared. The DNS
+record exists already.
 
 ## What the app depends on
 
