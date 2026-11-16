@@ -163,6 +163,38 @@ export async function registerTutorRoutes(
   app.get("/api/tutor/status", async (): Promise<TutorStatus> => buildTutorStatus(runtime));
 
   /**
+   * Loads a local tutor model ahead of the first question. Answers at once; the load carries on
+   * in the background, and asking again while it loads does nothing more. Only a hosted
+   * openai-compatible endpoint configured with `DISCERE_AI_WARM=1` does anything here, because
+   * warming a paid API would spend money on nothing.
+   */
+  /**
+   * `DISCERE_TUTOR_CONTEXT=compact` sends a small model the lesson as an outline rather than in
+   * full. A packet for pasting elsewhere always carries the full lesson.
+   */
+  const compactContext = () =>
+    process.env["DISCERE_TUTOR_CONTEXT"]?.trim() === "compact" &&
+    runtime.provider.generatesInProcess;
+
+  let warming: Promise<void> | undefined;
+  let warmedAt = 0;
+  app.post("/api/tutor/warm", async () => {
+    const provider = runtime.provider;
+    const enabled = process.env["DISCERE_AI_WARM"]?.trim() === "1";
+    if (!enabled || !provider.warm) return { warming: false };
+    // A model stays loaded for several minutes after use, so a request within five minutes of the
+    // last warm-up is answered without another call.
+    if (!warming && Date.now() - warmedAt > 5 * 60_000) {
+      warmedAt = Date.now();
+      warming = provider.warm().finally(() => {
+        warming = undefined;
+        warmedAt = Date.now();
+      });
+    }
+    return { warming: true };
+  });
+
+  /**
    * Deliberately a live generation: the owner asked for proof the OpenAI link works, and only
    * a real round trip is proof. It runs the same provider, schema and prompt builder as a
    * tutor question, and stops before the acceptance gate — a probe reports whether the link
@@ -184,6 +216,8 @@ export async function registerTutorRoutes(
         lesson,
         { question: "Reply with one short sentence confirming you received this.", mode: "coach" },
         undefined,
+        undefined,
+        compactContext(),
       ),
     };
     const startedAt = Date.now();
@@ -227,8 +261,17 @@ export async function registerTutorRoutes(
     }),
   );
 
-  app.post("/api/tutor/ask", async (request): Promise<TutorAskResponse> => {
+  app.post("/api/tutor/ask", async (request, reply): Promise<TutorAskResponse> => {
     const body = TutorAskRequestSchema.parse(request.body);
+    // A learner who leaves before the answer arrives closes the connection. The model's work is
+    // then stopped, rather than left running: a local model answers one request at a time, so an
+    // abandoned question would hold up everyone queued behind it.
+    const abandoned = new AbortController();
+    // The response's own `close` fires both when it finishes and when the connection drops;
+    // only the second leaves it unfinished.
+    reply.raw.once("close", () => {
+      if (!reply.raw.writableFinished) abandoned.abort();
+    });
     if (body.mode === "exam") {
       throw new HttpError(403, "ChatGPT assistance is unavailable in Exam mode.", "EXAM_GUARDRAIL");
     }
@@ -251,6 +294,7 @@ export async function registerTutorRoutes(
         { question: body.question, mode: body.mode },
         focusConceptIds,
         body.intent === "show" ? { figure: tutorFigureFor(lesson, question.id) } : undefined,
+        compactContext(),
       ),
     };
 
@@ -293,7 +337,7 @@ export async function registerTutorRoutes(
         ],
         timeoutMs: runtime.askTimeoutMs,
         ...(body.sessionId === undefined ? {} : { sessionId: body.sessionId }),
-        signal: abort.signal,
+        signal: AbortSignal.any([abort.signal, abandoned.signal]),
       });
     } catch (error) {
       if (error instanceof TutorProviderError && signInLikely(error))
@@ -544,11 +588,7 @@ export async function registerTutorRoutes(
       );
     const draft = store.reviseEssay(essayId);
     if (!draft)
-      throw new HttpError(
-        409,
-        "Submit your writing before revising it.",
-        "ESSAY_NOT_SUBMITTED",
-      );
+      throw new HttpError(409, "Submit your writing before revising it.", "ESSAY_NOT_SUBMITTED");
     const earlier = store.listEssayVersions(essayId);
     return {
       ...draft,
@@ -563,20 +603,23 @@ export async function registerTutorRoutes(
     };
   });
 
-  app.get("/api/essays/:essayId/versions/:version", async (request): Promise<EssayVersionResponse> => {
-    const { essayId, version } = EssayVersionParamsSchema.parse(request.params);
-    essayStage(essayId);
-    const found = store.listEssayVersions(essayId).find((entry) => entry.version === version);
-    if (!found)
-      throw new HttpError(404, "That version was not found.", "ESSAY_VERSION_NOT_FOUND");
-    return {
-      essayId,
-      version: found.version,
-      content: found.content,
-      wordCount: wordCount(found.content),
-      submittedAt: found.submittedAt,
-      assessment: found.assessment ? assessmentResponse(found.assessment, null, version) : null,
-    };
-  });
+  app.get(
+    "/api/essays/:essayId/versions/:version",
+    async (request): Promise<EssayVersionResponse> => {
+      const { essayId, version } = EssayVersionParamsSchema.parse(request.params);
+      essayStage(essayId);
+      const found = store.listEssayVersions(essayId).find((entry) => entry.version === version);
+      if (!found)
+        throw new HttpError(404, "That version was not found.", "ESSAY_VERSION_NOT_FOUND");
+      return {
+        essayId,
+        version: found.version,
+        content: found.content,
+        wordCount: wordCount(found.content),
+        submittedAt: found.submittedAt,
+        assessment: found.assessment ? assessmentResponse(found.assessment, null, version) : null,
+      };
+    },
+  );
 }
 import { genericTutorContext } from "./generic-tutor-context.js";

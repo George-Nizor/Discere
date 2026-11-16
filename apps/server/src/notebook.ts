@@ -6,8 +6,8 @@ import {
   type NotebookSaveRequest,
 } from "@discere/contracts";
 import { z } from "zod";
+import { learnerId } from "./learner.js";
 
-const LOCAL_USER_ID = "local-user";
 const StrokeArraySchema = z.array(NotebookStrokeSchema).max(300);
 
 interface NotebookRow {
@@ -23,7 +23,7 @@ export function getNotebookPage(database: Database.Database, lessonId: string): 
     .prepare(
       "SELECT lesson_id AS lessonId, page_type AS pageType, strokes_json AS strokesJson, note, updated_at AS updatedAt FROM notebook_pages WHERE user_id = ? AND lesson_id = ?",
     )
-    .get(LOCAL_USER_ID, lessonId) as NotebookRow | undefined;
+    .get(learnerId(), lessonId) as NotebookRow | undefined;
 
   if (!row) {
     return NotebookPageSchema.parse({
@@ -68,7 +68,7 @@ export function saveNotebookPage(
         updated_at = excluded.updated_at
     `)
     .run(
-      LOCAL_USER_ID,
+      learnerId(),
       lessonId,
       input.pageType,
       JSON.stringify(input.strokes),

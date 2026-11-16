@@ -68,6 +68,10 @@ says what is wrong now and how it was measured, so nobody has to redo a pass to 
 - The release zip ships `content/*/.authoring/` and `review/history/`.
 - 40 stylesheets with tokens redefined in five layers.
 - Nothing has been tried with a screen reader.
+- A save cannot move between browsers or between the homelab and the PC. On the homelab each
+  browser's save hangs off a cookie (`docs/homelab.md`), so clearing the site's data loses the
+  link to it. An export and import of one learner's progress, or a code to carry a save to
+  another device, would close it.
 - Read aloud downloads its 326 MB voice silently on the first press and reads with the browser's
   voice until it is ready; nothing in Settings shows the download or offers to remove it. Inline
   maths is spoken by rules in `apps/server/src/speech/text.ts` that cover what the courses use

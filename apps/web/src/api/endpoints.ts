@@ -359,6 +359,11 @@ export async function getTutorStatus(): Promise<TutorStatus> {
 }
 
 /** Spends one real generation on purpose: only a round trip proves the link is up. */
+/** Asks a local tutor model to load while the learner reads. Failure is ignored: it is a hint. */
+export function warmTutor(): void {
+  void fetch("/api/tutor/warm", { method: "POST" }).catch(() => undefined);
+}
+
 export async function probeTutor(): Promise<TutorProbeResponse> {
   return TutorProbeResponseSchema.parse(
     await requestJson<unknown>("/api/tutor/probe", { method: "POST", body: "{}" }),

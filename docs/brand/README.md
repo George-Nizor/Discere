@@ -10,6 +10,8 @@ Aligned on 6 October 2026, following Instrumenta `brand/ALIGNMENT.md`. George ap
 | Fonts (Commissioner, Fraunces, Spline Sans Mono) with OFL licences and `fonts.css` | `brand/fonts/` | `apps/web/src/styles/fonts/brand/` |
 | The Discere book icon (full, 24, 16, animated) | `brand/icons/svg/discere*.svg` | `apps/web/src/brand/` |
 | Discere palette (`accent #5E9EFD`, `secondary #ADD3FF`, `deep #234C88`, `ink #0C1626`) | `brand/tokens.json` | `--accent*` in `apps/web/src/styles/brilliant.css` |
+| The book icon at 256 and 512 px, for the phone app's home-screen icon (copied at Instrumenta e0856b2, 16 November 2026) | `brand/icons/png/discere-256.png`, `discere-512.png` | `apps/web/public/icons/` |
+| The app art, Instrumenta's tile and the release's mark (`instrumenta/product.json`), and the book at 256 px as the PNG favicon. They replace the v1 sculptural mark, `discere-mark.png`, removed on 16 November 2026 | `brand/artwork/discere-app-art.png`, `brand/icons/png/discere-256.png` | `apps/web/public/brand/`, `apps/web/public/favicon.png` |
 
 Regenerate in Instrumenta (`uv run brand/scripts/build-brand.py`) and copy again; never edit the
 copied files.

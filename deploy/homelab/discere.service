@@ -1,0 +1,15 @@
+# Discere on the homelab, as a systemd user service (the user lingers, so it runs without a login).
+# Installed by scripts/deploy-homelab.sh; see docs/homelab.md.
+[Unit]
+Description=Discere learning workspace
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/discere/current/apps/server
+EnvironmentFile=%h/discere/discere.env
+ExecStart=%h/discere/current/apps/server/node_modules/.bin/tsx src/index.ts
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

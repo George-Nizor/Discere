@@ -146,3 +146,18 @@ describe("read aloud with Discere's voice", () => {
     expect(FakeAudio.played).toEqual([]);
   });
 });
+
+describe("choosing the voice", () => {
+  it("reads with the device's voice when chosen, without asking the engine", async () => {
+    const { spoken } = installSpeech();
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    window.localStorage.setItem("discere.readAloudVoice", "device");
+    render(<ReadAloudButton text="Charge flows." />);
+    await userEvent.click(screen.getByRole("button", { name: "Read aloud" }));
+    await vi.waitFor(() => expect(spoken).toHaveLength(1));
+    const asked = fetchSpy.mock.calls.map(([url]) => String(url));
+    expect(asked.filter((url) => url !== "/api/speech/status")).toEqual([]);
+    window.localStorage.removeItem("discere.readAloudVoice");
+  });
+});

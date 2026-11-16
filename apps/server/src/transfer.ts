@@ -4,8 +4,7 @@ import type { Question, TransferChallenge, TransferSubmitResponse } from "@disce
 import { scoreAttempt, updateMastery } from "@discere/progression-engine";
 import type Database from "better-sqlite3";
 import type { DiscereStore } from "./db/store.js";
-
-const LOCAL_USER_ID = "local-user";
+import { learnerId } from "./learner.js";
 
 /** The changed case a question carries, presented as the learner-safe challenge record. */
 export function transferChallengeFor(question: Question): TransferChallenge | null {
@@ -195,7 +194,7 @@ export function saveTransferResponse(input: {
               updated_at = ?
           WHERE user_id = ? AND concept_id = ?
         `)
-        .run(nextMastery, nextMastery, nextMastery, timestamp, LOCAL_USER_ID, conceptId);
+        .run(nextMastery, nextMastery, nextMastery, timestamp, learnerId(), conceptId);
     }
     store.database
       .prepare(

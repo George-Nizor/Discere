@@ -18,8 +18,8 @@ import { assessResponse } from "./assessment.js";
 import type { ContentRepository } from "./content.js";
 import type { DiscereStore } from "./db/store.js";
 import { HttpError } from "./errors.js";
+import { learnerId } from "./learner.js";
 
-const USER = "local-user";
 const day = 86_400_000;
 const Params = z
   .object({ courseId: z.string().min(1).max(200), checkId: z.string().min(1).max(100) })
@@ -85,12 +85,12 @@ export class CourseCheckService {
       .prepare(
         "SELECT * FROM course_check_sessions WHERE user_id = ? AND course_id = ? AND check_id = ? AND check_hash = ?",
       )
-      .get(USER, courseId, check.id, hash(check)) as Row | undefined;
+      .get(learnerId(), courseId, check.id, hash(check)) as Row | undefined;
   }
   private row(id: string): Row {
     const row = this.store.database
       .prepare("SELECT * FROM course_check_sessions WHERE user_id = ? AND id = ?")
-      .get(USER, id) as Row | undefined;
+      .get(learnerId(), id) as Row | undefined;
     if (!row) throw new HttpError(404, "This check was not found.", "CHECK_NOT_FOUND");
     return row;
   }
@@ -183,7 +183,7 @@ export class CourseCheckService {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
         .run(
           id,
-          USER,
+          learnerId(),
           courseId,
           checkId,
           hash(check),
@@ -317,7 +317,7 @@ export class CourseCheckService {
         .prepare(
           "UPDATE course_check_sessions SET responses_json = ?, completed_at = ?, xp = ? WHERE id = ? AND user_id = ?",
         )
-        .run(JSON.stringify(responses), finished ? this.store.now() : null, xp, id, USER);
+        .run(JSON.stringify(responses), finished ? this.store.now() : null, xp, id, learnerId());
       return this.session(id);
     })();
   }

@@ -92,9 +92,7 @@ export function buildSearchIndex(bundles: CourseBundle[]): IndexedLesson[] {
       // and key idea. Reveals and feedback state answers, so an excerpt must never draw on them.
       passages: [
         lesson.orientation ?? "",
-        ...(lesson.intro
-          ? [...lesson.intro.hook.blocks.map(blockText), lesson.intro.promise]
-          : []),
+        ...(lesson.intro ? [...lesson.intro.hook.blocks.map(blockText), lesson.intro.promise] : []),
         ...lesson.steps.flatMap((step) => [
           ...step.blocks.map(blockText),
           step.headline ?? "",

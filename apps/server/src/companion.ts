@@ -38,12 +38,81 @@ export function modePolicy(mode: Exclude<TutoringMode, "exam">): string {
   return promptSection("tutor-system", MODE_SECTIONS[mode]).body;
 }
 
+/** Lesson fields a text model can read, in the order a learner meets them. */
+const READABLE_FIELDS = new Set([
+  "title",
+  "orientation",
+  "promise",
+  "headline",
+  "text",
+  "latex",
+  "math",
+  "alt",
+  "caption",
+  "keyIdea",
+  "prompt",
+  "nextHook",
+]);
+const LABELS: Record<string, string> = {
+  headline: "\n## ",
+  latex: "Equation: ",
+  math: "Maths: ",
+  alt: "Figure: ",
+  caption: "Figure caption: ",
+  keyIdea: "Key idea: ",
+  prompt: "Question: ",
+};
+
+/**
+ * The lesson as a short outline, for a small local model. The full lesson the tutor normally
+ * receives runs to 40,000 characters, half of it the diagrams' SVG markup, and Ollama on the
+ * homelab's 2070 stalls on prompts that long. The outline keeps what a learner reads (headings,
+ * paragraphs, equations, worked steps, figure descriptions, the question) and drops markup, ids
+ * and settings. A lesson longer than `budget` keeps its headings and loses its later paragraphs.
+ */
+export function lessonOutline(lesson: LessonResponse, budget = 9_000): string {
+  const lines: string[] = [];
+  const walk = (value: unknown, key: string) => {
+    if (typeof value === "string") {
+      if (READABLE_FIELDS.has(key) && value.trim())
+        lines.push(`${LABELS[key] ?? ""}${value.trim()}`);
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item, key);
+      return;
+    }
+    if (value && typeof value === "object")
+      for (const [child, item] of Object.entries(value)) {
+        if (child === "svg" || child === "sources" || child === "model") continue;
+        walk(item, child);
+      }
+  };
+  walk({ lesson: lesson.lesson, question: lesson.question }, "");
+  let outline = lines.join("\n");
+  if (outline.length > budget) {
+    const kept: string[] = [];
+    let used = 0;
+    for (const line of lines) {
+      const heading = line.startsWith("\n## ") || line.startsWith("Question: ");
+      if (heading || used + line.length <= budget) {
+        kept.push(line);
+        used += line.length;
+      }
+    }
+    outline = `${kept.join("\n")}\n(Some of the lesson's paragraphs were left out to keep this short.)`;
+  }
+  return outline;
+}
+
 export function buildTutorReplyPayload(
   lesson: LessonResponse,
   request: TutorReplyRequest,
   focusConceptIds?: readonly string[],
   /** The learner asked to be shown a parallel example rather than given a hint. */
   show?: { figure: LearningDiagram | undefined },
+  /** Sends the lesson as a short outline, for a small local model (`DISCERE_TUTOR_CONTEXT=compact`). */
+  compact = false,
 ) {
   if (request.mode === "exam") {
     throw new Error("ChatGPT assistance is unavailable in Exam mode.");
@@ -62,7 +131,12 @@ export function buildTutorReplyPayload(
     ...(focusConceptIds && focusConceptIds.length > 0
       ? { focusConceptIds: [...focusConceptIds] }
       : {}),
-    lessonContext: lesson,
+    ...(compact
+      ? {
+          lessonOutline: lessonOutline(lesson),
+          sources: lesson.sources.map((source) => ({ id: source.id, title: source.title })),
+        }
+      : { lessonContext: lesson }),
     allowedSourceIds,
     sourceRule:
       "Use only allowedSourceIds in payload.sourceIds. Leave sourceIds empty when the response does not rely on a listed source.",
@@ -126,7 +200,8 @@ export function matchCriteria(
 ): EssayCriterionResult[] | null {
   if (!results || results.length === 0 || results.length !== successCriteria.length) return null;
   const byKey = new Map(results.map((entry) => [criterionKey(entry.criterion), entry]));
-  const exact = byKey.size === results.length && successCriteria.every((c) => byKey.has(criterionKey(c)));
+  const exact =
+    byKey.size === results.length && successCriteria.every((c) => byKey.has(criterionKey(c)));
   return successCriteria.map((criterion, index) => {
     const entry = exact ? byKey.get(criterionKey(criterion)) : results[index];
     // Both lookups are guarded by the length and key checks above.

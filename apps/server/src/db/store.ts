@@ -30,8 +30,8 @@ import {
 import Database from "better-sqlite3";
 import { assertSchemaReady, runMigrations } from "./migrations.js";
 import { StudyStore } from "./study-store.js";
+import { learnerId } from "../learner.js";
 
-const LOCAL_USER_ID = "local-user";
 const REVIEW_PHASES = new Set<ReviewPhase>(["new", "learning", "review", "relearning"]);
 
 export interface AttemptRow {
@@ -180,7 +180,7 @@ export class DiscereStore {
     this.database.pragma("foreign_keys = ON");
     if (options.migrate === true) runMigrations(this.database);
     else assertSchemaReady(this.database, databasePath);
-    this.ensureUser();
+    this.ensureLearner();
     this.study = new StudyStore(this.database, () => this.now());
   }
 
@@ -189,14 +189,15 @@ export class DiscereStore {
     return this.clock().toISOString();
   }
 
-  private ensureUser(): void {
+  /** Creates the current learner's profile if it does not exist yet. */
+  ensureLearner(): void {
     const timestamp = this.now();
     const learnerName = process.env["DISCERE_LEARNER_NAME"]?.trim() || "Learner";
     this.database
       .prepare(
         "INSERT OR IGNORE INTO user_profiles (id, learner_name, xp, streak_days, created_at, updated_at) VALUES (?, ?, 0, 0, ?, ?)",
       )
-      .run(LOCAL_USER_ID, learnerName, timestamp, timestamp);
+      .run(learnerId(), learnerName, timestamp, timestamp);
   }
 
   /**
@@ -210,7 +211,7 @@ export class DiscereStore {
     const transaction = this.database.transaction(() => {
       for (const concept of concepts) {
         statement.run(
-          LOCAL_USER_ID,
+          learnerId(),
           concept.id,
           concept.prerequisiteIds.length === 0 ? "available" : "locked",
           this.now(),
@@ -229,7 +230,7 @@ export class DiscereStore {
       .prepare(
         "SELECT journey_id AS journeyId, MAX(updated_at) AS updatedAt FROM journey_progress WHERE user_id = ? GROUP BY journey_id ORDER BY updatedAt DESC",
       )
-      .all(LOCAL_USER_ID) as Array<{ journeyId: string; updatedAt: string }>;
+      .all(learnerId()) as Array<{ journeyId: string; updatedAt: string }>;
     const activity = new Map<string, { lastActiveAt: string | null; lessonId: string | null }>();
     for (const row of rows) {
       const separator = row.journeyId.indexOf(":");
@@ -254,7 +255,7 @@ export class DiscereStore {
                 SUM(CASE WHEN state IN ('completed', 'skipped_optional') THEN 0 ELSE 1 END) AS unfinished
          FROM journey_progress WHERE user_id = ? GROUP BY journey_id`,
       )
-      .all(LOCAL_USER_ID) as Array<{ journeyId: string; unfinished: number }>;
+      .all(learnerId()) as Array<{ journeyId: string; unfinished: number }>;
     const counts = new Map<string, number>();
     for (const row of rows) {
       if (row.unfinished > 0) continue;
@@ -279,10 +280,10 @@ export class DiscereStore {
         .prepare(
           "DELETE FROM journey_progress WHERE user_id = ? AND substr(journey_id, 1, length(?)) = ?",
         )
-        .run(LOCAL_USER_ID, prefix, prefix).changes;
+        .run(learnerId(), prefix, prefix).changes;
       const checks = this.database
         .prepare("DELETE FROM course_check_sessions WHERE user_id = ? AND course_id = ?")
-        .run(LOCAL_USER_ID, courseId).changes;
+        .run(learnerId(), courseId).changes;
       return { stages, checks };
     })();
   }
@@ -295,7 +296,7 @@ export class DiscereStore {
                 SUM(CASE WHEN state IN ('completed', 'skipped_optional') THEN 0 ELSE 1 END) AS unfinished
          FROM journey_progress WHERE user_id = ? GROUP BY journey_id`,
       )
-      .all(LOCAL_USER_ID) as Array<{ journeyId: string; unfinished: number }>;
+      .all(learnerId()) as Array<{ journeyId: string; unfinished: number }>;
     return new Set(rows.filter((row) => row.unfinished === 0).map((row) => row.journeyId));
   }
 
@@ -303,7 +304,7 @@ export class DiscereStore {
   dueReviewCount(): number {
     const row = this.database
       .prepare("SELECT COUNT(*) AS due FROM review_cards WHERE user_id = ? AND due_at <= ?")
-      .get(LOCAL_USER_ID, this.now()) as { due: number } | undefined;
+      .get(learnerId(), this.now()) as { due: number } | undefined;
     return row?.due ?? 0;
   }
 
@@ -356,7 +357,7 @@ export class DiscereStore {
         `SELECT occurred_at AS at FROM learning_events WHERE user_id = ? AND qualifying = 1
          UNION ALL SELECT updated_at AS at FROM learning_events WHERE user_id = ? AND qualifying = 1`,
       )
-      .all(LOCAL_USER_ID, LOCAL_USER_ID) as Array<{ at: string }>;
+      .all(learnerId(), learnerId()) as Array<{ at: string }>;
     return rows.map((row) => row.at);
   }
 
@@ -368,14 +369,14 @@ export class DiscereStore {
   getProfile(): { learnerName: string; xp: number; streakDays: number } {
     const row = this.database
       .prepare("SELECT learner_name AS learnerName, xp FROM user_profiles WHERE id = ?")
-      .get(LOCAL_USER_ID) as { learnerName: string; xp: number } | undefined;
+      .get(learnerId()) as { learnerName: string; xp: number } | undefined;
     if (!row) throw new Error("Local learner profile is missing.");
     const streakDays = this.streakDays();
     // The column is kept in step so an inspection of the database sees the same number the
     // learner does, but the answer always comes from the activity rather than from the column.
     this.database
       .prepare("UPDATE user_profiles SET streak_days = ? WHERE id = ? AND streak_days != ?")
-      .run(streakDays, LOCAL_USER_ID, streakDays);
+      .run(streakDays, learnerId(), streakDays);
     return { ...row, streakDays };
   }
 
@@ -385,7 +386,7 @@ export class DiscereStore {
         .prepare(
           "SELECT concept_id AS conceptId, state, mastery, independent_attempts AS independentAttempts, assisted_attempts AS assistedAttempts FROM concept_progress WHERE user_id = ? ORDER BY rowid",
         )
-        .all(LOCAL_USER_ID) as Array<{
+        .all(learnerId()) as Array<{
         conceptId: string;
         state: ConceptState;
         mastery: number;
@@ -398,7 +399,7 @@ export class DiscereStore {
   getMastery(conceptId: string): number {
     const row = this.database
       .prepare("SELECT mastery FROM concept_progress WHERE user_id = ? AND concept_id = ?")
-      .get(LOCAL_USER_ID, conceptId) as { mastery: number } | undefined;
+      .get(learnerId(), conceptId) as { mastery: number } | undefined;
     return row?.mastery ?? 0;
   }
 
@@ -413,7 +414,7 @@ export class DiscereStore {
         .prepare(
           `SELECT 1 FROM attempts WHERE user_id = ? AND question_id = ? AND length(trim(response)) > 0 ${requireCorrect ? "AND (correct = 1 OR answer_revealed = 1 OR closed = 1)" : ""} LIMIT 1`,
         )
-        .get(LOCAL_USER_ID, questionId),
+        .get(learnerId(), questionId),
     );
   }
 
@@ -422,7 +423,7 @@ export class DiscereStore {
       .prepare(
         "SELECT id FROM attempts WHERE user_id = ? AND question_id = ? AND mode = ? AND correct = 0 AND answer_revealed = 0 AND closed = 0 ORDER BY updated_at DESC LIMIT 1",
       )
-      .get(LOCAL_USER_ID, questionId, mode) as { id: string } | undefined;
+      .get(learnerId(), questionId, mode) as { id: string } | undefined;
     return row ? this.getAttempt(row.id) : null;
   }
 
@@ -449,7 +450,7 @@ export class DiscereStore {
                 (SELECT COUNT(*) FROM assistance_events e WHERE e.attempt_id = a.id AND e.type = 'tutor_reply') AS tutor
          FROM attempts a WHERE a.user_id = ? AND a.question_id = ? ORDER BY a.created_at, a.rowid`,
       )
-      .all(LOCAL_USER_ID, questionId) as Array<{
+      .all(learnerId(), questionId) as Array<{
       id: string;
       mode: string;
       correct: number;
@@ -521,7 +522,7 @@ export class DiscereStore {
         .prepare(
           "SELECT 1 FROM review_sessions WHERE user_id = ? AND card_id = ? AND rated = 1 LIMIT 1",
         )
-        .get(LOCAL_USER_ID, cardId),
+        .get(learnerId(), cardId),
     );
   }
 
@@ -530,7 +531,7 @@ export class DiscereStore {
       .prepare(
         "SELECT stage_id AS stageId, state, interaction_state AS interactionState, updated_at AS updatedAt FROM journey_progress WHERE user_id = ? AND journey_id = ?",
       )
-      .all(LOCAL_USER_ID, journeyId) as Array<{
+      .all(learnerId(), journeyId) as Array<{
       stageId: string;
       state: StageState;
       interactionState: string;
@@ -586,7 +587,7 @@ export class DiscereStore {
           .prepare(
             "SELECT state FROM journey_progress WHERE user_id = ? AND journey_id = ? AND stage_id = ?",
           )
-          .get(LOCAL_USER_ID, journeyId, input.stageId) as { state?: string } | undefined
+          .get(learnerId(), journeyId, input.stageId) as { state?: string } | undefined
       )?.state ?? "";
     const transaction = this.database.transaction(() => {
       const terminal = alreadyComplete === "completed" || alreadyComplete === "skipped_optional";
@@ -596,7 +597,7 @@ export class DiscereStore {
           "INSERT INTO journey_progress (user_id, journey_id, stage_id, state, interaction_state, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, journey_id, stage_id) DO UPDATE SET state = excluded.state, interaction_state = excluded.interaction_state, updated_at = excluded.updated_at",
         )
         .run(
-          LOCAL_USER_ID,
+          learnerId(),
           journeyId,
           input.stageId,
           // A finished stage stays finished. The one change allowed is an optional stage that
@@ -627,7 +628,7 @@ export class DiscereStore {
             .prepare(
               "INSERT INTO journey_progress (user_id, journey_id, stage_id, state, interaction_state, updated_at) VALUES (?, ?, ?, 'active', '{}', ?) ON CONFLICT(user_id, journey_id, stage_id) DO UPDATE SET state = CASE WHEN journey_progress.state IN ('completed', 'skipped_optional') THEN journey_progress.state ELSE 'active' END, updated_at = excluded.updated_at",
             )
-            .run(LOCAL_USER_ID, journeyId, next, timestamp);
+            .run(learnerId(), journeyId, next, timestamp);
         }
       }
     });
@@ -640,7 +641,7 @@ export class DiscereStore {
       .prepare(
         "SELECT essay_id AS essayId, content, submitted, updated_at AS updatedAt FROM essay_drafts WHERE user_id = ? AND essay_id = ?",
       )
-      .get(LOCAL_USER_ID, essayId) as
+      .get(learnerId(), essayId) as
       | { essayId: string; content: string; submitted: number; updatedAt: string | null }
       | undefined;
     if (!row) return { essayId, content: "", submitted: false, updatedAt: null };
@@ -658,7 +659,7 @@ export class DiscereStore {
       .prepare(
         "INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 0, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END",
       )
-      .run(LOCAL_USER_ID, essayId, content, timestamp);
+      .run(learnerId(), essayId, content, timestamp);
     return this.getEssayDraft(essayId);
   }
 
@@ -668,7 +669,7 @@ export class DiscereStore {
       .prepare(
         "INSERT INTO essay_drafts (user_id, essay_id, content, submitted, updated_at) VALUES (?, ?, ?, 1, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET content = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.content ELSE excluded.content END, submitted = 1, updated_at = CASE WHEN essay_drafts.submitted = 1 THEN essay_drafts.updated_at ELSE excluded.updated_at END",
       )
-      .run(LOCAL_USER_ID, essayId, content, timestamp);
+      .run(learnerId(), essayId, content, timestamp);
     return this.getEssayDraft(essayId);
   }
 
@@ -677,7 +678,7 @@ export class DiscereStore {
       .prepare(
         "SELECT essay_id AS essayId, request_id AS requestId, status, provider, accepted, assessment_json AS assessmentJson, issues_json AS issuesJson, error_code AS errorCode, error_message AS errorMessage, updated_at AS updatedAt FROM essay_assessments WHERE user_id = ? AND essay_id = ?",
       )
-      .get(LOCAL_USER_ID, essayId) as
+      .get(learnerId(), essayId) as
       | (Omit<EssayAssessmentRow, "accepted"> & { accepted: number })
       | undefined;
     if (!row) return null;
@@ -691,7 +692,7 @@ export class DiscereStore {
         "INSERT INTO essay_assessments (user_id, essay_id, request_id, status, provider, accepted, assessment_json, issues_json, error_code, error_message, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, essay_id) DO UPDATE SET request_id = excluded.request_id, status = excluded.status, provider = excluded.provider, accepted = excluded.accepted, assessment_json = excluded.assessment_json, issues_json = excluded.issues_json, error_code = excluded.error_code, error_message = excluded.error_message, updated_at = excluded.updated_at",
       )
       .run(
-        LOCAL_USER_ID,
+        learnerId(),
         row.essayId,
         row.requestId,
         row.status,
@@ -712,7 +713,7 @@ export class DiscereStore {
       .prepare(
         "SELECT COALESCE(MAX(version), 0) AS latest FROM essay_versions WHERE user_id = ? AND essay_id = ?",
       )
-      .get(LOCAL_USER_ID, essayId) as { latest: number };
+      .get(learnerId(), essayId) as { latest: number };
     return row.latest + 1;
   }
 
@@ -722,7 +723,7 @@ export class DiscereStore {
       .prepare(
         "SELECT version, content, submitted_at AS submittedAt, request_id AS requestId, status, provider, accepted, assessment_json AS assessmentJson, issues_json AS issuesJson, error_code AS errorCode, error_message AS errorMessage, assessed_at AS assessedAt FROM essay_versions WHERE user_id = ? AND essay_id = ? ORDER BY version",
       )
-      .all(LOCAL_USER_ID, essayId) as Array<{
+      .all(learnerId(), essayId) as Array<{
       version: number;
       content: string;
       submittedAt: string | null;
@@ -775,7 +776,7 @@ export class DiscereStore {
           "INSERT INTO essay_versions (user_id, essay_id, version, content, submitted_at, request_id, status, provider, accepted, assessment_json, issues_json, error_code, error_message, assessed_at, archived_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .run(
-          LOCAL_USER_ID,
+          learnerId(),
           essayId,
           this.essayVersionNumber(essayId),
           draft.content,
@@ -794,10 +795,10 @@ export class DiscereStore {
       // The live rows now describe the new version, which has no assessment yet.
       this.database
         .prepare("DELETE FROM essay_assessments WHERE user_id = ? AND essay_id = ?")
-        .run(LOCAL_USER_ID, essayId);
+        .run(learnerId(), essayId);
       this.database
         .prepare("UPDATE essay_drafts SET submitted = 0 WHERE user_id = ? AND essay_id = ?")
-        .run(LOCAL_USER_ID, essayId);
+        .run(learnerId(), essayId);
       return this.getEssayDraft(essayId);
     });
     return transaction();
@@ -830,7 +831,7 @@ export class DiscereStore {
          WHERE review_cards.course_id != excluded.course_id OR review_cards.question_id != excluded.question_id OR review_cards.concept_ids != excluded.concept_ids OR review_cards.front != excluded.front OR review_cards.back != excluded.back OR review_cards.source_ids != excluded.source_ids OR review_cards.origin != excluded.origin`,
       )
       .run(
-        LOCAL_USER_ID,
+        learnerId(),
         card.id,
         courseId,
         card.questionId,
@@ -872,7 +873,7 @@ export class DiscereStore {
     if (saved.state.dueAt <= dueAt) return saved;
     this.database
       .prepare("UPDATE review_cards SET due_at = ? WHERE user_id = ? AND card_id = ?")
-      .run(dueAt, LOCAL_USER_ID, card.id);
+      .run(dueAt, learnerId(), card.id);
     return this.getReviewCard(card.id) ?? saved;
   }
 
@@ -882,7 +883,7 @@ export class DiscereStore {
       .prepare(
         "SELECT card_id AS cardId, question_id AS questionId FROM review_cards WHERE user_id = ? AND origin = 'question' ORDER BY rowid",
       )
-      .all(LOCAL_USER_ID) as Array<{ cardId: string; questionId: string }>;
+      .all(learnerId()) as Array<{ cardId: string; questionId: string }>;
   }
 
   getReviewCard(cardId: string): ReviewCardRow | null {
@@ -890,7 +891,7 @@ export class DiscereStore {
       .prepare(
         "SELECT card_id AS cardId, course_id AS courseId, question_id AS questionId, concept_ids AS conceptIds, front, back, source_ids AS sourceIds, due_at AS dueAt, interval_days AS intervalDays, repetition, last_outcome AS lastOutcome, last_evidence AS lastEvidence, independent_reviews AS independentReviews, assisted_reviews AS assistedReviews, last_reviewed_at AS lastReviewedAt, stability, difficulty, lapses, phase, learning_step AS learningStep, elapsed_days AS elapsedDays, scheduled_days AS scheduledDays, origin FROM review_cards WHERE user_id = ? AND card_id = ?",
       )
-      .get(LOCAL_USER_ID, cardId) as
+      .get(learnerId(), cardId) as
       | {
           cardId: string;
           courseId: string;
@@ -965,7 +966,7 @@ export class DiscereStore {
       .prepare(
         "SELECT course_id AS courseId, MAX(last_reviewed_at) AS lastReviewedAt FROM review_cards WHERE user_id = ? GROUP BY course_id",
       )
-      .all(LOCAL_USER_ID) as Array<{ courseId: string; lastReviewedAt: string | null }>;
+      .all(learnerId()) as Array<{ courseId: string; lastReviewedAt: string | null }>;
     return new Map(rows.map((row) => [row.courseId, row.lastReviewedAt]));
   }
 
@@ -975,7 +976,7 @@ export class DiscereStore {
       .prepare(
         "SELECT card_id AS cardId, course_id AS courseId, due_at AS dueAt, repetition, rowid AS sequence FROM review_cards WHERE user_id = ? AND due_at <= ?",
       )
-      .all(LOCAL_USER_ID, nowTimestamp) as CourseQueueEntry[];
+      .all(learnerId(), nowTimestamp) as CourseQueueEntry[];
     // Every authored card is registered, and most belong to lessons the learner has not met.
     // With `only`, the turns are taken among the cards that can be shown. Taking turns among
     // all of them and then dropping the hidden ones leaves one course's cards ahead of
@@ -994,7 +995,7 @@ export class DiscereStore {
   countDueReviewCards(nowTimestamp: string): number {
     const row = this.database
       .prepare("SELECT COUNT(*) AS count FROM review_cards WHERE user_id = ? AND due_at <= ?")
-      .get(LOCAL_USER_ID, nowTimestamp) as { count: number };
+      .get(learnerId(), nowTimestamp) as { count: number };
     return row.count;
   }
 
@@ -1004,7 +1005,7 @@ export class DiscereStore {
       .prepare(
         "SELECT course_id AS courseId, SUM(CASE WHEN due_at <= ? THEN 1 ELSE 0 END) AS dueCount, COUNT(*) AS cardCount, MIN(due_at) AS nextDueAt FROM review_cards WHERE user_id = ? GROUP BY course_id ORDER BY course_id",
       )
-      .all(nowTimestamp, LOCAL_USER_ID) as CourseDueCount[];
+      .all(nowTimestamp, learnerId()) as CourseDueCount[];
   }
 
   createReviewSession(cardId: string, mode: TutoringMode = "coach"): ReviewSessionRow {
@@ -1025,7 +1026,7 @@ export class DiscereStore {
       )
       .run(
         session.id,
-        LOCAL_USER_ID,
+        learnerId(),
         session.cardId,
         session.createdAt,
         mode,
@@ -1039,7 +1040,7 @@ export class DiscereStore {
       .prepare(
         "SELECT id, card_id AS cardId, revealed, rated, created_at AS createdAt, mode, response, correct FROM review_sessions WHERE user_id = ? AND id = ?",
       )
-      .get(LOCAL_USER_ID, sessionId) as
+      .get(learnerId(), sessionId) as
       | {
           id: string;
           cardId: string;
@@ -1070,7 +1071,7 @@ export class DiscereStore {
       .prepare(
         "UPDATE review_sessions SET response = ?, correct = ? WHERE id = ? AND user_id = ? AND response IS NULL AND revealed = 0 AND rated = 0",
       )
-      .run(response, correct === null ? null : correct ? 1 : 0, sessionId, LOCAL_USER_ID);
+      .run(response, correct === null ? null : correct ? 1 : 0, sessionId, learnerId());
     return result.changes === 1;
   }
 
@@ -1085,7 +1086,7 @@ export class DiscereStore {
       return null;
     this.database
       .prepare("UPDATE review_sessions SET revealed = 1 WHERE id = ? AND user_id = ?")
-      .run(sessionId, LOCAL_USER_ID);
+      .run(sessionId, learnerId());
     return this.getReviewCard(session.cardId);
   }
 
@@ -1169,12 +1170,12 @@ export class DiscereStore {
           next.learningStep,
           next.elapsedDays,
           next.scheduledDays,
-          LOCAL_USER_ID,
+          learnerId(),
           session.cardId,
         );
       this.database
         .prepare("UPDATE review_sessions SET rated = 1 WHERE id = ? AND user_id = ?")
-        .run(sessionId, LOCAL_USER_ID);
+        .run(sessionId, learnerId());
       return { state: next, evidence, xpGained };
     });
     return updated();
@@ -1247,7 +1248,7 @@ export class DiscereStore {
         .prepare(
           "SELECT COALESCE(SUM(xp_awarded), 0) AS xp FROM attempts WHERE user_id = ? AND question_id = ?",
         )
-        .get(LOCAL_USER_ID, input.questionId) as { xp: number }
+        .get(learnerId(), input.questionId) as { xp: number }
     ).xp;
     const xpDelta = qualifying ? Math.max(0, input.xpAwarded - spent) : 0;
     const xpAwarded = (previous?.xpAwarded ?? 0) + xpDelta;
@@ -1256,7 +1257,7 @@ export class DiscereStore {
         .prepare(
           "SELECT 1 FROM attempts WHERE user_id = ? AND question_id = ? AND correct = 1 LIMIT 1",
         )
-        .get(LOCAL_USER_ID, input.questionId),
+        .get(learnerId(), input.questionId),
     );
     const newEvidence = input.correct && !previouslySolved;
     const credit: AttemptCredit =
@@ -1289,7 +1290,7 @@ export class DiscereStore {
           logResponse.run(
             randomUUID(),
             id,
-            LOCAL_USER_ID,
+            learnerId(),
             input.questionId,
             previous.response,
             previous.correct ? 1 : 0,
@@ -1319,7 +1320,7 @@ export class DiscereStore {
           )
           .run(
             id,
-            LOCAL_USER_ID,
+            learnerId(),
             input.questionId,
             input.response,
             input.mode,
@@ -1337,7 +1338,7 @@ export class DiscereStore {
         logResponse.run(
           randomUUID(),
           id,
-          LOCAL_USER_ID,
+          learnerId(),
           input.questionId,
           input.response,
           input.correct ? 1 : 0,
@@ -1381,7 +1382,7 @@ export class DiscereStore {
               input.independent ? 1 : 0,
               input.independent ? 0 : 1,
               timestamp,
-              LOCAL_USER_ID,
+              learnerId(),
               conceptId,
             );
         }
@@ -1415,7 +1416,7 @@ export class DiscereStore {
   /** A correction closes an unsuccessful lesson attempt without awarding correctness or XP. */
   recordLessonExplanation(attemptId: string): void {
     const attempt = this.getAttempt(attemptId);
-    if (!attempt || attempt.userId !== LOCAL_USER_ID || attempt.mode === "exam")
+    if (!attempt || attempt.userId !== learnerId() || attempt.mode === "exam")
       throw new Error("This attempt cannot open a lesson explanation.");
     if (attempt.correct || attempt.answerRevealed) return;
     const timestamp = this.now();
