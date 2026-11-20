@@ -11,9 +11,11 @@ import { describe, expect, it } from "vitest";
 /**
  * Statistical and Causal Inference follows the way History and Machine Learning ask questions
  * (docs/question-writing-guide.md), adapted to statistics: most questions describe a study, a poll,
- * a trial or a causal diagram in words and ask what follows, and numeric questions stay where
- * computing is the skill. This file recomputes each numeric answer from the numbers in its prompt,
- * and the figures that the judgement questions quote. The definitions come from the course's own
+ * a trial or a causal diagram in words and ask what follows. The questions about a figure (a standard
+ * error, a margin, a p-value, a power, a sample size, a count of assignments) are multiple choice and
+ * ask for the size or direction of the figure, never for an exact value. This file recomputes the
+ * fact behind each right option and the slip behind each wrong one, and the figures that the other
+ * judgement questions quote. The definitions come from the course's own
  * sources: OpenStax Introductory Statistics, the NIST e-Handbook, the ASA statement on p-values,
  * Ioannidis (2005), Hernan and Robins, Pearl, and Charig et al. (1986) for the kidney stone data.
  */
@@ -56,6 +58,234 @@ const choose = (n: number, k: number): number => {
   return Math.round(result);
 };
 
+const words = (text: string) => text.split(/\s+/u).filter(Boolean).length;
+const near = (value: number, target: number, tolerance: number): boolean =>
+  Math.abs(value - target) <= tolerance;
+const factorial = (n: number): number => (n <= 1 ? 1 : n * factorial(n - 1));
+
+/**
+ * No question asks the learner to compute an exact figure, because a calculator or an assistant does
+ * that in practice. Each converted question is multiple choice: the learner judges which option the
+ * figures support, and each wrong option is a slip people make with them. `right` is the label of the
+ * right option, `holds` recomputes the fact that option states, `mistakes` recomputes the figures that
+ * the wrong options come from, and `uses` lists numbers that must appear in the prompt so the question
+ * cannot drift from the figures it is checked against.
+ */
+type Judged = { right: string; holds: () => boolean; mistakes?: () => boolean; uses: number[] };
+const judged: Record<string, Judged> = {
+  "sample-means-wobble-n144": {
+    right: "It halves to about 1, as n is four times larger",
+    holds: () => 12 / Math.sqrt(36) === 2 && 12 / Math.sqrt(144) === 1 && 144 / 36 === 4,
+    mistakes: () => 12 / 144 < 0.1 && 2 / 4 === 0.5,
+    uses: [36, 12, 2, 144],
+  },
+  "sample-means-wobble-target-n": {
+    right: "About 100 readings, four times as many",
+    holds: () => 20 / Math.sqrt(25) === 4 && (20 / 2) ** 2 === 100 && 100 / 25 === 4,
+    mistakes: () => 20 / 2 === 10 && 25 * 2 === 50,
+    uses: [20, 25, 4, 2],
+  },
+  "normal-areas-between": {
+    right: "About 68 percent",
+    holds: () =>
+      (162 - 170) / 8 === -1 &&
+      (178 - 170) / 8 === 1 &&
+      Math.round((phi(1) - phi(-1)) * 100) === 68,
+    mistakes: () =>
+      Math.round(phi(1) * 100) === 84 &&
+      Math.round((1 - (phi(1) - phi(-1))) * 100) === 32 &&
+      Math.round((phi(2) - phi(-2)) * 100) === 95,
+    uses: [170, 8, 162, 178],
+  },
+  "normal-areas-mean-54": {
+    right: "About 2 percent",
+    holds: () => 12 / Math.sqrt(36) === 2 && Math.round((1 - phi((54 - 50) / 2)) * 100) === 2,
+    mistakes: () =>
+      Math.round(2 * (1 - phi(2)) * 100) === 5 &&
+      Math.round((1 - phi(4 / 12)) * 100) === 37 &&
+      Math.round((1 - phi(1)) * 100) === 16,
+    uses: [50, 12, 36, 54, 2],
+  },
+  "interval-for-a-mean-margin-t": {
+    right: "About 5, just over twice the standard error",
+    holds: () => 6 / Math.sqrt(9) === 2 && near(2.306 * 2, 4.6, 0.02) && 2.306 > 2,
+    mistakes: () => Math.round(2.306 * 6) === 14,
+    uses: [9, 40, 6, 2, 8, 2.306],
+  },
+  "interval-for-a-mean-upper-25": {
+    right: "About 6 points, so it clears 105 by a little",
+    holds: () => {
+      const se = 15 / Math.sqrt(25);
+      const margin = 2.064 * se;
+      return se === 3 && Math.round(margin) === 6 && 100 + margin > 105 && 100 + margin < 107;
+    },
+    mistakes: () => 2.064 * (15 / 25) < 5 && 2.064 * 3 > 5 && 100 + 3 < 105 && 100 + 15 > 105,
+    uses: [25, 100, 15, 105, 24, 2.064],
+  },
+  "what-95-means-margin-30-of-50": {
+    right: "About 14 points, twice the standard error",
+    holds: () => {
+      const se = Math.sqrt((0.6 * 0.4) / 50);
+      return Math.round(se * 100) === 7 && Math.round(1.96 * se * 100) === 14;
+    },
+    mistakes: () => Math.round(2 * 1.96 * Math.sqrt((0.6 * 0.4) / 50) * 100) === 27,
+    uses: [30, 50, 0.6, 0.07],
+  },
+  "what-95-means-margin-52": {
+    right: "About 3 points, as in most national polls",
+    holds: () => {
+      const se = Math.sqrt((0.52 * 0.48) / 1000);
+      return (
+        near(se * 100, 1.6, 0.05) &&
+        Math.round(1.96 * se * 100) === 3 &&
+        0.52 - 1.96 * se < 0.5 &&
+        0.52 + 1.96 * se > 0.5
+      );
+    },
+    mistakes: () => Math.round(2 * 1.96 * Math.sqrt((0.52 * 0.48) / 1000) * 100) === 6,
+    uses: [1000, 52],
+  },
+  "surprise-under-the-null-p-two-sided": {
+    right: "About 0.036, both tails together",
+    holds: () => near(1 - phi(2.1), 0.018, 0.0005) && near(2 * (1 - phi(2.1)), 0.036, 0.001),
+    mistakes: () => near(0.018 / 2, 0.009, 1e-12) && near(1 - 0.018, 0.98, 0.003),
+    uses: [2.1, 0.018],
+  },
+  "two-ways-to-be-wrong-power-300": {
+    right: "About 78 percent, the share caught",
+    holds: () => (300 - 66) / 300 === 0.78,
+    mistakes: () => Math.round((66 / 300) * 100) === 22 && Math.round((66 / 300) * 5) === 1,
+    uses: [300, 66],
+  },
+  "size-a-study-n-71": {
+    right: "About 70 people, a bit over twice as many",
+    holds: () =>
+      near(((1.96 + 0.8416) * 3) ** 2, 70.6, 0.05) &&
+      Math.ceil(((1.96 + 0.8416) * 3) ** 2) === 71 &&
+      Math.ceil(((1.96 + 0.8416) * 2) ** 2) === 32 &&
+      1.5 ** 2 === 2.25,
+    mistakes: () => 32 * 1.5 === 48 && 32 * 9 === 288,
+    uses: [10, 32, 5, 15],
+  },
+  "size-a-study-half-effect": {
+    right: "About 130 people, four times as many",
+    holds: () => Math.ceil((((1.96 + 0.8416) * 10) / 2.5) ** 2) === 126 && 4 * 32 === 128,
+    mistakes: () => Math.round(32 * Math.SQRT2) === 45 && 32 * 2 === 64,
+    uses: [32, 5, 10, 2.5],
+  },
+  "compare-two-groups-margin-diff": {
+    right: "About 4, about twice the standard error",
+    holds: () => near(1.96 * 2, 3.92, 1e-9) && Math.round(1.96 * 2) === 4,
+    mistakes: () => Math.round(1.96 * 5) === 10 && Math.round(2 * 1.96 * 2) === 8,
+    uses: [5, 2, 95],
+  },
+  "compare-two-groups-paired-margin": {
+    right: "About 1.4, so the interval stops short of zero",
+    holds: () => near(1.8 / 3, 0.6, 1e-9) && near(2.306 * 0.6, 1.38, 0.005) && -2.4 + 1.4 < 0,
+    mistakes: () =>
+      -2.4 + 0.6 < 0 && -2.4 + 2.306 * 1.8 > 0 && Math.round(2.306 * 1.8) === 4,
+    uses: [2.4, 1.8, 0.6, 8, 2.306],
+  },
+  "compare-two-groups-paired-upper": {
+    right: "About −2, just below zero, so scores fell",
+    holds: () => Math.round(-6 + 2.064 * 2) === -2 && -6 + 2.064 * 2 < 0,
+    mistakes: () =>
+      Math.round(-6 - 2.064 * 2) === -10 && -6 + 2 === -4 && Math.round(2.064 * 2) === 4,
+    uses: [25, 6, 10, 2, 24, 2.064],
+  },
+  "many-tests-one-lucky-result-twelve-tests": {
+    right: "About 45 percent, a little under even",
+    holds: () => near((1 - 0.95 ** 12) * 100, 45, 1.5) && 1 - 0.95 ** 12 < 0.5,
+    mistakes: () => 12 * 5 === 60 && 1 - 0.95 ** 50 > 0.9,
+    uses: [0.05],
+  },
+  "many-tests-one-lucky-result-eight-threshold": {
+    right: "About 0.006, one eighth of 0.05",
+    holds: () => near(0.05 / 8, 0.00625, 1e-12) && 0.009 > 0.05 / 8,
+    mistakes: () => near(0.05 * 8, 0.4, 1e-12),
+    uses: [0.05, 0.009],
+  },
+  "fit-a-line-sxy-v2": {
+    right: "About three or four times Sxx, since y rises faster",
+    holds: () => {
+      const dx = [1 - 2, 2 - 2, 3 - 2];
+      const dy = [3 - 6, 5 - 6, 10 - 6];
+      const sxy = dx.reduce((total, d, i) => total + d * (dy[i] as number), 0);
+      const sxx = dx.reduce((total, d) => total + d * d, 0);
+      return sxy === 7 && sxx === 2 && sxy / sxx === 3.5;
+    },
+    mistakes: () => {
+      const dx = [-1, 0, 1];
+      const dy = [-3, -1, 4];
+      const products = dx.map((d, i) => d * (dy[i] as number));
+      return (
+        dx.reduce((a, d) => a + d, 0) === 0 &&
+        dy.reduce((a, d) => a + d, 0) === 0 &&
+        products.every((product) => product >= 0)
+      );
+    },
+    uses: [3, 5, 10, 2, 6],
+  },
+  "fit-a-line-slope-25": {
+    right: "About 2.5 points per hour",
+    holds: () => {
+      const xs = [1, 2, 3];
+      const ys = [2, 3, 7];
+      const mx = 2;
+      const my = 4;
+      const slope =
+        xs.reduce((a, x, i) => a + (x - mx) * ((ys[i] as number) - my), 0) /
+        xs.reduce((a, x) => a + (x - mx) ** 2, 0);
+      return slope === 2.5 && (7 - 2) / 2 === 2.5 && (3 - 2 + (7 - 3)) / 2 === 2.5;
+    },
+    mistakes: () => 3 - 2 === 1 && 7 - 3 === 4 && 7 - 2 === 5,
+    uses: [1, 2, 3, 7],
+  },
+  "randomise-to-compare-ten-five": {
+    right: "About 250",
+    holds: () => choose(10, 5) === 252,
+    mistakes: () => 10 * 9 * 8 * 7 * 6 === 30_240 && factorial(10) === 3_628_800,
+    uses: [10, 5],
+  },
+  "randomise-to-compare-five-two": {
+    right: "About 0.10, 1 in 10",
+    holds: () => choose(5, 2) === 10 && 1 / choose(5, 2) === 0.1,
+    mistakes: () => 1 / 20 === 0.05 && 2 / 5 === 0.4 && 2 / 10 === 0.2,
+    uses: [5, 2],
+  },
+  "confounding-b-overall": {
+    right: "About 60 percent, nearer the large-stone rate",
+    holds: () =>
+      (54 + 70) / (60 + 140) === 0.62 && 54 / 60 === 0.9 && 70 / 140 === 0.5 && 62 - 50 < 90 - 62,
+    mistakes: () => (90 + 50) / 2 === 70 && 140 / 200 === 0.7,
+    uses: [54, 60, 90, 70, 140, 50, 200],
+  },
+  "confounding-weighted-fair": {
+    right: "E does better, by about 10 points",
+    holds: () => {
+      const easy = [(90 / 100) * 100, (340 / 400) * 100];
+      const hard = [(160 / 400) * 100, (25 / 100) * 100];
+      const e = 0.5 * (easy[0] as number) + 0.5 * (hard[0] as number);
+      const f = 0.5 * (easy[1] as number) + 0.5 * (hard[1] as number);
+      return e === 65 && f === 55 && e - f === 10;
+    },
+    mistakes: () => 90 - 85 === 5 && 40 - 25 === 15 && 73 - 50 === 23,
+    uses: [100, 400, 90, 85, 40, 25, 50, 73],
+  },
+  "natural-experiments-did-neg": {
+    right: "Lowered it by about 5, as the control gained more",
+    holds: () => 83 - 80 - (78 - 70) === -5,
+    mistakes: () => 83 - 80 === 3 && 83 - 80 + (78 - 70) === 11,
+    uses: [80, 83, 70, 78],
+  },
+  "natural-experiments-did-5": {
+    right: "Left hours about 4 above State C's trend",
+    holds: () => 41 - 45 - (42 - 50) === 4 && 41 - (45 + (42 - 50)) === 4,
+    mistakes: () => 41 - 45 === -4 && 41 - 45 + (42 - 50) === -12,
+    uses: [45, 41, 50, 42],
+  },
+};
+
 describe("questions in Statistical and Causal Inference", () => {
   it("asks every question from a lesson, and every lesson question exists", () => {
     const asked = new Set(
@@ -85,164 +315,65 @@ describe("questions in Statistical and Causal Inference", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, of at least two types unless one was a judged figure", () => {
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (!lesson.questionIds.some((id) => id.replace("staci-", "") in judged))
+        expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
-  it("keeps numeric questions to places where computing is the skill", () => {
+  it("asks for a computed number only where the number is a count of roles, not a sum", () => {
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(26);
+    expect(numeric.map((question) => question.id.replace("staci-", ""))).toEqual([
+      "draw-the-causes-three-backdoor-v2",
+    ]);
     for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
   });
 
-  it("recomputes every numeric answer from the numbers in its prompt", () => {
-    const checks: Record<string, (text: string) => number> = {
-      "sample-means-wobble-n144": (t) => {
-        const [sd, n] = numbers(t) as [number, number];
-        return sd / Math.sqrt(n);
-      },
-      "sample-means-wobble-target-n": (t) => {
-        const [sd, se] = numbers(t) as [number, number];
-        return (sd / se) ** 2;
-      },
-      "normal-areas-between": (t) => {
-        const [mean, sd] = numbers(t) as [number, number];
-        return phi((178 - mean) / sd) - phi((162 - mean) / sd);
-      },
-      "normal-areas-mean-54": (t) => {
-        const [mean, , n, limit] = numbers(t) as [number, number, number, number];
-        const sd = 12;
-        return 1 - phi((limit - mean) / (sd / Math.sqrt(n)));
-      },
-      "interval-for-a-mean-margin-t": (t) => {
-        const [n, , s, tcrit] = numbers(t.replace("standard error is 2", "")) as [
-          number,
-          number,
-          number,
-          number,
-        ];
-        return tcrit * (s / Math.sqrt(n));
-      },
-      "interval-for-a-mean-upper-25": (t) => {
-        const [n, mean, s, , , , tcrit] = numbers(t) as number[];
-        return (mean as number) + (tcrit as number) * ((s as number) / Math.sqrt(n as number));
-      },
-      "what-95-means-margin-30-of-50": (t) => {
-        const [x, n] = numbers(t) as [number, number];
-        const p = x / n;
-        return 1.96 * Math.sqrt((p * (1 - p)) / n);
-      },
-      "what-95-means-margin-52": (t) => {
-        const [n, percent] = numbers(t) as [number, number];
-        const p = percent / 100;
-        return 1.96 * Math.sqrt((p * (1 - p)) / n);
-      },
-      "surprise-under-the-null-p-two-sided": (t) => {
-        const [, area] = numbers(t.replace(/z = 2\.1/u, "")) as [number, number];
-        return 2 * (area as number);
-      },
-      "two-ways-to-be-wrong-power-300": (t) => {
-        const [runs, missed] = numbers(t) as [number, number];
-        return (runs - missed) / runs;
-      },
-      "size-a-study-n-71": (t) => {
-        const [z, scale] = numbers(t) as [number, number];
-        return Math.ceil((z * scale) ** 2);
-      },
-      "size-a-study-half-effect": (t) => {
-        const [, , sd, , small, za, zb] = numbers(t) as number[];
-        return Math.ceil(
-          ((((za as number) + (zb as number)) * (sd as number)) / (small as number)) ** 2,
-        );
-      },
-      "compare-two-groups-margin-diff": (t) => {
-        const n = numbers(t) as number[];
-        return (n[n.length - 1] as number) * (n[1] as number);
-      },
-      "compare-two-groups-paired-margin": (t) => {
-        const n = numbers(t) as number[];
-        return (n[n.length - 1] as number) * ((n[1] as number) / 3);
-      },
-      "compare-two-groups-paired-upper": (t) => {
-        const [n, mean, sd, , , tcrit] = numbers(t) as number[];
-        return (mean as number) + (tcrit as number) * ((sd as number) / Math.sqrt(n as number));
-      },
-      "many-tests-one-lucky-result-twelve-tests": (t) => {
-        const [alpha] = numbers(t) as [number];
-        return 1 - (1 - alpha) ** 12;
-      },
-      "many-tests-one-lucky-result-eight-threshold": (t) => {
-        const [alpha] = numbers(t) as [number];
-        return alpha / 8;
-      },
-      "fit-a-line-sxy-v2": () => (1 - 2) * (3 - 6) + 0 * (5 - 6) + (3 - 2) * (10 - 6),
-      "fit-a-line-slope-25": (t) => {
-        const [h1, h2, h3, s1, s2, s3] = numbers(
-          t.replace(/The mean of x is \d+ and the mean of y is \d+\./u, ""),
-        ) as number[];
-        const xs = [h1, h2, h3] as number[];
-        const ys = [s1, s2, s3] as number[];
-        const mx = xs.reduce((a, x) => a + x, 0) / 3;
-        const my = ys.reduce((a, y) => a + y, 0) / 3;
-        return (
-          xs.reduce((a, x, i) => a + (x - mx) * ((ys[i] as number) - my), 0) /
-          xs.reduce((a, x) => a + (x - mx) ** 2, 0)
-        );
-      },
-      "randomise-to-compare-ten-five": (t) => {
-        const [n, group] = numbers(t) as [number, number];
-        return choose(n, group);
-      },
-      "randomise-to-compare-five-two": (t) => {
-        const [n, treated] = numbers(t) as [number, number];
-        return 1 / choose(n, treated);
-      },
-      "confounding-b-overall": (t) => {
-        const [s1, n1, s2, n2] = numbers(t.replace(/treatment C/u, "")) as [
-          number,
-          number,
-          number,
-          number,
-        ];
-        return ((s1 + s2) / (n1 + n2)) * 100;
-      },
-      "confounding-weighted-fair": (t) => {
-        const n = numbers(t);
-        // 100 easy and 400 hard for E, 400 easy and 100 hard for F, then successes.
-        const [, , , , e1, e2, f1, f2] = n as number[];
-        const e = 0.5 * ((e1 as number) / 100) + 0.5 * ((e2 as number) / 400);
-        const f = 0.5 * ((f1 as number) / 400) + 0.5 * ((f2 as number) / 100);
-        return (e - f) * 100;
-      },
-      "draw-the-causes-three-backdoor-v2": () => {
-        // Z and W are common causes of X and Y. M is a mediator and C a collider.
-        return ["Z", "W"].length;
-      },
-      "natural-experiments-did-neg": (t) => {
-        const [a, b2, c, d] = numbers(t) as [number, number, number, number];
-        return b2 - a - (d - c);
-      },
-      "natural-experiments-did-5": (t) => {
-        const [a, b2, c, d] = numbers(t) as [number, number, number, number];
-        return b2 - a - (d - c);
-      },
-    };
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id.replace("staci-", "")).sort()).toEqual(
-      Object.keys(checks).sort(),
-    );
-    for (const question of numeric) {
-      const check = checks[question.id.replace("staci-", "")];
-      const authority = question.answerAuthority;
-      if (!check || authority.kind !== "numeric") throw new Error(question.id);
-      const computed = check(question.prompt);
-      expect(Math.abs(computed - authority.value), question.id).toBeLessThan(
-        Math.max(authority.absoluteTolerance, 0.006),
+  it("recomputes the remaining numeric answer from the diagram in its prompt", () => {
+    const question = get("draw-the-causes-three-backdoor-v2");
+    const authority = question.answerAuthority;
+    if (authority.kind !== "numeric") throw new Error(question.id);
+    // Z and W are common causes of X and Y. M is a mediator and C a collider.
+    expect(["Z", "W"].length).toBe(authority.value);
+  });
+
+  it("keeps each converted judgement true to its figures", () => {
+    expect(Object.keys(judged)).toHaveLength(25);
+    for (const [id, entry] of Object.entries(judged)) {
+      const question = get(id);
+      expect(kind(question), id).toBe("choice");
+      expect(question.responseType, id).toBe("short_text");
+      expect(question.answerAuthority.kind, id).toBe("text");
+      if (question.answerAuthority.kind !== "text") continue;
+      expect(question.answerAuthority.exampleAnswer, id).toBe(entry.right);
+      expect(question.answerAuthority.acceptedIdeas, id).toEqual([entry.right]);
+      expect(
+        (question.choices ?? []).map((choice) => choice.label),
+        id,
+      ).toContain(entry.right);
+      expect(entry.holds(), `${id} holds`).toBe(true);
+      if (entry.mistakes) expect(entry.mistakes(), `${id} mistakes`).toBe(true);
+      const quoted = numbers(question.prompt).map(Math.abs);
+      for (const number of entry.uses)
+        expect(quoted, `${id} mentions ${number}`).toContain(number);
+    }
+  });
+
+  it("keeps feedback from repeating the right option, and keeps the explanation short", () => {
+    for (const id of Object.keys(judged)) {
+      const question = get(id);
+      expect(words(question.onCorrect ?? ""), id).toBeLessThanOrEqual(45);
+      const right = (question.choices ?? []).find((choice) =>
+        question.answerAuthority.kind === "text"
+          ? choice.label === question.answerAuthority.acceptedIdeas[0]
+          : false,
       );
+      expect(right, id).toBeTruthy();
+      for (const item of question.misconceptions ?? [])
+        expect(item.feedback.toLowerCase(), id).not.toContain(right?.label.toLowerCase());
     }
   });
 
