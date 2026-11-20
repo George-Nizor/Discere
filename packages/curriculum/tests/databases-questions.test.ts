@@ -13,9 +13,11 @@ import { describe, expect, it } from "vitest";
  * Databases and Data Modelling follows the way System Design and History ask questions
  * (docs/question-writing-guide.md), adapted to a course about schemas, queries and transactions.
  * Questions put a small schema, a few rows, a query, a plan or an interleaving of two transactions in
- * front of the learner and ask for a judgement. Numeric questions stay where a count of rows, pages or
- * keys is the point. Every query result and every plan line quoted in a question is rerun below in
- * SQLite (Node's built-in `node:sqlite`) against the rows shown in the question.
+ * front of the learner and ask for a judgement. Numeric questions stay only where a count of rows from a
+ * query or a constraint is the point; the questions about pages, levels, keys and costs ask which way a
+ * figure goes or roughly how big it is, and the figures behind each answer are recomputed below. Every
+ * query result and every plan line quoted in a question is rerun below in SQLite (Node's built-in
+ * `node:sqlite`) against the rows shown in the question.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -96,7 +98,6 @@ const MEMBERS_OF_COURSES = `${STUDENTS}
  * example's text, so its inputs (marked `example`) come from that text and not from the prompt.
  */
 const recompute: Record<string, { value: () => number; uses?: number[]; example?: string }> = {
-  "from-a-story-to-entities-pair-rows": { value: () => 3 * 12, uses: [3, 12] },
   "one-to-many-and-many-to-many-after-where": {
     value: () =>
       scalar(
@@ -156,7 +157,6 @@ const recompute: Record<string, { value: () => number; uses?: number[]; example?
     uses: [101, 102, 103, 104],
   },
   "normal-forms-and-decomposition-join-orders": { value: () => 4, uses: [4, 3] },
-  "normal-forms-and-decomposition-ben-revenue": { value: () => 4 * 2, uses: [4, 2] },
   "normal-forms-and-decomposition-invented-rows": {
     value: () =>
       scalar(
@@ -184,60 +184,10 @@ const recompute: Record<string, { value: () => number; uses?: number[]; example?
     },
     uses: [1, 2, 5, 3],
   },
-  "reporting-models-and-denormalisation-read-to-write": {
-    value: () => 1000 / 20,
-    uses: [1000, 20],
-  },
-  "how-an-index-finds-rows-scan-pages": { value: () => 3_000_000 / 60, uses: [3000000, 60] },
-  "how-an-index-finds-rows-levels-ten-million": {
-    value: () => {
-      let levels = 0;
-      while (100 ** levels < 10_000_000) levels += 1;
-      return levels;
-    },
-    uses: [100, 10000000],
-  },
-  "how-an-index-finds-rows-levels-hundred-million": {
-    value: () => {
-      let levels = 0;
-      while (100 ** levels < 100_000_000) levels += 1;
-      return levels;
-    },
-    uses: [100, 100000000],
-  },
-  "how-an-index-finds-rows-ratio-ten-million": {
-    value: () => 10_000_000 / 50 / (4 + 1),
-    uses: [10000000, 50, 100, 4],
-  },
-  "how-an-index-finds-rows-break-even-five": { value: () => 20_000 / 5, uses: [5, 20000] },
-  "composite-indexes-and-selectivity-rows-per-dept": { value: () => 12_000 / 4, uses: [12000, 4] },
-  "composite-indexes-and-selectivity-rows-per-country": {
-    value: () => 2_000_000 / 250,
-    uses: [2000000, 250],
-  },
-  "reading-query-plans-reads-per-outer-row": { value: () => 3 + 1, uses: [3] },
-  "reading-query-plans-indexed-two-thousand": { value: () => 2000 * (3 + 1), uses: [2000, 3] },
   "transactions-and-acid-faded-replay": { value: () => 900 - 250, uses: [900, 100, 250] },
   "locks-versions-and-conflicts-atomic-updates": {
     value: () => 200 + 15 + 40,
     uses: [200, 15, 40],
-  },
-  "locks-versions-and-conflicts-retry-result": { value: () => 150 + 30, uses: [30, 150, 4] },
-  "replication-sharding-and-choosing-mod-six": {
-    value: () =>
-      Array.from({ length: 12 }, (_, key) => key).filter((key) => key % 3 !== key % 6).length,
-    uses: [12, 3, 6],
-  },
-  "replication-sharding-and-choosing-add-node-25": {
-    value: () => {
-      const nodes = [10, 40, 70];
-      const owner = (key: number, ring: number[]) =>
-        [...ring].sort((a, b) => a - b).find((node) => node >= key) ?? Math.min(...ring);
-      return Array.from({ length: 100 }, (_, key) => key).filter(
-        (key) => owner(key, nodes) !== owner(key, [...nodes, 25]),
-      ).length;
-    },
-    uses: [10, 40, 70, 25],
   },
 };
 const mentions = (prompt: string, value: number) => {
@@ -331,6 +281,84 @@ describe("questions in Databases and Data Modelling", () => {
         expect(mentions(question.prompt, number), `${question.id} mentions ${number}`).toBe(true);
       if (!entry.uses) expect(entry.example, question.id).toBeTruthy();
     }
+  });
+
+  it("recomputes the figures behind each judgement answer", () => {
+    const label = (id: string) => {
+      const question = q(id);
+      const authority = question.answerAuthority;
+      if (!question.choices || authority.kind !== "text") throw new Error(`${id} has no choices`);
+      const right = question.choices.filter(
+        (choice) => assessTextAnswer(choice.label, authority).correct,
+      );
+      expect(right, id).toHaveLength(1);
+      return right[0]?.label;
+    };
+    const height = (rows: number, fanOut: number) => {
+      let levels = 0;
+      while (fanOut ** levels < rows) levels += 1;
+      return levels;
+    };
+    const owner = (key: number, ring: number[]) =>
+      [...ring].sort((a, b) => a - b).find((node) => node >= key) ?? Math.min(...ring);
+
+    // At most one row for each pair: 3 doctors and 12 patients allow 36 rows, three times the patients.
+    expect((3 * 12) / 12).toBe(3);
+    expect(label("from-a-story-to-entities-pair-rows")).toBe("Up to three times as many");
+    // Ben's one rebuilt line, 4 Pens at 2, gives the 8 of the flat table.
+    expect(4 * 2).toBe(8);
+    expect(label("normal-forms-and-decomposition-ben-revenue")).toMatch(/^The same, so Ben's line/u);
+    // 1000 reads and 20 changes a day: each change is followed by 50 reads, which is tens.
+    expect(1000 / 20).toBe(50);
+    expect(label("reporting-models-and-denormalisation-read-to-write")).toBe("Tens of reads");
+    // 3,000,000 rows at 60 a page fill 50,000 pages.
+    expect(3_000_000 / 60).toBe(50_000);
+    expect(label("how-an-index-finds-rows-scan-pages")).toBe("About 50,000");
+    // Fan-out 100: 3 levels for a million rows, 4 for ten million and for a hundred million.
+    expect(height(1_000_000, 100)).toBe(3);
+    expect(height(10_000_000, 100)).toBe(4);
+    expect(height(100_000_000, 100)).toBe(4);
+    expect(label("how-an-index-finds-rows-levels-ten-million")).toBe("About 4 levels");
+    expect(height(100_000_000, 100) - height(1_000_000, 100)).toBe(1);
+    expect(label("how-an-index-finds-rows-levels-hundred-million")).toBe("One extra level");
+    // 200,000 pages in a scan against 4 + 1 for a lookup is 40,000 times fewer.
+    expect(10_000_000 / 50 / (4 + 1)).toBe(40_000);
+    expect(label("how-an-index-finds-rows-ratio-ten-million")).toBe("About 40,000 times");
+    // The index and the scan are equal at 20,000 / 4 = 5,000 rows, and at 20,000 / 5 = 4,000 rows.
+    expect(20_000 / 4).toBe(5_000);
+    expect(20_000 / 5).toBe(4_000);
+    expect(label("how-an-index-finds-rows-break-even-five")).toBe("It falls, to about 4,000 rows");
+    // One of four equal departments holds a quarter of 12,000 rows, and one of 250 countries 0.4 percent.
+    expect(12_000 / 4 / 12_000).toBe(0.25);
+    expect(label("composite-indexes-and-selectivity-rows-per-dept")).toBe("A quarter of the table");
+    expect((100 / 250).toFixed(1)).toBe("0.4");
+    expect(2_000_000 / 250).toBe(8000);
+    expect(label("composite-indexes-and-selectivity-rows-per-country")).toBe("About 0.4%");
+    // A seek reads the 3 index levels and the table page, and 2,000 seeks double the 1,000 of 4,000 reads.
+    expect(3 + 1).toBe(4);
+    expect(label("reading-query-plans-reads-per-outer-row")).toMatch(/^Four, /u);
+    expect((2000 * 4) / (1000 * 4)).toBe(2);
+    expect(label("reading-query-plans-indexed-two-thousand")).toBe("It doubles");
+    // The retry adds 30 to the re-read 150, so both users' changes give 180.
+    expect(100 + 30).toBe(130);
+    expect(150 + 30).toBe(180);
+    expect(label("locks-versions-and-conflicts-retry-result")).toMatch(/^It succeeds, and both/u);
+    // Going from 3 to 6 nodes under key mod n moves 6 of the 12 keys, half, where 3 to 4 moves 9.
+    const keys = Array.from({ length: 12 }, (_, key) => key);
+    expect(keys.filter((key) => key % 3 !== key % 6)).toHaveLength(6);
+    expect(keys.filter((key) => key % 3 !== key % 4)).toHaveLength(9);
+    expect(label("replication-sharding-and-choosing-mod-six")).toBe("About half");
+    // Adding a node at 25 moves keys 11 to 25 only, the arc after the node at 10.
+    const nodes = [10, 40, 70];
+    const moved = Array.from({ length: 100 }, (_, key) => key).filter(
+      (key) => owner(key, nodes) !== owner(key, [...nodes, 25]),
+    );
+    expect(moved[0]).toBe(11);
+    expect(moved.at(-1)).toBe(25);
+    expect(moved).toHaveLength(15);
+    expect(label("replication-sharding-and-choosing-add-node-25")).toMatch(
+      /^The keys between the node at 10 and the new node$/u,
+    );
   });
 
   it("gives the results of the join questions on the rows shown", () => {
