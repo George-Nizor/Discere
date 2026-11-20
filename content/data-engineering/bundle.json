@@ -1326,7 +1326,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The Parquet table is 0.5 TB, the query reads 3 of its 25 columns, which is 0.06 TB, and at $5 a terabyte that costs $0.30. Column choice and compression multiply, so the saving is far larger than either alone."
+              "text": "Compression leaves a quarter of the bytes, and the query reads only 3 of the 25 columns, so the two savings multiply to about 3% of the CSV bill. At $5 a terabyte that is roughly $0.30 against $10, a far larger saving than either one gives alone."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -1382,7 +1382,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to work out the bytes a query reads under a row and a column layout, read a Parquet footer's statistics to see which row groups are skipped, and pick a format for a job.",
+        "promise": "By the end you'll be able to estimate the bytes a query reads under a row and a column layout, read a Parquet footer's statistics to see which row groups are skipped, and pick a format for a job.",
         "estimatedMinutes": 13,
         "whyItMatters": "The same table can cost a query 16 GB or 1.6 GB, depending on a choice made when the file was written."
       },
@@ -2491,7 +2491,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The critical path runs through the slower of Y and Z, so the minimum is 3 + 8 + 2 = 13 minutes."
+              "text": "`join` waits for the slower cleaning task, so the pipeline cannot finish before `extract`, `clean_customers` and `join` have run one after another, which takes 13 minutes. The 5 minute task has 3 minutes of slack, and more workers cannot shorten that chain."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2599,7 +2599,7 @@
               "math": "45 ÷ 6 = 7.5"
             },
             {
-              "text": "A partly filled wave still takes as long as a full one.",
+              "text": "The first 7 waves hold 6 partitions each, and a last wave holds the other 3.",
               "blank": {
                 "questionId": "date-orchestrating-dependencies-backfill-waves"
               }
@@ -2678,7 +2678,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to count the valid orders of a task graph, find its critical path, and work out how long a retry limit or a parallel backfill takes.",
+        "promise": "By the end you'll be able to count the valid orders of a task graph, find its critical path, and judge how long a retry limit or a parallel backfill takes.",
         "estimatedMinutes": 14,
         "whyItMatters": "A pipeline that has to finish before the morning is planned from its critical path, and one that has to be repaired is planned from its backfill."
       },
@@ -3286,7 +3286,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The 5 old files are only marked as removed, and the new 5 GB file is added, so 13 GB are on storage. A vacuum later deletes the removed files and brings the bill down to 8 GB."
+              "text": "The 5 old files are only marked as removed, and the new 5 GB file is added, so the bill rises from 8 GB to 13 GB. A vacuum later deletes the removed files and brings it back down to 8 GB."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3668,7 +3668,7 @@
           "id": "estimate-a-read",
           "kind": "faded_example",
           "blocks": [],
-          "headline": "A 1,800 GB table is partitioned by day over 360 days. A query filters on the last 30 days. Work out how many gigabytes it reads.",
+          "headline": "A 1,800 GB table is partitioned by day over 360 days. A query filters on the last 30 days. Judge how much of the table it reads.",
           "workedSteps": [
             {
               "text": "Divide the table's size by the number of partitions to find one partition's size.",
@@ -3698,7 +3698,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The day's data is 7,200 × 4 MB = 28,800 MB, and 28,800 ÷ 200 = 144 files. Compaction cut the file count by a factor of 50."
+              "text": "A 200 MB file holds as much as 50 of the 4 MB files, so the day's data moves from 7,200 files to about 144, a factor of 50."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3750,7 +3750,7 @@
             },
             {
               "kind": "paragraph",
-              "text": "The layout is a decision about which rows share a folder and which share a file. With a table's size, its number of folders and the ranges in its files, you can work out how many gigabytes a filtered query will read before the layout is built, and see when a layout has been cut so finely that its files cost more to open than to read."
+              "text": "The layout is a decision about which rows share a folder and which share a file. With a table's size, its number of folders and the ranges in its files, you can estimate how many gigabytes a filtered query will read before the layout is built, and see when a layout has been cut so finely that its files cost more to open than to read."
             }
           ]
         },
@@ -5001,7 +5001,7 @@
               "math": "window [14:00, 14:05) is closed"
             },
             {
-              "text": "The event stamped 14:03 is earlier than that watermark.",
+              "text": "Decide whether the event stamped 14:03 still counts.",
               "blank": {
                 "questionId": "date-streaming-and-event-time-behind-watermark"
               }
@@ -5369,13 +5369,13 @@
               "math": "30 + 60 + 20 = 110 rows"
             },
             {
-              "text": "Divide by the batch size to find the share that fails.",
+              "text": "Judge the share of the batch that fails against the 2% threshold.",
               "blank": {
                 "questionId": "date-checking-data-in-motion-batch-percent"
               }
             },
             {
-              "text": "Compare with the 2% threshold. Above it, the gate stops the run and alerts someone instead of quarantining.",
+              "text": "The 110 failing rows are 2.2% of the 5,000. Above the threshold, the gate stops the run and alerts someone instead of quarantining.",
               "math": "2.2% > 2%: stop and alert"
             }
           ],
@@ -5416,7 +5416,7 @@
         "date-checking-data-in-motion-card-3-v2"
       ],
       "reviewLabel": "Checking data in motion",
-      "nextAction": "Compute freshness and throughput against a target, and diagnose a slow or failing job from its symptoms.",
+      "nextAction": "Estimate freshness and throughput against a target, and diagnose a slow or failing job from its symptoms.",
       "stageTitles": {
         "quiz": "Skill check",
         "review": "Recall it later",
@@ -5447,7 +5447,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to classify a schema change as safe or breaking, compute the share of a batch that fails, and say whether a gate should quarantine or stop.",
+        "promise": "By the end you'll be able to classify a schema change as safe or breaking, estimate the share of a batch that fails, and say whether a gate should quarantine or stop.",
         "estimatedMinutes": 13,
         "whyItMatters": "Checks are cheap next to the cost of a wrong table that readers trust, and they are what make failing fast and recovering possible."
       },
@@ -5459,7 +5459,7 @@
             "text": "You placed gates between layers and compared the share of failing rows with a threshold: 1.6% of 2,500 rows was set aside and 2,460 continued, while 2.2% of 5,000 stopped the run. Renaming a column breaks queries that name it, whereas adding a nullable column or widening an integer leaves them working, and a pipeline should stop on breaking changes and not adapt to them silently."
           }
         ],
-        "nextHook": "The next lesson turns to the running pipeline itself, and computes freshness and throughput against a service target."
+        "nextHook": "The next lesson turns to the running pipeline itself, and estimates freshness and throughput against a service target."
       }
     },
     {
@@ -5563,7 +5563,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The backlog grows by 3,000 events each second for 1,200 seconds, so 3,600,000 events wait when the peak ends. How soon they clear depends on how far the input rate falls below 9,000 per second."
+              "text": "The job falls 3,000 events a second behind, a quarter of the 12,000 that arrive, and it does so for the whole 20 minutes, so a quarter of the peak's events, about 3.6 million, are waiting when it ends. How soon they clear depends on how far the input rate falls below 9,000 per second."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -5703,13 +5703,13 @@
               "math": "23:20 to 24:00 = 40 min"
             },
             {
-              "text": "From midnight to 05:45 is 5 hours 45 minutes.",
+              "text": "Judge the table's age by counting the time on both sides of midnight.",
               "blank": {
                 "questionId": "date-monitoring-and-tuning-overnight-age"
               }
             },
             {
-              "text": "The target of 5 hours 20 minutes is 320 minutes, and the table is late by its age minus the target.",
+              "text": "The table is 40 minutes plus 5 hours 45 minutes old, which is 385 minutes. The target of 5 hours 20 minutes is 320 minutes, and the table is late by its age minus the target.",
               "math": "385 − 320 = 65 min"
             }
           ],
@@ -5735,7 +5735,7 @@
           "activityId": ""
         }
       ],
-      "orientation": "Compute throughput and freshness against a service target, and diagnose a slow or failing job from its symptoms.",
+      "orientation": "Estimate throughput and freshness against a service target, and diagnose a slow or failing job from its symptoms.",
       "visualStates": [],
       "visualKind": "none",
       "activityId": "",
@@ -5782,7 +5782,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to compute freshness and throughput against a target, choose the signals worth alerting on, and match a slow job's symptom to its likely cause.",
+        "promise": "By the end you'll be able to estimate freshness and throughput against a target, choose the signals worth alerting on, and match a slow job's symptom to its likely cause.",
         "estimatedMinutes": 14,
         "whyItMatters": "A pipeline that is monitored only for failure will be wrong for days before anyone notices."
       },
@@ -6036,20 +6036,20 @@
           "id": "count-the-parameters",
           "kind": "worked_example",
           "blocks": [],
-          "headline": "Count the parameter values kept for a pipeline in 3 environments that each supply a source, a destination, a secret name and a sample size.",
+          "headline": "Judge what a fourth environment needs when 3 environments each supply a source, a destination, a secret name and a sample size to the same pipeline.",
           "workedSteps": [
             {
-              "text": "The pipeline's code does not change between environments, so none of the values is written into it."
+              "text": "Each of the 3 environments supplies its own value for each parameter: a source, a destination, a secret name and a sample size."
             },
             {
-              "text": "Each of the 3 environments supplies its own value for each parameter: a source, a destination, a secret name and a sample size.",
+              "text": "A fourth environment joins the other three.",
               "blank": {
                 "questionId": "date-environments-security-and-release-parameter-total"
               }
             },
             {
-              "text": "The total is the number of environments times the number of parameters.",
-              "math": "3 × 4 = 12"
+              "text": "The pipeline's code does not change between environments, so none of the values is written into it. Each environment adds a value for every parameter, so the stored values are the number of environments times the number of parameters.",
+              "math": "3 × 4 = 12, then 4 × 4 = 16"
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -6407,13 +6407,12 @@
         "etl-elt",
         "idempotence"
       ],
-      "prompt": "After the second run of the upsert, how many rows does the table hold?",
-      "responseType": "numeric",
+      "prompt": "A table holds orders 10 and 11. A batch of orders 10, 11, 12 and 13 is loaded into it with an upsert on `order_id`, and then a retry loads the same batch again. How does the table after the retry compare with the table after the first run?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Which ids exist after the first run?",
-        "Does any id in the batch fail to match an existing row?",
-        "Rows that match are replaced, not added."
+        "Which of the four ids in the batch are already in the table once the first run has finished?",
+        "What does an upsert do with a row whose key the table already holds?"
       ],
       "sourceIds": [
         "airflow-dags",
@@ -6421,35 +6420,61 @@
         "azure-etl-elt",
         "spark-streaming-overview"
       ],
-      "onCorrect": "Matching keys are replaced, so a second run of the same batch changes nothing, which is what idempotent means.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              10
-            ]
-          },
-          "feedback": "That is what plain INSERTs would give, because every run would add its rows. An upsert replaces rows with matching keys."
-        },
-        {
-          "match": {
-            "numeric": [
-              8
-            ]
-          },
-          "feedback": "That adds the batch a second time. Rows whose keys already exist are replaced, not added."
-        }
-      ],
+      "onCorrect": "After the first run the table holds orders 10 to 13, so the retry finds a match for every row and replaces each one with an identical row. A step that can be repeated without changing the result is idempotent.",
       "skill": "spot-non-idempotent-step",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "After the first run the ids are 10, 11, 12 and 13. The second run matches all four and adds none, so the table holds 4 rows."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "It is unchanged, because every key in the batch already exists"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "It is unchanged, because every key in the batch already exists"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "It has four more rows, because the whole batch is added again"
+        },
+        {
+          "id": "b",
+          "label": "It has two more rows, because orders 12 and 13 are added again"
+        },
+        {
+          "id": "c",
+          "label": "It is unchanged, because every key in the batch already exists"
+        },
+        {
+          "id": "d",
+          "label": "The retry fails, because the keys it carries already exist"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That is how plain `INSERT` statements behave, because each run adds its rows. An upsert replaces a row whose key already exists, so a repeated batch adds nothing."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Orders 12 and 13 were new only on the first run. After it they are in the table, so the retry matches them and replaces them like the others."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That is what a plain insert does into a table with a declared key. An upsert is written for exactly this case, and it replaces the matching row instead of stopping."
+        }
+      ]
     },
     {
       "id": "date-what-a-pipeline-is-safe-to-run-twice",
@@ -6921,13 +6946,12 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "How many gigabytes (10^9 bytes) does the columnar reader fetch?",
-      "responseType": "numeric",
+      "prompt": "A table has 200 million rows and 12 columns of 4 bytes each, and a query needs 3 of the columns. A row-oriented reader passes over all 12 columns of every row, which is 9.6 GB. Roughly how much does a columnar reader fetch?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Multiply the rows by the 3 columns.",
-        "Then multiply by the 4 bytes of each value.",
-        "Divide by 1,000,000,000 to give gigabytes."
+        "How many of the 12 columns does the query need?",
+        "Does a columnar reader still pass over the columns that the query leaves out?"
       ],
       "sourceIds": [
         "parquet-format",
@@ -6935,35 +6959,61 @@
         "parquet-encodings",
         "avro-spec"
       ],
-      "onCorrect": "The result is a quarter of the row layout's 9.6 GB, matching the 3 of 12 columns the query needs.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              9.6
-            ]
-          },
-          "feedback": "That is the row layout, which passes over all 12 columns."
-        },
-        {
-          "match": {
-            "numeric": [
-              0.8
-            ]
-          },
-          "feedback": "That is the size of one column of 4 bytes. The query needs three."
-        }
-      ],
+      "onCorrect": "A columnar reader fetches only the 3 columns the query names, a quarter of the 12, so it reads about a quarter of the 9.6 GB, roughly 2.4 GB.",
       "skill": "compute-scan-bytes",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2.4,
-        "unit": "",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "200,000,000 × 3 × 4 = 2,400,000,000 bytes, which is 2.4 GB and a quarter of the 9.6 GB the row layout reads."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "About a quarter of it, since 3 of the 12 columns are needed"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About a quarter of it, since 3 of the 12 columns are needed"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "About the same, since every row is still read"
+        },
+        {
+          "id": "b",
+          "label": "About a quarter of it, since 3 of the 12 columns are needed"
+        },
+        {
+          "id": "c",
+          "label": "About a twelfth of it, the size of a single column"
+        },
+        {
+          "id": "d",
+          "label": "About three quarters of it, since 9 of the 12 columns are skipped"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A columnar reader does read every row, but only of the columns the query names. It skips the other columns completely, so the bytes fall with the number of columns needed."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "That is the size of one column. The query needs three columns, and the reader fetches all three of them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That counts the columns the query skips. The reader fetches only the 3 it needs, which is the smaller share."
+        }
+      ]
     },
     {
       "id": "date-files-and-formats-one-record-v2",
@@ -7038,13 +7088,12 @@
         "encoding-compression",
         "schema-in-file"
       ],
-      "prompt": "A team pays $5 for every terabyte its query engine reads. Their 2 TB of orders as CSV is read in full by every query. Stored as Parquet the same data takes a quarter of the space, in 25 columns of equal size, and a typical query needs 3 of them. What does one such query cost in dollars?",
-      "responseType": "numeric",
+      "prompt": "A team pays $5 for every terabyte its query engine reads. Every query on their 2 TB of orders as CSV reads all of it, which costs $10. Stored as Parquet the same data takes a quarter of the space, in 25 columns of equal size, and a typical query needs 3 of them. Roughly how does the cost of such a query compare with the CSV query?",
+      "responseType": "short_text",
       "difficulty": 1.4,
       "hints": [
-        "Work out the size of the Parquet table first.",
-        "Take the share of the columns the query needs.",
-        "Multiply the terabytes read by the price per terabyte."
+        "What fraction of the CSV's bytes is left once the data is stored as Parquet?",
+        "Of the 25 columns, how many does the query read, and how do the two savings combine?"
       ],
       "sourceIds": [
         "parquet-format",
@@ -7052,43 +7101,61 @@
         "parquet-encodings",
         "avro-spec"
       ],
-      "onCorrect": "At $0.30 against $10 for a CSV scan, the format choice cuts the bill for each query by a factor of about 33.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              10
-            ]
-          },
-          "feedback": "That is the cost of reading all 2 TB of CSV. The Parquet table is smaller and the query reads only 3 of its 25 columns."
-        },
-        {
-          "match": {
-            "numeric": [
-              2.5
-            ]
-          },
-          "feedback": "That applies the compression and reads all 25 columns. The query needs only 3 of them."
-        },
-        {
-          "match": {
-            "numeric": [
-              1.2
-            ]
-          },
-          "feedback": "That reads 3 of 25 columns of the CSV size and leaves out the compression."
-        }
-      ],
+      "onCorrect": "Compression leaves a quarter of the bytes and the query reads 3 of the 25 columns, so the two savings multiply to about 3% of the CSV bill, roughly $0.30 against $10.",
       "skill": "compute-scan-bytes",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 0.3,
-        "unit": "dollars",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "Parquet takes 2 ÷ 4 = 0.5 TB, the query reads 3 of 25 columns, which is 0.5 × 3 ÷ 25 = 0.06 TB, and 0.06 × 5 = $0.30."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "About a thirtieth of it, since the two savings multiply"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About a thirtieth of it, since the two savings multiply"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "About a quarter of it, from the smaller files"
+        },
+        {
+          "id": "b",
+          "label": "About an eighth of it, from reading 3 of the 25 columns"
+        },
+        {
+          "id": "c",
+          "label": "About the same, since both formats hold the same data"
+        },
+        {
+          "id": "d",
+          "label": "About a thirtieth of it, since the two savings multiply"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That counts the compression and still reads all 25 columns. The query needs only 3 of them, which cuts the read much further."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That counts the columns and leaves out the compression. Parquet also holds the data in a quarter of the space, and that saving applies as well."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The same data does not mean the same bytes read. Parquet stores it in a quarter of the space and lets the query fetch only the columns it names."
+        }
+      ]
     },
     {
       "id": "date-files-and-formats-row-or-column",
@@ -8520,13 +8587,12 @@
         "retry-backoff",
         "backfill"
       ],
-      "prompt": "A pipeline's `extract` task (3 min) feeds `clean_orders` (5 min) and `clean_customers` (8 min), and `join` (2 min) reads both cleaned tables. With as many workers as it wants, what is the shortest time the pipeline can take, in minutes?",
-      "responseType": "numeric",
+      "prompt": "A pipeline's `extract` task (3 min) feeds `clean_orders` (5 min) and `clean_customers` (8 min), and `join` (2 min) reads both cleaned tables. With as many workers as it wants, what decides the shortest time the pipeline can take?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "The two cleaning tasks can run at the same time.",
-        "`join` cannot start until both of them have finished.",
-        "Add the tasks along the longer branch."
+        "Which of these tasks can start only after another one has finished, and which can overlap?",
+        "`join` needs both cleaned tables. Which of the two cleaning tasks does it have to wait for?"
       ],
       "sourceIds": [
         "airflow-dags",
@@ -8534,35 +8600,61 @@
         "airflow-task-sdk-api",
         "critical-path"
       ],
-      "onCorrect": "Only the longer branch counts toward the total, and the 5 minute task has 3 minutes of slack.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              18
-            ]
-          },
-          "feedback": "That adds every task, which is the time with a single worker. The cleaning tasks can overlap."
-        },
-        {
-          "match": {
-            "numeric": [
-              10
-            ]
-          },
-          "feedback": "That follows the shorter branch through `clean_orders`. `join` must wait for `clean_customers` as well."
-        }
-      ],
+      "onCorrect": "`join` cannot start until the slower cleaning task has finished, so the pipeline needs at least the time of `extract`, `clean_customers` and `join` in a row, 13 minutes. The 5 minute task has 3 minutes of slack.",
       "skill": "find-critical-path",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 13,
-        "unit": "minutes",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "The two cleaning tasks run side by side and `join` waits for the slower one, so the longest chain is extract, clean_customers and join: 3 + 8 + 2 = 13 minutes."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "The chain from `extract` through `clean_customers` to `join`"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The chain from `extract` through `clean_customers` to `join`"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "The chain from `extract` through `clean_customers` to `join`"
+        },
+        {
+          "id": "b",
+          "label": "The sum of all four tasks, since each of them has to run"
+        },
+        {
+          "id": "c",
+          "label": "The longest single task, since the others run alongside it"
+        },
+        {
+          "id": "d",
+          "label": "The chain from `extract` through `clean_orders` to `join`"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Adding every task gives the time with a single worker. With as many workers as it wants, the two cleaning tasks run side by side."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "`extract` has to finish before either cleaning task starts, and `join` has to wait for both, so those tasks cannot overlap the longest one."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That follows the shorter cleaning task. `join` reads both cleaned tables, so it waits for the slower one as well."
+        }
+      ]
     },
     {
       "id": "date-orchestrating-dependencies-backoff-compare",
@@ -8714,13 +8806,12 @@
         "retry-backoff",
         "backfill"
       ],
-      "prompt": "How many waves does the backfill need?",
-      "responseType": "numeric",
+      "prompt": "A backfill of 45 daily partitions runs 6 at a time, and each run takes 10 minutes. Seven full waves of 6 run 42 partitions, and one last wave runs the other 3. How long does that last wave take?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Divide the partitions by the number that run at once.",
-        "The result is not a whole number.",
-        "A partly filled wave still takes a round, so round up."
+        "Do the partitions inside one wave run side by side or one after another?",
+        "What decides how long a wave lasts?"
       ],
       "sourceIds": [
         "airflow-dags",
@@ -8728,33 +8819,47 @@
         "airflow-task-sdk-api",
         "critical-path"
       ],
+      "onCorrect": "The partitions in a wave run side by side, so the last wave takes one full run, 10 minutes, even with only 3 partitions in it. A partly filled wave still counts as a whole wave.",
       "skill": "plan-backfill",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 8,
-        "unit": "waves",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "45 ÷ 6 = 7.5, and a partly filled wave still takes a whole round, so rounding up gives 8 waves."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 10 minutes, the same as a full wave"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 10 minutes, the same as a full wave"
       },
-      "onCorrect": "Seven full waves cover 42 partitions, and an eighth wave runs the last 3, so the eighth counts in full.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 10 minutes, the same as a full wave"
+        },
+        {
+          "id": "b",
+          "label": "About 5 minutes, since it holds half as many partitions"
+        },
+        {
+          "id": "c",
+          "label": "About 30 minutes, since its 3 partitions run one after another"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              7
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That rounds down. The last 3 partitions still need a wave of their own."
+          "feedback": "A wave lasts as long as the runs in it, and those run side by side. Fewer partitions in the wave do not shorten the 10 minutes each run takes."
         },
         {
           "match": {
-            "numeric": [
-              7.5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A wave is a whole round, so a part of a wave still counts as one."
+          "feedback": "The partitions of a wave run at the same time, on separate workers, and do not wait for one another. The wave lasts as long as a single run."
         }
       ]
     },
@@ -9834,13 +9939,12 @@
         "time-travel",
         "maintenance"
       ],
-      "prompt": "A table has 8 data files of 1 GB each. A compaction rewrites 5 of them into one new 5 GB file in a single commit, and storage is billed per gigabyte stored. How many gigabytes are billed before any vacuum runs?",
-      "responseType": "numeric",
+      "prompt": "A table has 8 data files of 1 GB each, and storage is billed per gigabyte stored. A compaction rewrites 5 of them into one new 5 GB file in a single commit. Before any vacuum runs, how does the billed storage compare with what it was before the compaction?",
+      "responseType": "short_text",
       "difficulty": 1.4,
       "hints": [
-        "Does a commit that removes files delete their bytes?",
-        "Add the new file to the files already on storage.",
-        "8 GB plus 5 GB."
+        "Does a commit that removes files from a table delete their bytes from storage?",
+        "Which files are on storage after the commit: the old ones, the new one, or both?"
       ],
       "sourceIds": [
         "delta-protocol",
@@ -9848,35 +9952,49 @@
         "delta-concurrency-control",
         "fabric-table-maintenance"
       ],
-      "onCorrect": "Compaction shrinks the live count but grows storage until a vacuum deletes the removed files, which after the default retention period of 7 days frees 5 GB.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              8
-            ]
-          },
-          "feedback": "That is the live data, 3 old files plus the new 5 GB file. The removed files are still on storage."
-        },
-        {
-          "match": {
-            "numeric": [
-              5
-            ]
-          },
-          "feedback": "That is the size of the new file alone. The 8 original files are still stored."
-        }
-      ],
+      "onCorrect": "A compaction commit only marks the 5 old files as removed, so they stay on storage beside the new 5 GB file, and the bill rises from 8 GB to 13 GB until a vacuum deletes them, by default after 7 days.",
       "skill": "count-physical-files",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 13,
-        "unit": "GB",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "The 8 files stay on storage because the commit only marks 5 of them as removed, and the new file adds 5 GB, so 8 + 5 = 13 GB."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "Higher, because the old files stay beside the new one"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Higher, because the old files stay beside the new one"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Lower, because five files were replaced by a single file"
+        },
+        {
+          "id": "b",
+          "label": "The same, because the table holds the same data"
+        },
+        {
+          "id": "c",
+          "label": "Higher, because the old files stay beside the new one"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The commit replaces files in the table's view, but it does not delete the old ones from storage. They stay, and they are billed, until a vacuum removes them."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The table's data is unchanged, but storage holds more than the table lists. The new file is written beside the old ones, which stay until a vacuum."
+        }
+      ]
     },
     {
       "id": "date-open-table-formats-files-at-v3",
@@ -10500,13 +10618,12 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "How many gigabytes does the query read?",
-      "responseType": "numeric",
+      "prompt": "A 1,800 GB table is partitioned by day over 360 days, and a query filters on the last 30 days. Roughly how much of the table does the query read?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Use the size of one partition from the first step.",
-        "Multiply by the 30 partitions opened.",
-        "30 times 5."
+        "How many of the 360 partitions does a filter on the last 30 days open?",
+        "What happens to the partitions that the filter does not name?"
       ],
       "sourceIds": [
         "delta-best-practices",
@@ -10514,35 +10631,61 @@
         "iceberg-spec",
         "parquet-thrift"
       ],
-      "onCorrect": "A 30-day filter reads 30 of 360 partitions, about a twelfth of the table.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              1800
-            ]
-          },
-          "feedback": "That is the whole table. Pruning leaves the other 330 partitions unread."
-        },
-        {
-          "match": {
-            "numeric": [
-              5
-            ]
-          },
-          "feedback": "That is one partition. The query opens 30."
-        }
-      ],
+      "onCorrect": "The filter names 30 of the 360 daily partitions, so the engine opens a twelfth of the table, about 150 GB of the 1,800 GB, and skips the rest.",
       "skill": "estimate-bytes-read",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 150,
-        "unit": "",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "30 partitions of 5 GB each give 30 × 5 = 150 GB, which is about 8.3% of the 1,800 GB table."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "About a twelfth of it, since 30 of the 360 partitions are opened"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About a twelfth of it, since 30 of the 360 partitions are opened"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "All of it, since the engine applies a filter only after it has read the files"
+        },
+        {
+          "id": "b",
+          "label": "About a twelfth of it, since 30 of the 360 partitions are opened"
+        },
+        {
+          "id": "c",
+          "label": "About one partition's worth, the size of a single day"
+        },
+        {
+          "id": "d",
+          "label": "About 30% of it, one percent for each day named"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "A filter on the partition column lets the engine drop folders before it reads anything. The other 330 days are never opened."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The filter names 30 days, so the query opens 30 partitions."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That treats the 30 days as 30 parts out of 100. The table has 360 partitions, so 30 of them are a much smaller share."
+        }
+      ]
     },
     {
       "id": "date-partitioning-and-file-layout-files-after-compaction",
@@ -10552,13 +10695,12 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "A day's data is 7,200 files of 4 MB. Compaction rewrites it into files of about 200 MB. How many files hold the data afterwards?",
-      "responseType": "numeric",
+      "prompt": "A day's data is 7,200 files of 4 MB. Compaction rewrites it into files of about 200 MB. Roughly how does the number of files change?",
+      "responseType": "short_text",
       "difficulty": 1.4,
       "hints": [
-        "Work out the total data in megabytes first.",
-        "Divide the total by the target file size.",
-        "7,200 times 4, then divide by 200."
+        "How many 4 MB files does it take to fill one 200 MB file?",
+        "Does compaction change the amount of data, or only how it is split into files?"
       ],
       "sourceIds": [
         "delta-best-practices",
@@ -10566,35 +10708,61 @@
         "iceberg-spec",
         "parquet-thrift"
       ],
-      "onCorrect": "Compaction keeps the same data in about a fiftieth as many files, so far fewer fixed costs are paid on each read.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              7200
-            ]
-          },
-          "feedback": "That is the number of files before compaction."
-        },
-        {
-          "match": {
-            "numeric": [
-              36
-            ]
-          },
-          "feedback": "That divides by 800 MB. The target file size is 200 MB."
-        }
-      ],
+      "onCorrect": "A 200 MB file holds as much as 50 of the 4 MB files, so the same data fits in about 50 times fewer files, roughly 144 instead of 7,200, and far fewer fixed costs are paid on each read.",
       "skill": "pick-partition-column",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 144,
-        "unit": "files",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "The data is 7,200 × 4 = 28,800 MB, and 28,800 ÷ 200 = 144 files."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 50 times fewer, since each new file holds about 50 old ones"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 50 times fewer, since each new file holds about 50 old ones"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 4 times fewer, since the old files were 4 MB"
+        },
+        {
+          "id": "b",
+          "label": "About 50 times fewer, since each new file holds about 50 old ones"
+        },
+        {
+          "id": "c",
+          "label": "About 200 times fewer, since the new files are 200 MB"
+        },
+        {
+          "id": "d",
+          "label": "About the same, since the data is rewritten and none of it is removed"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The 4 MB is the size of an old file. What matters is how many of them fit into one new file of 200 MB."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "That divides by the new file size alone. Each new file replaces the old files that fill it, and the old ones were 4 MB each."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The same data is held in far larger files, so there are far fewer of them. Compaction changes how the bytes are packed, and the amount of data stays the same."
+        }
+      ]
     },
     {
       "id": "date-partitioning-and-file-layout-gb-skipped",
@@ -10604,13 +10772,12 @@
         "small-files",
         "data-skipping"
       ],
-      "prompt": "A 900 GB table has 360 equal daily partitions, and a query filters 12 of those days. How many gigabytes does partition pruning let the engine skip?",
-      "responseType": "numeric",
+      "prompt": "A 900 GB table has 360 equal daily partitions, and a query filters 12 of those days. How much of the table does partition pruning let the engine skip?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "How big is one daily partition?",
-        "How many gigabytes do the 12 opened partitions hold?",
-        "Subtract them from the whole table."
+        "What share of the 360 partitions does the query open?",
+        "Is the question about the part the query reads, or the part it skips?"
       ],
       "sourceIds": [
         "delta-best-practices",
@@ -10618,35 +10785,61 @@
         "iceberg-spec",
         "parquet-thrift"
       ],
-      "onCorrect": "Reading 30 GB out of 900 GB is a thirtieth of the table, so pruning skips 29 parts in 30.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              30
-            ]
-          },
-          "feedback": "That is what the query reads. The question asks how much is skipped."
-        },
-        {
-          "match": {
-            "numeric": [
-              900
-            ]
-          },
-          "feedback": "That is the whole table. The query opens 12 of 360 partitions."
-        }
-      ],
+      "onCorrect": "The query opens 12 of the 360 partitions, a thirtieth of the table, so pruning skips the other 29 parts in 30, about 870 GB of the 900 GB.",
       "skill": "estimate-bytes-read",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 870,
-        "unit": "GB",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each partition holds 900 ÷ 360 = 2.5 GB, so 12 days are 30 GB, and the other 900 − 30 = 870 GB are skipped."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "Almost all of it, about 29 parts in every 30"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Almost all of it, about 29 parts in every 30"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "About a thirtieth of it, the part the query opens"
+        },
+        {
+          "id": "b",
+          "label": "About a third of it, one day in every three"
+        },
+        {
+          "id": "c",
+          "label": "Almost all of it, about 29 parts in every 30"
+        },
+        {
+          "id": "d",
+          "label": "None of it, since the engine still has to check every partition"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That is the share the query reads. The question asks for the share skipped, which is everything else."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The query opens only 12 of the 360 partitions, so most of the table is skipped, far more than a third of it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Checking a partition's name reads no data. Pruning drops the folders that the filter rules out before any of their files are opened."
+        }
+      ]
     },
     {
       "id": "date-partitioning-and-file-layout-practice-3-v2",
@@ -11031,13 +11224,12 @@
         "lazy",
         "skew"
       ],
-      "prompt": "How many seconds does the hot key's task need?",
-      "responseType": "numeric",
+      "prompt": "A stage shuffles 1,000 million rows to 10 reducing tasks that each process 2 million rows per second, so an even split would take 50 seconds. One key holds 40% of the rows, and every row of a key goes to the same task. How does the stage's run time compare with an even split?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Divide the rows by the rate.",
-        "Rows divided by rows per second gives seconds.",
-        "400 million divided by 2 million."
+        "What share of the rows would each task hold in an even split, and what share does the hot key's task hold?",
+        "Does a stage finish when the average task finishes, or when the slowest one does?"
       ],
       "sourceIds": [
         "spark-sql-tuning",
@@ -11045,43 +11237,61 @@
         "spark-cluster-overview",
         "rdd-paper"
       ],
-      "onCorrect": "The stage takes four times as long as the even split of 50 seconds, because one task carries 40% of the rows and an even task would carry 10%.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              50
-            ]
-          },
-          "feedback": "That is the time for an even split of 100 million rows each. The hot task holds 400 million."
-        },
-        {
-          "match": {
-            "numeric": [
-              500
-            ]
-          },
-          "feedback": "That would be all the rows on one task. The hot key holds 40%."
-        },
-        {
-          "match": {
-            "numeric": [
-              400
-            ]
-          },
-          "feedback": "That is the hot task's rows in millions. At 2 million rows per second it needs half as many seconds."
-        }
-      ],
+      "onCorrect": "The stage lasts as long as its slowest task, and the hot task holds 40% of the rows where an even task would hold 10%, so it needs four times as long, 200 seconds against 50.",
       "skill": "estimate-skewed-stage",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 200,
-        "unit": "seconds",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "400 million ÷ 2 million per second = 200 seconds, which is also the length of the stage, against 50 seconds for an even split."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "About four times as long, since one task holds 40% of the rows"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About four times as long, since one task holds 40% of the rows"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "About the same, since ten tasks still share the work"
+        },
+        {
+          "id": "b",
+          "label": "About 40% longer, since the hot key holds 40% of the rows"
+        },
+        {
+          "id": "c",
+          "label": "About four times as long, since one task holds 40% of the rows"
+        },
+        {
+          "id": "d",
+          "label": "About ten times as long, since one task ends up doing all of the work"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Nine tasks share the other 60% of the rows, but one task gets 40% of them. The stage ends when that task ends, so the even split's time is no guide."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That adds 40% on top of the even split. The hot task holds 40% of all the rows where an even task would hold 10%, which is a far bigger step."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That would need one task to hold every row. The hot key holds 40% of them, and the other nine tasks share the rest and finish early."
+        }
+      ]
     },
     {
       "id": "date-distributed-processing-which-call",
@@ -12322,48 +12532,61 @@
         "watermark-stream",
         "delivery"
       ],
-      "prompt": "How many minutes earlier than the watermark is the event time?",
-      "responseType": "numeric",
+      "prompt": "A stream allows records to arrive up to 10 minutes late, and the latest event time it has seen is 14:41. A record stamped 14:03 arrives for the window from 14:00 to 14:05. Does the record still count in that window?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Both times are in the same hour.",
-        "Subtract the minutes of 14:03 from the minutes of 14:31.",
-        "31 minus 3."
+        "The watermark is the latest event time minus the allowed lateness. Where does it stand?",
+        "Did the window from 14:00 to 14:05 end before or after that point?"
       ],
       "sourceIds": [
         "spark-streaming",
         "kafka-docs",
         "dataflow-model"
       ],
-      "onCorrect": "The event is 28 minutes behind the watermark, and its window closed long before it arrived.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              38
-            ]
-          },
-          "feedback": "That subtracts from the latest event time 14:41. The question compares with the watermark."
-        },
-        {
-          "match": {
-            "numeric": [
-              18
-            ]
-          },
-          "feedback": "That takes away the allowed lateness as well, but the gap to the watermark is the full difference."
-        }
-      ],
+      "onCorrect": "The watermark stands at 14:31, well past the window's end at 14:05, so the window has been closed and a record stamped 14:03 is too late to count.",
       "skill": "compute-watermark",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 28,
-        "unit": "min",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "From 14:03 to 14:31 is 28 minutes, which is more than the 10 minutes of allowed lateness, so the event is too late to count."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "No, because the watermark is already well past the window's end"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "No, because the watermark is already well past the window's end"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "No, because the watermark is already well past the window's end"
+        },
+        {
+          "id": "b",
+          "label": "Yes, because its timestamp falls inside the window"
+        },
+        {
+          "id": "c",
+          "label": "Yes, because late records are always added to their windows"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The timestamp puts the record in that window, but the window may already be closed. The engine counts the record only if the watermark has not yet passed the window's end."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Only records within the allowed lateness are added. Beyond it the engine has reported the window and moved on, or its results would keep changing."
+        }
+      ]
     },
     {
       "id": "date-streaming-and-event-time-replayed-records",
@@ -12985,48 +13208,61 @@
         "quarantine",
         "fail-fast"
       ],
-      "prompt": "What percentage of the 5,000 rows fail?",
-      "responseType": "numeric",
+      "prompt": "A validation gate quarantines the failing rows when under 2% of a batch fails, and stops the run when more fail. A batch of 5,000 rows has 30 rows with a null key, 60 with a negative amount and 20 with a duplicate key, and no row fails two checks. What does the gate do?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Divide the failing rows by the batch size.",
-        "110 divided by 5,000.",
-        "Multiply by 100 to give a percentage."
+        "Does the gate judge each check on its own, or all the failing rows together?",
+        "About how many rows is 2% of a batch of 5,000, and how many rows fail in all?"
       ],
       "sourceIds": [
         "fabric-mlv-data-quality",
         "delta-schema",
         "avro-spec"
       ],
-      "onCorrect": "2.2% is over the 2% threshold, so the gate stops the run, although no single check failed on many rows.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              110
-            ]
-          },
-          "feedback": "That is the number of failing rows. The question asks for a percentage."
-        },
-        {
-          "match": {
-            "numeric": [
-              0.022
-            ]
-          },
-          "feedback": "That is the fraction. Multiply by 100 for a percentage."
-        }
-      ],
+      "onCorrect": "The checks fail 110 of the 5,000 rows between them, about 2.2%, which is over the 2% threshold, so the gate stops the run although no single check failed on many rows.",
       "skill": "apply-threshold",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2.2,
-        "unit": "%",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "110 ÷ 5,000 = 0.022, which is 2.2%, above the 2% threshold."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "Stops the run, since the failing rows together are just over 2% of the batch"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Stops the run, since the failing rows together are just over 2% of the batch"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Quarantines the failing rows, since no single check fails more than 2% of the rows"
+        },
+        {
+          "id": "b",
+          "label": "Stops the run, since the failing rows together are just over 2% of the batch"
+        },
+        {
+          "id": "c",
+          "label": "Lets the batch through, since nearly 98% of its rows pass"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "The gate counts all the failing rows together, whatever check each one failed. The three checks fail 110 rows between them, which is more than 2% of 5,000."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Most rows passing does not make the batch safe. The gate's rule is about the share that fails, and more than 2% failing means it stops the run."
+        }
+      ]
     },
     {
       "id": "date-checking-data-in-motion-drop-versus-fail",
@@ -13353,13 +13589,12 @@
         "run-signals",
         "tuning-causes"
       ],
-      "prompt": "A stream receives 12,000 events per second during a 20 minute peak, and the job can process 9,000 per second. How many events are waiting unprocessed when the peak ends?",
-      "responseType": "numeric",
+      "prompt": "A stream receives 12,000 events per second during a 20 minute peak, and the job can process 9,000 per second. What share of the events that arrive during the peak is still waiting unprocessed when it ends?",
+      "responseType": "short_text",
       "difficulty": 1.4,
       "hints": [
-        "How many events does the backlog grow by each second?",
-        "How many seconds does the peak last?",
-        "Multiply the two."
+        "How many of the 12,000 events that arrive each second can the job not process?",
+        "That gap builds up over the whole peak. What share of the arriving events does it make up?"
       ],
       "sourceIds": [
         "sre-workbook-pipelines",
@@ -13367,35 +13602,61 @@
         "spark-sql-tuning",
         "delta-best-practices"
       ],
-      "onCorrect": "At 9,000 events per second the job needs 400 seconds of peak-rate processing to clear that backlog if the input stopped, and longer while new events keep arriving, so freshness slips by minutes.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              3000
-            ]
-          },
-          "feedback": "That is the growth in a single second. The peak lasts 1,200 seconds."
-        },
-        {
-          "match": {
-            "numeric": [
-              14400000
-            ]
-          },
-          "feedback": "That is every event of the peak, 12,000 × 1,200. The job processed 9,000 of them each second."
-        }
-      ],
+      "onCorrect": "The job falls 3,000 events a second behind, a quarter of the 12,000 that arrive, and the gap builds for all 20 minutes. About 3.6 million events wait, and clearing them takes roughly 400 seconds at full speed with no new input.",
       "skill": "compute-throughput",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3600000,
-        "unit": "events",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "The backlog grows by 12,000 − 9,000 = 3,000 events every second, and the peak lasts 20 × 60 = 1,200 seconds, so 3,000 × 1,200 = 3,600,000 events."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "About a quarter, since the job keeps up with three quarters"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About a quarter, since the job keeps up with three quarters"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Only a few thousand, the gap for a single second"
+        },
+        {
+          "id": "b",
+          "label": "About three quarters, the share of the arrivals the job handles"
+        },
+        {
+          "id": "c",
+          "label": "Nearly all of them, since the job is overloaded for the whole peak"
+        },
+        {
+          "id": "d",
+          "label": "About a quarter, since the job keeps up with three quarters"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "That is how far behind the job falls in one second. The gap builds up for every second of the 20 minute peak."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That is the share the job does process, 9,000 of every 12,000 events. What waits is the rest."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The job is overloaded, yet it still processes 9,000 events every second. Only the events beyond that rate wait."
+        }
+      ]
     },
     {
       "id": "date-monitoring-and-tuning-status-misses-volume",
@@ -13612,13 +13873,12 @@
         "run-signals",
         "tuning-causes"
       ],
-      "prompt": "How many minutes old is the table when it is checked at 05:45?",
-      "responseType": "numeric",
+      "prompt": "A table was last loaded at 23:20 and is checked at 05:45 the next morning. Its freshness target is 5 hours 20 minutes. Roughly how late is the table?",
+      "responseType": "short_text",
       "difficulty": 1.1,
       "hints": [
-        "The time passes midnight, so split it there.",
-        "From 23:20 to midnight is 40 minutes.",
-        "Convert 5 hours 45 minutes to minutes and add the 40."
+        "The load was before midnight and the check after it. How much of the table's age falls on each side of midnight?",
+        "Lateness is the age beyond what the target allows. About how old is the table?"
       ],
       "sourceIds": [
         "sre-workbook-pipelines",
@@ -13626,33 +13886,59 @@
         "spark-sql-tuning",
         "delta-best-practices"
       ],
+      "onCorrect": "The table is 40 minutes old at midnight and 5 hours 45 minutes older by 05:45, about 6 hours 25 minutes against a target of 5 hours 20 minutes, so it is a little over an hour late.",
       "skill": "compute-freshness",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 385,
-        "unit": "minutes",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "From 23:20 to midnight is 40 minutes, and from midnight to 05:45 is 5 hours 45 minutes, which is 345 minutes, so the table is 40 + 345 = 385 minutes old."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About an hour late, counting from the load at 23:20"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About an hour late, counting from the load at 23:20"
       },
-      "onCorrect": "The age runs across midnight, so it is the time to midnight plus the time since, 40 + 345 = 385 minutes.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 25 minutes late, counting from midnight"
+        },
+        {
+          "id": "b",
+          "label": "About 6 hours late, since that is how old the table is"
+        },
+        {
+          "id": "c",
+          "label": "Not late, since it was loaded less than a day ago"
+        },
+        {
+          "id": "d",
+          "label": "About an hour late, counting from the load at 23:20"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              345
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts only the time after midnight. The 40 minutes before midnight count as well."
+          "feedback": "That starts the clock at midnight and leaves out the 40 minutes between the load at 23:20 and midnight. The table's age starts at the load."
         },
         {
           "match": {
-            "numeric": [
-              40
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is only the time before midnight. The table is also 5 hours 45 minutes old at 05:45."
+          "feedback": "That is the table's age. Lateness is the age beyond the 5 hours 20 minutes the target allows."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The target here is 5 hours 20 minutes, so the table's age is judged against that figure, whatever the number of days."
         }
       ]
     },
@@ -14250,13 +14536,12 @@
         "date-access-control",
         "secrets"
       ],
-      "prompt": "How many parameter values are kept in all?",
-      "responseType": "numeric",
+      "prompt": "A pipeline has the same code in 3 environments, and each environment supplies its own source, destination, secret name and sample size. A fourth environment is added. What does it need?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Each environment has its own set of values.",
-        "Multiply the environments by the parameters.",
-        "3 times 4."
+        "Which parts of the pipeline differ between environments, and which stay the same?",
+        "What would the new environment have to supply for each parameter the pipeline reads?"
       ],
       "sourceIds": [
         "fabric-deployment-pipelines",
@@ -14265,35 +14550,49 @@
         "fabric-warehouse-security",
         "fabric-key-vault-reference"
       ],
-      "onCorrect": "The table of parameters grows with the environments, while the pipeline code stays the same.",
-      "misconceptions": [
-        {
-          "match": {
-            "numeric": [
-              7
-            ]
-          },
-          "feedback": "That adds the numbers. Each environment has its own value for every parameter, so they multiply."
-        },
-        {
-          "match": {
-            "numeric": [
-              4
-            ]
-          },
-          "feedback": "That is the parameters of one environment. There are 3 environments."
-        }
-      ],
+      "onCorrect": "The code stays the same and each environment supplies a value for every parameter, so a fourth environment adds four values and no new code: 16 values for 4 environments, up from 12 for 3.",
       "skill": "order-a-release",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 12,
-        "unit": "",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each of the 3 environments supplies 4 values, so 3 × 4 = 12 values."
-      }
+        "kind": "text",
+        "acceptedIdeas": [
+          "Its own set of four values, with the pipeline code left unchanged"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Its own set of four values, with the pipeline code left unchanged"
+      },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Its own set of four values, with the pipeline code left unchanged"
+        },
+        {
+          "id": "b",
+          "label": "A copy of the pipeline with its own four values written into the code"
+        },
+        {
+          "id": "c",
+          "label": "Nothing, because the three existing sets of values cover any environment"
+        }
+      ],
+      "misconceptions": [
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "Copies of the code let the environments drift apart, so what was tested is no longer what is released. The code stays as it is, and each environment supplies its values."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Each environment has its own source, destination and secret. A new one needs a value for every parameter, or it would read another environment's data and credentials."
+        }
+      ]
     },
     {
       "id": "date-environments-security-and-release-auditor-access",
