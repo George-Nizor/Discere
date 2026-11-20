@@ -11,9 +11,11 @@ import { describe, expect, it } from "vitest";
 /**
  * Game Design and Game Programming Patterns follows the way UX and HCI asks questions
  * (docs/question-writing-guide.md): most questions describe a mechanic, a playtest finding or a
- * short piece of code and ask what it does or what breaks. Numeric questions stay where the number
- * is the point. Every figure that a question or its feedback quotes is recomputed below, and the
- * code the questions show was run in Python when it was written; the functions here repeat it.
+ * short piece of code and ask what it does or what breaks. Questions about a figure ask which option
+ * is larger, roughly how much, or what the figure shows, and offer choices; only the three
+ * fixed-timestep questions in the game loop lesson still ask for a number. Every figure that a
+ * question or its feedback quotes is recomputed below, and the code the questions show was run in
+ * Python when it was written; the functions here repeat it.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -266,41 +268,10 @@ describe("questions in Game Design and Game Programming Patterns", () => {
   });
 
   it("recomputes every numeric answer", () => {
-    const msPerFrame = (fps: number) => 1000 / fps;
-    const cost = (level: number) => ({
-      a: 100 + 60 * (level - 1),
-      b: 100 * 1.4 ** (level - 1),
-    });
-    let crossing = 0;
-    for (let level = 1; level < 30 && !crossing; level++)
-      if (cost(level).b > cost(level).a) crossing = level;
-    let coins = 12;
-    let failure = 0;
-    for (let round = 1; round <= 20 && !failure; round++) {
-      coins += 1;
-      if (coins < 3) failure = round;
-      else coins -= 3;
-    }
-    const pairs = (n: number) => (n * (n - 1)) / 2;
     const expected: Record<string, [number, number]> = {
-      "feedback-and-game-feel-jump-misses-target": [7 * msPerFrame(60) - 100, 0.1],
-      "feedback-and-game-feel-same-delay-30": [3 * msPerFrame(30) - 3 * msPerFrame(60), 0.5],
-      "feedback-and-game-feel-check-window-at-144": [6 * msPerFrame(144), 0.1],
-      "challenge-flow-and-difficulty-dda-two-steps": [200 * 0.9 * 0.9, 0.5],
-      "balance-by-the-numbers-expected-with-miss": [0.7 * (0.9 * 50 + 0.1 * 150), 0.5],
-      "balance-by-the-numbers-curves-cross": [crossing, 0.001],
-      "balance-by-the-numbers-twenty-kills-no-drop": [100 * 0.95 ** 20, 0.1],
-      "balance-by-the-numbers-check-compare-ttk": [360 / 90 - 360 / (45 * 3 * 0.75), 0.01],
-      "prototype-and-playtest-paper-first-failure": [failure, 0.001],
-      "prototype-and-playtest-check-funnel": [(120 / 300) * 100, 0.5],
       "the-game-loop-updates-from-70": [runLoop([110], 20).updates, 0.001],
       "the-game-loop-interpolated-x": [100 + (20 * 5) / 20, 0.5],
       "the-game-loop-capped-updates": [runLoop([500], 20, true, 250).updates, 0.001],
-      "components-soa-lines": [Math.ceil((2000 * (12 + 12 + 4)) / 64), 0.5],
-      "events-and-queues-stall-in-frames": [Math.round((3 + 8 + 40) / 16.7), 0.01],
-      "pools-and-sharing-trees-in-budget": [Math.floor((1_000_000 - 20_000) / 12), 0.001],
-      "spatial-partitioning-pairs-doubled": [pairs(2000) - pairs(1000), 0.5],
-      "spatial-partitioning-grid-pair-tests": [(1000 * (90 - 1)) / 2, 0.5],
     };
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
     expect(numeric.map((question) => question.id.replace(/^gamdpp-/u, "")).sort()).toEqual(
@@ -317,6 +288,128 @@ describe("questions in Game Design and Game Programming Patterns", () => {
         entry[1] + 0.05,
       );
     }
+  });
+
+  it("asks fifteen former calculations as judgements and recomputes the figures behind them", () => {
+    const rights: Record<string, string> = {
+      "feedback-and-game-feel-jump-misses-target": "It misses by about one frame, roughly 17 ms",
+      "feedback-and-game-feel-same-delay-30": "About twice as long, since frames are twice as long",
+      "feedback-and-game-feel-check-window-at-144": "About 40 ms, less than half as long as before",
+      "challenge-flow-and-difficulty-dda-two-steps":
+        "A little smaller, since the second cut takes less",
+      "balance-by-the-numbers-expected-with-miss":
+        "A little over 40, since seven swings in ten land",
+      "balance-by-the-numbers-curves-cross":
+        "Plan B passes plan A at level 5 and keeps pulling further away",
+      "balance-by-the-numbers-twenty-kills-no-drop": "About a third, since the misses multiply",
+      "balance-by-the-numbers-check-compare-ttk":
+        "Weapon B, by under half a second, because it deals more per second",
+      "prototype-and-playtest-paper-first-failure":
+        "No, the coins run out a round or two before the end",
+      "prototype-and-playtest-check-funnel": "About 40%, 120 of the 300 who reached it",
+      "components-soa-lines": "A little under half as many, since 28 of 64 bytes are read",
+      "events-and-queues-stall-in-frames": "About three frames, since all three run in turn",
+      "pools-and-sharing-trees-in-budget": "About 80,000, since each tree adds only 12 bytes",
+      "spatial-partitioning-pairs-doubled":
+        "About four times as many, since pairs grow with the square",
+      "spatial-partitioning-grid-pair-tests":
+        "About a tenth as many, once each pair is counted once",
+    };
+    for (const [suffix, label] of Object.entries(rights)) {
+      const question = get(suffix);
+      expect(kind(question), suffix).toBe("choice");
+      expect(question.calculator, suffix).toBe("off");
+      expect(
+        rightOption(question).map((choice) => choice.label),
+        suffix,
+      ).toEqual([label]);
+    }
+
+    const msPerFrame = (fps: number) => 1000 / fps;
+    // frames and milliseconds: the build is about one frame over, and 3 frames double at half rate
+    expect(7 * msPerFrame(60)).toBeCloseTo(116.7, 1);
+    expect(7 * msPerFrame(60) - 100).toBeCloseTo(16.7, 1);
+    expect(3 * msPerFrame(60)).toBeCloseTo(50, 0);
+    expect(3 * msPerFrame(30)).toBeCloseTo(100, 0);
+    expect((3 * msPerFrame(30)) / (3 * msPerFrame(60))).toBeCloseTo(2, 5);
+    expect(msPerFrame(30)).toBeCloseTo(33.3, 1);
+    expect(6 * msPerFrame(144)).toBeCloseTo(41.7, 1);
+    expect(msPerFrame(144)).toBeCloseTo(6.9, 1);
+    expect(144 / 60).toBeCloseTo(2.4, 5);
+    // two successive cuts of 10 percent against one flat cut of 20 percent
+    expect(200 - 200 * 0.9 * 0.9).toBeCloseTo(38, 5);
+    expect(200 * 0.2).toBeCloseTo(40, 5);
+    expect(180 * 0.1).toBeCloseTo(18, 5);
+    // expected damage
+    expect(0.9 * 50 + 0.1 * 150).toBeCloseTo(60, 5);
+    expect(0.7 * (0.9 * 50 + 0.1 * 150)).toBeCloseTo(42, 5);
+    expect(0.3 * 60).toBeCloseTo(18, 5);
+    // the two upgrade prices
+    const cost = (level: number) => ({
+      a: 100 + 60 * (level - 1),
+      b: 100 * 1.4 ** (level - 1),
+    });
+    expect(cost(4).a).toBe(280);
+    expect(cost(4).b).toBeCloseTo(274.4, 1);
+    expect(cost(5).b - cost(4).b).toBeCloseTo(109.76, 2);
+    for (const level of [2, 3, 4])
+      expect(cost(level).b, `level ${level}`).toBeLessThan(cost(level).a);
+    for (let level = 5; level <= 30; level++)
+      expect(cost(level).b, `level ${level}`).toBeGreaterThan(cost(level).a);
+    expect(get("curves-cross").onCorrect).toContain("levels 2, 3 and 4");
+    // a rare drop
+    expect(0.95 ** 20).toBeCloseTo(0.358, 3);
+    expect(1 - 0.95 ** 20).toBeCloseTo(0.642, 3);
+    expect(20 * 5).toBe(100);
+    // time to kill
+    expect(360 / 90).toBe(4);
+    expect(45 * 3 * 0.75).toBeCloseTo(101.25, 5);
+    expect(360 / (45 * 3 * 0.75)).toBeCloseTo(3.56, 2);
+    expect(360 / 90 - 360 / (45 * 3 * 0.75)).toBeGreaterThan(0.4);
+    expect(360 / 90 - 360 / (45 * 3 * 0.75)).toBeLessThan(0.5);
+    expect(3 * 0.75).toBeCloseTo(2.25, 5);
+    expect(45 * 3).toBe(135);
+    expect(360 / 90 - 360 / (45 * 3)).toBeGreaterThan(1);
+    // the paper economy: a net loss of 2 a round, and the first failure in round 7
+    let coins = 12;
+    let failure = 0;
+    for (let round = 1; round <= 20 && !failure; round++) {
+      coins += 1;
+      if (coins < 3) failure = round;
+      else coins -= 3;
+    }
+    expect(failure).toBe(7);
+    expect(8 * (3 - 1)).toBe(16);
+    expect(12 / 3).toBe(4);
+    // the funnel
+    expect(120 / 300).toBeCloseTo(0.4, 5);
+    expect(120 / 400).toBeCloseTo(0.3, 5);
+    expect(300 / 400).toBeCloseTo(0.75, 5);
+    expect(180 / 300).toBeCloseTo(0.6, 5);
+    // cache lines
+    expect(12 + 12 + 4).toBe(28);
+    expect(Math.ceil((2000 * 28) / 64)).toBe(875);
+    expect(875 / 2000).toBeCloseTo(0.4375, 4);
+    expect((2000 * 24) / 64 / 2000).toBeCloseTo(0.375, 3);
+    // the listeners that run in turn
+    expect(3 + 8 + 40).toBe(51);
+    expect(51 / 16.7).toBeCloseTo(3.05, 2);
+    expect(40 / 16.7).toBeCloseTo(2.4, 1);
+    // the forest
+    expect(Math.floor((1_000_000 - 20_000) / 12)).toBe(81_666);
+    expect(1_000_000 / 12).toBeCloseTo(83_333.3, 1);
+    expect(20_000 / 1_000_000).toBeCloseTo(1 / 50, 5);
+    expect(Math.floor(1_000_000 / 20_012)).toBe(49);
+    // pair tests
+    const pairs = (n: number) => (n * (n - 1)) / 2;
+    expect(pairs(1000)).toBe(499_500);
+    expect(pairs(2000)).toBe(1_999_000);
+    expect(pairs(2000) / pairs(1000)).toBeCloseTo(4, 1);
+    expect(get("pairs-doubled").onCorrect).toContain("499,500 to 1,999,000");
+    expect((1000 * (90 - 1)) / 2).toBe(44_500);
+    expect(1000 * (90 - 1)).toBe(89_000);
+    expect(44_500 / 499_500).toBeCloseTo(0.089, 3);
+    expect(89_000 / 499_500).toBeCloseTo(0.178, 3);
   });
 
   it("recomputes the figures that the multiple-choice questions and their feedback quote", () => {
@@ -450,10 +543,11 @@ describe("questions in Game Design and Game Programming Patterns", () => {
   it("states each figure that feedback quotes for the questions that use one", () => {
     expect(feedbackOf(get("hitstop-ms"))).toContain("2 × 16.67");
     expect(get("check-pity-limit").onCorrect).toContain("0.98^60");
-    expect(get("curves-cross").answerAuthority.kind).toBe("numeric");
+    expect(get("curves-cross").answerAuthority.kind).toBe("text");
     expect(get("curves-cross").onCorrect).toContain("levels 2, 3 and 4");
-    expect(feedbackOf(get("trees-in-budget"))).toContain("1,000,004");
-    expect(feedbackOf(get("pairs-doubled"))).toContain("499,500");
+    expect(get("trees-in-budget").onCorrect).toContain("only 49 would fit");
+    expect(get("pairs-doubled").prompt).toContain("499,500");
+    expect(get("grid-pair-tests").onCorrect).toContain("44,500");
     expect(feedbackOf(get("check-crowd-in-corner"))).toContain("404,550");
   });
 

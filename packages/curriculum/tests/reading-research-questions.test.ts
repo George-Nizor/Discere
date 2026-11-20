@@ -13,8 +13,10 @@ import { describe, expect, it } from "vitest";
  * adapted to source work: most questions put a short passage, a claim with its figures, a search
  * or a note in front of the learner and ask what it shows, what is missing and what to do next.
  * Real passages come from Bacon, Paine and Pliny (Project Gutenberg, public domain); the others
- * are labelled as invented for the exercise. Numeric questions stay in the worked-example blanks
- * and in one place where a figure is read off a trial table.
+ * are labelled as invented for the exercise. The questions that once asked for a figure (a reading
+ * time, a review date, a relative reduction, a number needed to treat, a total of participants) now ask
+ * for a judgement, such as roughly how long an article takes or how large a share the biggest study
+ * holds, and the figures behind each right answer are recomputed here from the scenario.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -68,20 +70,103 @@ describe("questions in Reading and Research", () => {
     }
   });
 
-  it("keeps numeric questions to the worked-example blanks and one figure read off a trial table", () => {
+  it("keeps typed numbers to the two search counts, where the count is the point of the operator", () => {
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(12);
-    const blanks = new Set(
-      bundle.lessons.flatMap((lesson) =>
-        lesson.steps.flatMap((step) =>
-          (step.workedSteps ?? []).map((line) => line.blank?.questionId ?? ""),
-        ),
-      ),
-    );
-    expect(numeric.filter((question) => !blanks.has(question.id)).map((q) => q.id)).toEqual([
-      "rear-judging-a-claim-flu-table",
+    expect(numeric.map((question) => question.id).sort()).toEqual([
+      "rear-searching-well-not-count-v2",
+      "rear-searching-well-or-count",
     ]);
     for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
+    // A OR B counts the shared results once, and A NOT B takes them out of A.
+    expect(100 + 80 - 30).toBe(150);
+    expect(70 - 15).toBe(55);
+  });
+
+  it("asks for a judgement and not a calculation in the questions that once wanted a figure", () => {
+    for (const id of [
+      "rear-reading-with-a-purpose-twelve-thousand",
+      "rear-reading-with-a-purpose-three-hundred-pages",
+      "rear-remembering-what-you-read-third-day",
+      "rear-remembering-what-you-read-last-review",
+      "rear-judging-a-claim-relative-reduction",
+      "rear-judging-a-claim-nnt-common",
+      "rear-judging-a-claim-flu-table",
+      "rear-synthesising-sources-total-participants",
+      "rear-synthesising-sources-benefit-participants",
+    ]) {
+      const question = questions.get(id) as Question;
+      expect(kind(question), id).toBe("choice");
+      expect(question.hints, id).toHaveLength(2);
+      expect(question.choices?.length, id).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("recomputes the figures behind each judgement answer", () => {
+    const label = (id: string) => {
+      const question = questions.get(id) as Question;
+      const authority = question.answerAuthority;
+      if (authority.kind !== "text") throw new Error(id);
+      return question.choices?.find((choice) => assessTextAnswer(choice.label, authority).correct)
+        ?.label;
+    };
+    // 12,000 words at 240 a minute is 50 minutes: ten minutes cover 2,400 words, a fifth of the article.
+    expect(12000 / 240).toBe(50);
+    expect(240 * 10).toBe(2400);
+    expect(2400 / 12000).toBe(0.2);
+    expect(240 / 12000).toBeLessThan(1);
+    expect(label("rear-reading-with-a-purpose-twelve-thousand")).toBe("About 50 minutes");
+    // 300 pages at 25 a day is 12 days: a week covers 175 pages, two weeks 350 and five weeks 875.
+    expect(300 / 25).toBe(12);
+    expect(7 * 25).toBeLessThan(300);
+    expect(14 * 25).toBeGreaterThan(300);
+    expect(35 * 25).toBe(875);
+    expect(875 / 300).toBeGreaterThan(2.8);
+    expect(label("rear-reading-with-a-purpose-three-hundred-pages")).toBe("About two weeks");
+    // Read on 3 November, the 3-day review is the 6th. Counting the day read as day one gives the 5th,
+    // and counting from the 1-day review on the 4th gives the 7th.
+    expect(3 + 3).toBe(6);
+    expect(3 + 3 - 1).toBe(5);
+    expect(4 + 3).toBe(7);
+    expect(label("rear-remembering-what-you-read-third-day")).toMatch(/makes it the 6th$/u);
+    // Read on 12 November, the reviews fall on the 13th, 15th, 19th and 26th, all inside November.
+    expect([1, 3, 7, 14].map((gap) => 12 + gap)).toEqual([13, 15, 19, 26]);
+    expect(12 + 14).toBeLessThanOrEqual(30);
+    expect(label("rear-remembering-what-you-read-last-review")).toMatch(/^The 26th/u);
+    // 8 in 1,000 to 6 in 1,000: the fall of 2 is a quarter of the old rate, and the new rate is 75% of it.
+    expect((8 - 6) / 8).toBe(0.25);
+    expect(6 / 8).toBe(0.75);
+    expect(((8 - 6) / 1000) * 100).toBeCloseTo(0.2, 12);
+    expect(label("rear-judging-a-claim-relative-reduction")).toBe("About a quarter lower");
+    // 40 in 100 to 20 in 100: 20 spared in every 100 is one in five, and the relative reduction is a half.
+    expect(1 / ((40 - 20) / 100)).toBe(5);
+    expect((40 - 20) / 40).toBe(0.5);
+    expect(1 / 0.5).toBe(2);
+    expect(label("rear-judging-a-claim-nnt-common")).toBe("About 5 people");
+    // 12 of 200 against 8 of 200 is 6% against 4%: a third fewer cases, and 1 / 0.02 = 50 vaccinations.
+    expect(12 / 200).toBeCloseTo(0.06, 12);
+    expect(8 / 200).toBeCloseTo(0.04, 12);
+    expect((12 - 8) / 12).toBeCloseTo(1 / 3, 12);
+    expect(1 / (12 / 200 - 8 / 200)).toBeCloseTo(50, 9);
+    expect(label("rear-judging-a-claim-flu-table")).toBe("About 50 people");
+    // 300 + 150 + 80 + 1,200 + 70 = 1,800 and the other four come to 600, so the largest study holds
+    // two thirds. Half would need the other four to come to 1,200.
+    const first = [300, 150, 80, 1200, 70];
+    expect(first.reduce((sum, n) => sum + n, 0)).toBe(1800);
+    expect(300 + 150 + 80 + 70).toBe(600);
+    expect(1200 / 1800).toBeCloseTo(2 / 3, 12);
+    expect(1 / 5).toBe(0.2);
+    expect(label("rear-synthesising-sources-total-participants")).toBe(
+      "About two thirds of the participants",
+    );
+    // 350 + 200 + 160 = 710 of 2,270 is about 31%, a third, and half of 2,270 is over 1,100.
+    const second = [350, 200, 160, 1500, 60];
+    expect(second.reduce((sum, n) => sum + n, 0)).toBe(2270);
+    expect(350 + 200 + 160).toBe(710);
+    expect(710 / 2270).toBeGreaterThan(0.3);
+    expect(710 / 2270).toBeLessThan(0.34);
+    expect(2270 / 2).toBeGreaterThan(1100);
+    expect(1500).toBeGreaterThan(710);
+    expect(label("rear-synthesising-sources-benefit-participants")).toBe("About a third of them");
   });
 
   it("puts a passage in front of the learner in at least ten questions across six lessons", () => {
@@ -131,11 +216,7 @@ describe("questions in Reading and Research", () => {
         .filter((extract) => !/invented/iu.test(extract.who))
         .map((extract) => extract.who.split(",")[0]),
     );
-    expect([...real].sort()).toEqual([
-      "Francis Bacon",
-      "Pliny the Younger",
-      "Thomas Paine",
-    ]);
+    expect([...real].sort()).toEqual(["Francis Bacon", "Pliny the Younger", "Thomas Paine"]);
   });
 
   it("gives every extract its author, its date and the kind of work it comes from", () => {
@@ -242,8 +323,14 @@ describe("questions in Reading and Research", () => {
       "rear-making-notes-bacon-student",
     ]);
     for (const question of pairs)
-      expect(`${question.prompt} ${question.onCorrect}`, question.id).toMatch(/Source [AB]|Pliny|Bacon|headline/u);
-    for (const id of ["rear-kinds-of-source-pliny-and-textbook", "rear-judging-a-claim-headline-and-table", "rear-making-notes-bacon-student"])
+      expect(`${question.prompt} ${question.onCorrect}`, question.id).toMatch(
+        /Source [AB]|Pliny|Bacon|headline/u,
+      );
+    for (const id of [
+      "rear-kinds-of-source-pliny-and-textbook",
+      "rear-judging-a-claim-headline-and-table",
+      "rear-making-notes-bacon-student",
+    ])
       expect(questions.get(id)?.prompt, id).toMatch(/Source [AB]/u);
   });
 
@@ -294,7 +381,10 @@ describe("questions in Reading and Research", () => {
         expect(hint, question.id).not.toMatch(/^[\d\s,.+−×÷*/=-]+\.?$/u);
       }
       const needsTwo =
-        question.extracts?.length || question.order || question.sort || kind(question) === "numeric";
+        question.extracts?.length ||
+        question.order ||
+        question.sort ||
+        kind(question) === "numeric";
       expect(question.hints.length, question.id).toBeGreaterThanOrEqual(needsTwo ? 2 : 1);
     }
   });

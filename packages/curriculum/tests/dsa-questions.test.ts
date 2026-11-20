@@ -314,14 +314,6 @@ const recompute: Record<string, { value: () => number; uses: number[] }> = {
     },
     uses: [3, 6, 9, 12, 15, 2],
   },
-  "dynamic-arrays-and-amortised-cost-copies-nine": {
-    value: () => copiesWhenGrowing(9, (c) => c * 2).copies,
-    uses: [9],
-  },
-  "dynamic-arrays-and-amortised-cost-six-appends": {
-    value: () => copiesWhenGrowing(6, (c) => c * 2).copies,
-    uses: [6],
-  },
   "linked-lists-and-pointers-third-after-reverse": {
     value: () => reverseList([2, 6, 1, 8])[2] as number,
     uses: [2, 6, 1, 8],
@@ -685,6 +677,18 @@ describe("questions in Data Structures and Algorithms", () => {
       [5, 4],
       [9, 8],
     ]);
+    // The two doubling questions that compare totals with the appends instead of asking for them.
+    expect(copiesWhenGrowing(9, (c) => c * 2).copies).toBe(15);
+    expect(copiesWhenGrowing(9, (c) => c * 2).copies).toBeLessThan(2 * 9);
+    expect(range(9).reduce((total, size) => total + size, 0)).toBe(36);
+    expect(copiesWhenGrowing(6, (c) => c * 2)).toMatchObject({ copies: 7 });
+    expect(copiesWhenGrowing(6, (c) => c * 2).resizes).toEqual([
+      [2, 1],
+      [3, 2],
+      [5, 4],
+    ]);
+    expect(copiesWhenGrowing(6, (c) => c * 2).copies).toBeGreaterThan(6);
+    expect(copiesWhenGrowing(6, (c) => c * 2).copies).toBeLessThan(2 * 6);
     expect(copiesWhenGrowing(17, (c) => c * 2)).toMatchObject({ copies: 31 });
     expect(copiesWhenGrowing(17, (c) => c * 2).resizes.at(-1)).toEqual([17, 16]);
     expect(copiesWhenGrowing(25, (c) => c + 10)).toEqual({

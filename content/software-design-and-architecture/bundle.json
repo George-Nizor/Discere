@@ -33,7 +33,7 @@
     "introduction": {
       "paragraphs": [
         "A program that works today can still be hard to change tomorrow, and over the life of most software the cost of changing it is the larger cost. Some decisions are cheap to revisit, such as the name of a variable inside one function, while others become expensive the moment other code depends on them, such as the shape of the data a service sends out or the rule about which module may call which. Software architecture is the study of that second kind of decision, and of how to make such decisions deliberately, knowing what each one gives up.",
-        "The subject has a reputation for diagrams and vocabulary, yet most of its questions can be settled with arithmetic and a careful look at code. Counting the links between two modules tells you how far a change in one will spread, multiplying the availabilities of the services in a chain tells you how often the chain will fail, and asking how many programs read a field tells you what renaming it will cost. Every principle and pattern you meet here is judged in the same way, by what it costs and what it buys in a system you can see."
+        "The subject has a reputation for diagrams and vocabulary, yet most of its questions can be settled with a rough count and a careful look at code. Counting the links between two modules tells you how far a change in one will spread, multiplying the availabilities of the services in a chain tells you how often the chain will fail, and asking how many programs read a field tells you what renaming it will cost. Every principle and pattern you meet here is judged in the same way, by what it costs and what it buys in a system you can see."
       ],
       "outcomes": [
         "You'll be able to name the decisions that are architectural and state a quality attribute as a testable scenario.",
@@ -915,7 +915,7 @@
               "math": "Measure: 99% within 2 s."
             },
             {
-              "text": "The measure allows only a small share of the orders to take longer than 2 seconds, and the test counts them.",
+              "text": "The measure allows only a small share of the orders to take longer than 2 seconds, and the test counts them. Judge how many slow orders it allows at this load.",
               "blank": {
                 "questionId": "sofda-what-architecture-decides-faded-allowance"
               }
@@ -1062,7 +1062,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The first guess is often 5 × 5 or 5 × 4. Both count every link twice or include a module's link to itself."
+              "text": "A common first guess is one link for each module, or 5 × 5 or 5 × 4. The first forgets that every module links to all four of the others, and the other two count every link twice or include a module's link to itself."
             }
           ],
           "answerVisibility": "hidden-until-response"
@@ -3561,7 +3561,7 @@
         }
       ],
       "orientation": "Draw the direction of dependencies in layered and hexagonal designs, and recognise an import that breaks the dependency rule.",
-      "nextAction": "Compare a modular monolith with microservices, and work out how availability falls as services are chained.",
+      "nextAction": "Compare a modular monolith with microservices, and judge how far availability falls as services are chained.",
       "calculator": "off",
       "questionIds": [
         "sofda-layers-and-ports-layer-sort",
@@ -3902,7 +3902,7 @@
           "answerVisibility": "hidden-until-response"
         }
       ],
-      "orientation": "Weigh a modular monolith against microservices, work out how availability falls in a chain, and use Conway's law to include the teams in the decision.",
+      "orientation": "Weigh a modular monolith against microservices, judge how availability falls in a chain, and use Conway's law to include the teams in the decision.",
       "nextAction": "Tell commands from events, and say what event sourcing and CQRS add.",
       "calculator": "off",
       "questionIds": [
@@ -3928,7 +3928,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to describe three shapes of system, work out the availability of a chain of services, and say why the team structure belongs in the choice.",
+        "promise": "By the end you'll be able to describe three shapes of system, judge how far a chain of services lowers availability, and say why the team structure belongs in the choice.",
         "estimatedMinutes": 14
       },
       "recap": {
@@ -5206,7 +5206,7 @@
         }
       ],
       "orientation": "Score options with a weighted matrix, test whether the ranking survives a change of weights, and record a decision in a short ADR.",
-      "nextAction": "Plan how a running system changes: measure technical debt, compute instability and migrate with a strangler.",
+      "nextAction": "Plan how a running system changes: measure technical debt, judge instability and migrate with a strangler.",
       "calculator": "off",
       "questionIds": [
         "sofda-trade-offs-and-decision-records-adr-life",
@@ -5231,7 +5231,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to compute a weighted total, see whether the ranking depends on the weights, and write the fields of a decision record.",
+        "promise": "By the end you'll be able to judge where a weighted total falls, see whether the ranking depends on the weights, and write the fields of a decision record.",
         "estimatedMinutes": 14
       },
       "recap": {
@@ -5561,7 +5561,7 @@
           "answerVisibility": "hidden-until-response"
         }
       ],
-      "orientation": "Compute instability, price a shortcut as interest, and plan a gradual migration with a router in front.",
+      "orientation": "Judge instability, price a shortcut as interest, and plan a gradual migration with a router in front.",
       "nextAction": "Apply the whole course: name the decisions, draw the boundaries, and weigh a change before making it.",
       "calculator": "off",
       "questionIds": [
@@ -5587,7 +5587,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to compute a module's instability, work out when a repair pays for itself, and plan a migration that keeps the system running.",
+        "promise": "By the end you'll be able to judge a module's instability, say roughly when a repair pays for itself, and plan a migration that keeps the system running.",
         "estimatedMinutes": 14
       },
       "recap": {
@@ -5739,12 +5739,12 @@
         "quality-scenario",
         "reversibility"
       ],
-      "prompt": "At most how many of 5,000 simultaneous orders may take longer than 2 seconds if 99% must be on time?",
+      "prompt": "A checkout's measure is that 99% of simultaneous orders are accepted within 2 seconds, so with 1,000 orders at once a test allows 10 slow ones. How many slow orders may it allow with 5,000 orders at once?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The allowance is the share that may be slow.",
-        "1% is one hundredth.",
-        "Divide 5,000 by 100."
+        "Is the measure a fixed number of slow orders, or a share of the orders?",
+        "If the load rises fivefold and the share stays at 1%, what happens to the number of slow orders allowed?"
       ],
       "sourceIds": [
         "iso-25010",
@@ -5752,34 +5752,59 @@
         "fowler-articles",
         "arc42"
       ],
-      "onCorrect": "Fifty orders may miss the limit, which is why the scenario gives a test something exact to count.",
+      "onCorrect": "The measure is a share, so the allowance grows with the load: 1% of 5,000 is about 50 slow orders, five times the ten allowed at 1,000, so the scenario gives a test something exact to count.",
       "skill": "write-a-scenario",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 50,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "1% of 5,000 is 0.01 × 5,000 = 50."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 50, a hundredth of the load"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 50, a hundredth of the load"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Still 10, since the measure is unchanged"
+        },
+        {
+          "id": "b",
+          "label": "About 50, a hundredth of the load"
+        },
+        {
+          "id": "c",
+          "label": "About 500, a tenth of the load"
+        },
+        {
+          "id": "d",
+          "label": "About 4,950, the orders that must pass"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4950
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number that must be on time. The question asks how many may be slow."
+          "feedback": "The measure is a share and not a fixed count. A load five times as big has five times as many orders that may run slow."
         },
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "5 is one hundredth of 500. Take one hundredth of 5,000."
+          "feedback": "That takes 10% of the load. A measure of 99% leaves an allowance of 1%, a tenth of that."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That is the number of orders that must be on time. The question asks how many may be slow."
         }
       ]
     },
@@ -5791,46 +5816,71 @@
         "dependency-count",
         "change-smells"
       ],
-      "prompt": "Five modules are all linked to one another, with one link for each pair. How many links are there?",
+      "prompt": "Five modules are all linked to one another, with one link for each pair. How does the number of links compare with the number of modules?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Pick one module and count the others it is linked to.",
-        "Do that for each module, and notice that every link has now been counted from both ends.",
-        "Multiply 5 by the number each module links to, then halve it."
+        "Pick one module. How many of the other modules is it linked to?",
+        "Every link has two ends. If each module counts its own links, how many times is each link counted?"
       ],
       "sourceIds": [
         "fowler-articles",
         "parnas-1972",
         "azure-arch-guide"
       ],
-      "onCorrect": "Ten links, and the count follows n × (n − 1) ÷ 2, which grows much faster than n.",
+      "onCorrect": "Each of the 5 modules links to 4 others, and every link is counted from both ends, so there are 5 × 4 ÷ 2 = 10 links. The count follows n × (n − 1) ÷ 2, which grows much faster than n.",
       "skill": "count-dependencies",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 10,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each of 5 modules pairs with 4 others, which counts every pair twice: 5 × 4 ÷ 2 = 10."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Two links for each module, about ten"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Two links for each module, about ten"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "One link for each module, about five"
+        },
+        {
+          "id": "b",
+          "label": "Four links for each module, about twenty"
+        },
+        {
+          "id": "c",
+          "label": "Two links for each module, about ten"
+        },
+        {
+          "id": "d",
+          "label": "Five links for each module, about twenty-five"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              20
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts each link from both ends. A link between two modules is one link."
+          "feedback": "That gives each module a single link, but every module is linked to all four of the others."
         },
         {
           "match": {
-            "numeric": [
-              5
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is one link per module. Every module also links to several others."
+          "feedback": "That counts every link from both of its ends. A link between two modules is one link, however many modules count it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That counts a module's link to itself as well as to the other four, and counts each link from both ends."
         }
       ]
     },
@@ -6442,46 +6492,59 @@
         "composition",
         "combinatorial-explosion"
       ],
-      "prompt": "A notifier can send over 3 transports (email, SMS, push) and in 3 formats (text, JSON, XML). If there is one subclass for each combination, how many subclasses are there?",
+      "prompt": "A notifier can send over 3 transports (email, SMS, push) and in 3 formats (text, JSON, XML), six choices in all. If there is one subclass for each combination of transport and format, how does the number of subclasses compare with the six choices?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Each transport can be used with every format.",
-        "Multiply the two counts.",
-        "Three groups of three."
+        "Each transport can be used with every format. How many pairings does one transport have?",
+        "Is the number of pairings found by adding the two lists or by multiplying them?"
       ],
       "sourceIds": [
         "python-data-model",
         "azure-arch-guide",
         "fowler-articles"
       ],
-      "onCorrect": "Nine subclasses, and the count is a product, so it grows quickly when either list grows.",
+      "onCorrect": "Each of the 3 transports pairs with each of the 3 formats, so inheritance needs 3 × 3 = 9 subclasses against 3 + 3 = 6 parts for composition. The count is a product, so it grows quickly when either list grows.",
       "skill": "count-classes",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 9,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "Each of the 3 transports pairs with each of the 3 formats, so 3 × 3 = 9."
+        "kind": "text",
+        "acceptedIdeas": [
+          "More, since each pairing needs its own subclass"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "More, since each pairing needs its own subclass"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "More, since each pairing needs its own subclass"
+        },
+        {
+          "id": "b",
+          "label": "As many, since each choice needs one subclass"
+        },
+        {
+          "id": "c",
+          "label": "Fewer, since subclasses share code with a parent"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              6
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That adds the two counts. A subclass is needed for each pair, not each item."
+          "feedback": "That adds the two lists. A subclass is needed for each pairing of a transport with a format, and there are more pairings than choices."
         },
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That counts the transports only."
+          "feedback": "Sharing code through a parent does not remove any subclass. One is still needed for every pairing, so the count is the product of the lists."
         }
       ]
     },
@@ -7120,46 +7183,71 @@
         "pure-function",
         "test-pyramid"
       ],
-      "prompt": "A suite has 200 unit tests of 0.01 seconds each, 20 integration tests of 0.5 seconds each and 5 end-to-end tests of 20 seconds each. How many seconds does it take to run in total?",
+      "prompt": "A suite has 200 unit tests of 0.01 seconds each, 20 integration tests of 0.5 seconds each and 5 end-to-end tests of 20 seconds each. Which layer takes most of the run time?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Work out each layer's time separately.",
-        "Count times the length of one test.",
-        "Add the three layer times."
+        "For each layer, how long does one test take and how many are there?",
+        "Which layer's total is the largest, and is it the layer with the most tests?"
       ],
       "sourceIds": [
         "python-data-model",
         "fowler-articles",
         "azure-arch-guide"
       ],
-      "onCorrect": "The five slowest tests take 100 of the 112 seconds, which is why the pyramid keeps them few.",
+      "onCorrect": "The five end-to-end tests take 100 of the 112 seconds, about nine tenths of the run, which is why the pyramid keeps them few.",
       "skill": "pick-boundary-cases",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 112,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "200 × 0.01 = 2, 20 × 0.5 = 10 and 5 × 20 = 100, so the total is 112 seconds."
+        "kind": "text",
+        "acceptedIdeas": [
+          "The 5 end-to-end tests, by a wide margin"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The 5 end-to-end tests, by a wide margin"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "The 200 unit tests, as there are most of them"
+        },
+        {
+          "id": "b",
+          "label": "The 20 integration tests, which sit in the middle"
+        },
+        {
+          "id": "c",
+          "label": "The 5 end-to-end tests, by a wide margin"
+        },
+        {
+          "id": "d",
+          "label": "All three layers take about equal time"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That leaves out the end-to-end layer, which is the largest."
+          "feedback": "The unit tests are the most numerous, but at 0.01 seconds each they add up to about 2 seconds. Count and cost per test both matter."
         },
         {
           "match": {
-            "numeric": [
-              2
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the unit layer only."
+          "feedback": "The integration tests add up to about 10 seconds, well behind the layer above them. The slowest tests, few as they are, cost more."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The three totals are about 2, 10 and 100 seconds. A layer of many cheap tests and a layer of a few dear ones do not come out level."
         }
       ]
     },
@@ -7357,12 +7445,12 @@
         "conways-law",
         "distribution-cost"
       ],
-      "prompt": "A request passes through ten services in sequence, each 99.9% available, and they fail independently. To one decimal place, what is the availability of the chain, in percent?",
+      "prompt": "A request passes through ten services in sequence, each 99.9% available, and they fail independently. Roughly how available is the whole chain?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The chain needs every service in it to be up.",
-        "Multiply the availability by itself, once for each service.",
-        "The result is a little under the figure for five services."
+        "The request needs every service. If each is down 0.1% of the time, about how much downtime do ten of them add up to?",
+        "Does adding a service to a chain raise the availability, lower it or leave it as it was?"
       ],
       "sourceIds": [
         "conway-1968",
@@ -7370,34 +7458,47 @@
         "azure-arch-guide",
         "twelve-factor"
       ],
-      "onCorrect": "Ten services give 99.0%, which is about seven hours of downtime in a month.",
+      "onCorrect": "Each service adds about 0.1% of downtime, so ten add about 1%: the chain is 99.0% available, which is about seven hours of downtime in a month.",
       "skill": "compute-chain-availability",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 99,
-        "unit": "%",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "0.999 to the power 10 is 0.990, or 99.0%."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 99%, ten times one service's downtime"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 99%, ten times one service's downtime"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 99.9%, no worse than a single service"
+        },
+        {
+          "id": "b",
+          "label": "About 99%, ten times one service's downtime"
+        },
+        {
+          "id": "c",
+          "label": "About 90%, a point lost for every service"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              99.9
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is one service. Every further service in the chain lowers the figure."
+          "feedback": "The chain needs every service to be up at once, so it is less available than any one of them. Each extra service adds its own downtime."
         },
         {
           "match": {
-            "numeric": [
-              99.5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the figure for five services, and this chain is longer."
+          "feedback": "That treats each 0.1% of downtime as a full point. Ten services at 0.1% each add up to about 1% of downtime, not 10%."
         }
       ]
     },
@@ -7409,12 +7510,12 @@
         "conways-law",
         "distribution-cost"
       ],
-      "prompt": "A chain is 99.5% available. In a 30-day month of 720 hours, for how many hours is it unavailable?",
+      "prompt": "A chain of services is 99.5% available. In a 30-day month of 720 hours, roughly how long is it unavailable?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Unavailability is what remains after availability.",
-        "That is 0.5%.",
-        "Take 0.5% of 720 hours."
+        "Availability is the share of time that the chain works. What share of the month does it not work?",
+        "A hundredth of 720 hours is a little over seven hours. Is half a percent more or less than that?"
       ],
       "sourceIds": [
         "conway-1968",
@@ -7422,34 +7523,47 @@
         "azure-arch-guide",
         "twelve-factor"
       ],
-      "onCorrect": "About three and a half hours a month, from five services that each looked reliable on its own.",
+      "onCorrect": "The chain is down 0.5% of the time, and 0.5% of 720 hours is about three and a half hours, from five services that each looked reliable on its own.",
       "skill": "compute-chain-availability",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 3.6,
-        "unit": "hours",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "0.5% of 720 hours is 0.005 × 720 = 3.6 hours."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 3.5 hours"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 3.5 hours"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "About half an hour"
+        },
+        {
+          "id": "b",
+          "label": "About 36 hours"
+        },
+        {
+          "id": "c",
+          "label": "About 3.5 hours"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              717.6
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the time the chain is available. The question asks for the time it is not."
+          "feedback": "That reads 0.5% as half an hour. It is half a percent of the 720 hours of the month."
         },
         {
           "match": {
-            "numeric": [
-              0.5
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "0.5 is the percentage that is unavailable. Apply it to the 720 hours."
+          "feedback": "That takes 5% of the month. The unavailable share is 0.5%, a tenth of that."
         }
       ]
     },
@@ -7518,46 +7632,59 @@
         "event-sourcing",
         "cqrs"
       ],
-      "prompt": "The events are deposit 50, withdraw 20 and deposit 5, but a retry stored the last deposit twice, so the log holds four events. What does a replay give?",
+      "prompt": "An account's events are deposit 50, withdraw 20 and deposit 5, so its true balance is 35. A retry stored the last deposit twice, so the log holds four events. How does the balance from replaying the log compare with the true balance?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The log now holds four events.",
-        "The duplicate deposit is applied as well.",
-        "Add the second deposit to the usual result."
+        "How many deposits of 5 does the log now hold, and does a replay apply each one?",
+        "What would a consumer need in order to recognise the second deposit as a copy of the first?"
       ],
       "sourceIds": [
         "fowler-articles",
         "azure-arch-guide",
         "ddd-reference"
       ],
-      "onCorrect": "A duplicated event is applied twice unless each event has an id that the consumer checks.",
+      "onCorrect": "A replay applies every event it finds, so the extra deposit of 5 makes the balance 40, five too high. A duplicate is applied twice unless each event has an id that the consumer checks.",
       "skill": "replay-events",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 40,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "50 − 20 + 5 + 5 = 40."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Five higher, as the deposit is applied twice"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Five higher, as the deposit is applied twice"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Five higher, as the deposit is applied twice"
+        },
+        {
+          "id": "b",
+          "label": "The same, since a copy changes nothing at all"
+        },
+        {
+          "id": "c",
+          "label": "Ten higher, as the copy doubles the deposit"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              35
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That ignores the duplicate. A replay applies every event it finds."
+          "feedback": "A replay cannot tell a copy from a new event, so it applies both. The stored duplicate changes the result."
         },
         {
           "match": {
-            "numeric": [
-              45
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That counts the duplicate as 10. Each copy of the deposit is 5."
+          "feedback": "The duplicate is a second copy of one deposit of 5, not a deposit of 10. It adds 5 once more and no more."
         }
       ]
     },
@@ -7963,12 +8090,12 @@
         "adr",
         "fitness-function"
       ],
-      "prompt": "Weights are performance 0.5, cost 0.3 and simplicity 0.2. Option A scores 8, 5 and 6 on those three criteria. What is A's weighted total?",
+      "prompt": "Weights are performance 0.5, cost 0.3 and simplicity 0.2. Option A scores 8, 5 and 6 on those three criteria, out of 10. Where does A's weighted total fall?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Multiply each score by its weight.",
-        "The three products are 4, 1.5 and 1.2.",
-        "Add the three products."
+        "Which criterion has the largest weight, and what is A's score on it?",
+        "A weighted total is a weighted average. Can it be higher than the best score or lower than the worst?"
       ],
       "sourceIds": [
         "nygard-adr",
@@ -7976,34 +8103,59 @@
         "arc42",
         "fowler-articles"
       ],
-      "onCorrect": "A scores 6.7 out of 10, and the weights decide how much each criterion counts toward it.",
+      "onCorrect": "The total is 0.5 × 8 + 0.3 × 5 + 0.2 × 6 = 6.7. Performance carries half the weight, so its 8 pulls the total above the plain average of about 6.3.",
       "skill": "score-options",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 6.7,
-        "unit": "",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "0.5 × 8 + 0.3 × 5 + 0.2 × 6 = 4 + 1.5 + 1.2 = 6.7."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Near 7, pulled toward the 8 by its weight"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Near 7, pulled toward the 8 by its weight"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Near 6, the plain average of the scores"
+        },
+        {
+          "id": "b",
+          "label": "Near 7, pulled toward the 8 by its weight"
+        },
+        {
+          "id": "c",
+          "label": "Near 5, held down by the lowest score"
+        },
+        {
+          "id": "d",
+          "label": "Above 10, the three scores added up"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              19
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That adds the scores without the weights."
+          "feedback": "A plain average gives every criterion the same say. Here performance counts for half, so the total moves toward its 8."
         },
         {
           "match": {
-            "numeric": [
-              6.3
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That uses the wrong weight on one of the scores. Match each score to its own criterion."
+          "feedback": "The lowest score, 5, is on cost, which has only 0.3 of the weight. It drags the total down a little, but not to 5."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The weights add up to 1, so the total is a weighted average and cannot pass the best score. Adding the scores ignores the weights."
         }
       ]
     },
@@ -8137,46 +8289,71 @@
         "instability",
         "refactoring"
       ],
-      "prompt": "A module has 1 incoming dependency (Ca) and 4 outgoing (Ce). What is its instability, Ce ÷ (Ca + Ce)?",
+      "prompt": "A module has 1 incoming dependency (Ca) and 4 outgoing (Ce). Its instability, Ce ÷ (Ca + Ce), runs from 0 for a module with no outgoing links to 1 for a module with no incoming ones. Which description fits this module?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Ce is the outgoing count and Ca the incoming count.",
-        "Add them to get all the links.",
-        "Divide Ce by that total."
+        "Which dependencies sit on top of the fraction, the incoming or the outgoing ones?",
+        "Of its five links in all, how many point outward?"
       ],
       "sourceIds": [
         "fowler-articles",
         "nygard-adr",
         "azure-arch-guide"
       ],
-      "onCorrect": "At 0.8 it is unstable, which is acceptable for a module that few others rely on.",
+      "onCorrect": "Four of its five links point outward, so its instability is 4 ÷ 5 = 0.8, close to 1. That suits a module that few others rely on.",
       "skill": "compute-instability",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 0.8,
-        "unit": "",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "I = 4 ÷ (1 + 4) = 0.8."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Unstable, since most of its links go outward"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Unstable, since most of its links go outward"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "Stable, since another module relies on it"
+        },
+        {
+          "id": "b",
+          "label": "Balanced, since it has both kinds of link"
+        },
+        {
+          "id": "c",
+          "label": "Fully unstable, since it depends on others"
+        },
+        {
+          "id": "d",
+          "label": "Unstable, since most of its links go outward"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              0.2
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the fraction incoming. Instability counts the outgoing share."
+          "feedback": "That reads the incoming share, 1 of 5, as the instability. Instability counts the outgoing share, and most of this module's links go outward."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is Ce alone. Divide it by the total of Ca and Ce."
+          "feedback": "Having both kinds of link does not put the value at one half. It depends on the shares, and here four of the five links go outward."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "A value of 1 needs every link to point outward and none to come in. This module has one incoming link, so it is high but short of that."
         }
       ]
     },
@@ -8188,46 +8365,71 @@
         "instability",
         "refactoring"
       ],
-      "prompt": "A repair would cost 10 hours once. The shortcut it would remove adds 1 hour to each change, and the team makes 4 changes a month. After how many months has the repair paid for itself?",
+      "prompt": "A repair would cost 10 hours once. The shortcut it would remove adds 1 hour to each change, and the team makes 4 changes a month. Roughly when has the repair paid for itself?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Work out the hours the shortcut costs each month.",
-        "That is 4 changes at 1 hour each.",
-        "Divide the repair's cost by the monthly cost."
+        "How many hours does the shortcut cost the team in one month?",
+        "How many months of that cost add up to the 10 hours the repair takes?"
       ],
       "sourceIds": [
         "fowler-articles",
         "nygard-adr",
         "azure-arch-guide"
       ],
-      "onCorrect": "After two and a half months the repair is cheaper than living with the shortcut, which is a measurable reason to do it.",
+      "onCorrect": "The shortcut costs 4 hours a month, so the 10-hour repair is paid back in two and a half months. After that the repair is cheaper than living with the shortcut, which is a measurable reason to do it.",
       "skill": "plan-a-migration",
       "calculator": "off",
-      "responseType": "numeric",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2.5,
-        "unit": "months",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "The shortcut costs 1 × 4 = 4 hours a month, so the 10-hour repair pays for itself after 10 ÷ 4 = 2.5 months."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Within about three months"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Within about three months"
       },
+      "choices": [
+        {
+          "id": "a",
+          "label": "After about four months"
+        },
+        {
+          "id": "b",
+          "label": "After about ten months"
+        },
+        {
+          "id": "c",
+          "label": "Within about three months"
+        },
+        {
+          "id": "d",
+          "label": "Not within the first year"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              10
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the repair cost in hours. Divide by the monthly cost of the shortcut."
+          "feedback": "Four is the hours lost each month, not a number of months. The repair's 10 hours is paid back once enough months of that loss have added up."
         },
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the hours lost each month. Divide the repair cost by it."
+          "feedback": "That divides the repair's 10 hours by the 1 hour added to a single change. The team makes four changes a month, so the loss comes in four times as fast."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The shortcut costs 4 hours every month, so a repair of 10 hours is paid back in under a quarter of a year."
         }
       ]
     },
@@ -9037,54 +9239,71 @@
         "composition",
         "combinatorial-explosion"
       ],
-      "prompt": "A sender uses inheritance, with one subclass for each pair of transport and format, and it has 4 transports and 3 formats. A fourth format, YAML, is added. How many new subclasses does it need?",
-      "responseType": "numeric",
+      "prompt": "A sender has 4 transports and 3 formats. With inheritance there is one subclass for each pair of transport and format, and with composition one class for each transport and each format. A fourth format, YAML, is added. How many new classes does each design need?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The new format must work with every transport.",
-        "One subclass for each pairing of the new format with a transport.",
-        "Count the transports, because the new format needs a subclass for each of them."
+        "The new format has to work with every transport. What does that need in the inheritance design?",
+        "In the composition design, is any existing class touched when a format is added?"
       ],
       "sourceIds": [
         "python-data-model",
         "azure-arch-guide",
         "fowler-articles"
       ],
+      "onCorrect": "Four new subclasses with inheritance, one for each transport, against one new class with composition, which is the gap that widens as the lists grow.",
       "skill": "count-classes",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The new format has to work with each of the 4 transports, so it needs one subclass for each pairing: 4 new subclasses."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Four with inheritance and one with composition"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Four with inheritance and one with composition"
       },
-      "onCorrect": "Four new subclasses with inheritance, against one new class with composition, which is the gap that widens as the lists grow.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "One class in each design, for YAML"
+        },
+        {
+          "id": "b",
+          "label": "Four with inheritance and one with composition"
+        },
+        {
+          "id": "c",
+          "label": "Twelve with inheritance and one with composition"
+        },
+        {
+          "id": "d",
+          "label": "Sixteen with inheritance and eight with composition"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the number of subclasses that exist already. The question asks how many the new format adds."
+          "feedback": "Composition needs only the YAML class, but inheritance needs a subclass for each transport that YAML has to work with."
         },
         {
           "match": {
-            "numeric": [
-              16
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the total once YAML is added. The question asks only for the new subclasses."
+          "feedback": "Twelve is the number of subclasses that exist already. YAML adds only the pairings that include it."
         },
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That is what composition needs, one class for the new format. With inheritance the format needs a subclass for each transport."
+          "feedback": "Those are the totals once YAML is in. The question asks how many classes are new."
         }
       ]
     },
@@ -15036,21 +15255,14 @@
         "dependency-count",
         "change-smells"
       ],
-      "front": "How many links join n modules when every module depends on every other?",
-      "back": "n × (n − 1) ÷ 2, so 6 modules have 15.",
+      "front": "Every module in a system depends on every other. How does the number of links change as modules are added?",
+      "back": "It grows with the square of the count, as n × (n − 1) ÷ 2, so 5 modules have 10 links and 10 modules have 45.",
       "sourceIds": [
         "fowler-articles",
         "parnas-1972",
         "azure-arch-guide"
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 15,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "6 × 5 ÷ 2 = 15, for 6 modules."
-      }
+      "recall": "self"
     },
     {
       "id": "sofda-coupling-and-cohesion-card-2",
@@ -15231,21 +15443,14 @@
         "composition",
         "combinatorial-explosion"
       ],
-      "front": "Three transports and three formats: how many subclasses does inheritance need for every pair?",
-      "back": "3 × 3 = 9, against 3 + 3 = 6 parts with composition.",
+      "front": "Which needs more classes for three transports and three formats, inheritance with a subclass for each pair or composition with one class for each part?",
+      "back": "Inheritance, which needs 3 × 3 = 9 subclasses against 3 + 3 = 6 parts for composition, and the gap widens as either list grows.",
       "sourceIds": [
         "python-data-model",
         "azure-arch-guide",
         "fowler-articles"
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 9,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "3 × 3 = 9."
-      }
+      "recall": "self"
     },
     {
       "id": "sofda-composition-over-inheritance-card-3",
@@ -15567,22 +15772,15 @@
         "conways-law",
         "distribution-cost"
       ],
-      "front": "Five services in a chain are each 99.9% available. What is the chain's availability, in percent, to one decimal place?",
-      "back": "0.999 to the power 5 is 0.995, so 99.5%.",
+      "front": "Five services in a chain are each 99.9% available. Is the chain more or less available than one service, and roughly by how much?",
+      "back": "Less available, at about 99.5%, so its downtime is about five times that of a single service.",
       "sourceIds": [
         "conway-1968",
         "fowler-articles",
         "azure-arch-guide",
         "twelve-factor"
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 99.5,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "0.999^5 = 0.995, which is 99.5%."
-      }
+      "recall": "self"
     },
     {
       "id": "sofda-monolith-modules-and-microservices-card-3",
@@ -15838,22 +16036,15 @@
         "adr",
         "fitness-function"
       ],
-      "front": "A scores 8, 5, 6 with weights 0.5, 0.3, 0.2. What is the weighted total?",
-      "back": "0.5 × 8 + 0.3 × 5 + 0.2 × 6 = 6.7.",
+      "front": "Option A scores 8, 5 and 6 with weights 0.5, 0.3 and 0.2. Is its weighted total nearer its best score or its worst, and why?",
+      "back": "Nearer the best, at 6.7, because the best score of 8 is on the criterion with the largest weight.",
       "sourceIds": [
         "nygard-adr",
         "adr-github",
         "arc42",
         "fowler-articles"
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 6.7,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "4 + 1.5 + 1.2 = 6.7."
-      }
+      "recall": "self"
     },
     {
       "id": "sofda-evolving-a-system-card-1",

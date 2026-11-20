@@ -25,38 +25,38 @@ whether the course has coding projects, and whether a review record binds the bu
 | Calculus II: Series and Differential Equations | 15 | 182 | 49 | 128 | 5 | 0 | 0 | 0 | 64% | 7% | 0 | 0 | 34 |  |  | targeted |
 | Logic and Reasoning | 8 | 86 | 71 | 4 | 11 | 0 | 0 | 0 | 57% | 15% | 0 | 3 | 6 |  | yes | targeted |
 | Probability and Statistics | 6 | 77 | 23 | 54 | 0 | 0 | 0 | 0 | 36% | 14% | 0 | 3 | 8 |  | yes | targeted |
-| Statistical and Causal Inference | 14 | 124 | 76 | 26 | 10 | 0 | 12 | 0 | 11% | 0% | 0 | 0 | 9 |  |  | rewritten |
+| Statistical and Causal Inference | 14 | 124 | 101 | 1 | 10 | 0 | 12 | 0 | 10% | 4% | 0 | 0 | 9 |  |  | rewritten |
 
 ## Programming and computer science
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | How Computers Solve Problems | 6 | 69 | 23 | 46 | 0 | 0 | 0 | 0 | 62% | 14% | 0 | 3 | 12 |  | yes | targeted |
-| How Computers and Networks Work | 12 | 110 | 67 | 25 | 6 | 0 | 12 | 0 | 15% | 13% | 0 | 0 | 21 |  |  | rewritten |
-| Data Structures and Algorithms | 14 | 136 | 91 | 30 | 3 | 0 | 12 | 0 | 10% | 3% | 0 | 0 | 35 |  |  | rewritten |
+| How Computers and Networks Work | 12 | 110 | 81 | 11 | 6 | 0 | 12 | 0 | 15% | 14% | 0 | 0 | 21 |  |  | rewritten |
+| Data Structures and Algorithms | 14 | 136 | 93 | 28 | 3 | 0 | 12 | 0 | 10% | 3% | 0 | 0 | 35 |  |  | rewritten |
 | Linux and the Command Line | 14 | 135 | 104 | 10 | 11 | 0 | 10 | 0 | 27% | 10% | 0 | 0 | 8 |  |  | rewritten |
-| Git and Version Control | 13 | 115 | 80 | 11 | 12 | 0 | 12 | 0 | 6% | 21% | 0 | 0 | 41 |  |  | rewritten |
+| Git and Version Control | 13 | 115 | 82 | 9 | 12 | 0 | 12 | 0 | 6% | 21% | 0 | 0 | 41 |  |  | rewritten |
 | Rust Foundations | 16 | 190 | 57 | 51 | 11 | 71 | 0 | 0 | 65% | 16% | 0 | 0 | 63 | yes |  | targeted |
 | Systems Programming: Memory, Operating Systems, C and Rust | 13 | 140 | 46 | 78 | 8 | 8 | 0 | 0 | 22% | 15% | 0 | 0 | 12 |  |  | targeted |
-| The Web: HTML, CSS and JavaScript | 14 | 155 | 98 | 14 | 31 | 0 | 12 | 0 | 19% | 2% | 0 | 0 | 18 |  |  | rewritten |
+| The Web: HTML, CSS and JavaScript | 14 | 155 | 103 | 9 | 31 | 0 | 12 | 0 | 19% | 3% | 0 | 0 | 18 |  |  | rewritten |
 | TypeScript and Node.js | 14 | 175 | 114 | 32 | 14 | 15 | 0 | 0 | 33% | 14% | 0 | 0 | 17 |  |  | targeted |
-| Game Design and Game Programming Patterns | 12 | 118 | 83 | 18 | 5 | 0 | 12 | 0 | 10% | 16% | 0 | 0 | 26 |  |  | rewritten |
+| Game Design and Game Programming Patterns | 12 | 118 | 98 | 3 | 5 | 0 | 12 | 0 | 10% | 13% | 0 | 0 | 26 |  |  | rewritten |
 
 ## Building software
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Backend Development and API Design | 14 | 136 | 93 | 13 | 18 | 0 | 12 | 0 | 23% | 10% | 0 | 0 | 13 |  |  | rewritten |
-| Databases and Data Modelling | 14 | 139 | 97 | 25 | 5 | 0 | 12 | 0 | 3% | 15% | 0 | 0 | 15 |  |  | rewritten |
-| Software Testing and Quality | 11 | 104 | 78 | 13 | 1 | 0 | 12 | 0 | 7% | 10% | 0 | 0 | 9 |  |  | rewritten |
-| Software Design and Architecture | 15 | 135 | 94 | 12 | 17 | 0 | 12 | 0 | 1% | 22% | 0 | 0 | 13 |  |  | rewritten |
-| System Design | 14 | 148 | 97 | 33 | 7 | 0 | 11 | 0 | 14% | 5% | 0 | 0 | 14 |  |  | rewritten |
-| DevOps and Delivery | 13 | 118 | 70 | 22 | 14 | 0 | 12 | 0 | 8% | 14% | 0 | 0 | 15 |  |  | rewritten |
-| Cloud Fundamentals | 12 | 108 | 75 | 18 | 5 | 0 | 10 | 0 | 10% | 15% | 0 | 0 | 53 |  |  | rewritten |
-| Cybersecurity | 13 | 116 | 87 | 12 | 5 | 0 | 12 | 0 | 13% | 2% | 0 | 0 | 15 |  |  | rewritten |
-| AI-Assisted Engineering and Code Review | 12 | 101 | 64 | 14 | 12 | 0 | 11 | 0 | 16% | 23% | 0 | 0 | 12 |  |  | rewritten |
-| UX and Human–Computer Interaction | 13 | 117 | 88 | 15 | 2 | 0 | 12 | 2 | 15% | 22% | 0 | 0 | 11 |  |  | rewritten |
-| Technical Writing | 12 | 111 | 88 | 8 | 4 | 0 | 11 | 20 | 27% | 7% | 12 | 0 | 12 |  |  | rewritten |
+| Backend Development and API Design | 14 | 136 | 100 | 6 | 18 | 0 | 12 | 0 | 22% | 11% | 0 | 0 | 13 |  |  | rewritten |
+| Databases and Data Modelling | 14 | 139 | 112 | 10 | 5 | 0 | 12 | 0 | 2% | 14% | 0 | 0 | 15 |  |  | rewritten |
+| Software Testing and Quality | 11 | 104 | 84 | 7 | 1 | 0 | 12 | 0 | 7% | 11% | 0 | 0 | 9 |  |  | rewritten |
+| Software Design and Architecture | 15 | 135 | 105 | 1 | 17 | 0 | 12 | 0 | 1% | 22% | 0 | 0 | 13 |  |  | rewritten |
+| System Design | 14 | 148 | 130 | 0 | 7 | 0 | 11 | 0 | 7% | 11% | 0 | 0 | 14 |  |  | rewritten |
+| DevOps and Delivery | 13 | 118 | 86 | 6 | 14 | 0 | 12 | 0 | 8% | 14% | 0 | 0 | 15 |  |  | rewritten |
+| Cloud Fundamentals | 12 | 108 | 91 | 2 | 5 | 0 | 10 | 0 | 9% | 14% | 0 | 0 | 53 |  |  | rewritten |
+| Cybersecurity | 13 | 116 | 99 | 0 | 5 | 0 | 12 | 0 | 12% | 4% | 0 | 0 | 15 |  |  | rewritten |
+| AI-Assisted Engineering and Code Review | 12 | 101 | 75 | 3 | 12 | 0 | 11 | 0 | 10% | 20% | 0 | 0 | 12 |  |  | rewritten |
+| UX and Human–Computer Interaction | 13 | 117 | 103 | 0 | 2 | 0 | 12 | 2 | 9% | 18% | 0 | 0 | 11 |  |  | rewritten |
+| Technical Writing | 12 | 111 | 95 | 1 | 4 | 0 | 11 | 20 | 26% | 7% | 12 | 0 | 12 |  |  | rewritten |
 
 ## Data and AI
 
@@ -64,11 +64,11 @@ whether the course has coding projects, and whether a review record binds the bu
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | SQL: From Rows to Reports | 15 | 193 | 54 | 89 | 5 | 45 | 0 | 0 | 36% | 13% | 0 | 3 | 23 | yes | yes | targeted |
 | Python for Data Analysis | 21 | 342 | 78 | 188 | 13 | 63 | 0 | 0 | 55% | 14% | 0 | 3 | 34 | yes | yes | targeted |
-| Data Engineering: Pipelines, Warehouses and Lakehouses | 14 | 135 | 94 | 17 | 13 | 0 | 11 | 0 | 9% | 3% | 0 | 0 | 44 |  |  | rewritten |
-| Analytics Engineering and Data Governance | 14 | 142 | 97 | 17 | 17 | 0 | 11 | 0 | 13% | 14% | 0 | 0 | 15 |  |  | rewritten |
-| Machine Learning, from Models to MLOps | 13 | 131 | 93 | 27 | 1 | 0 | 10 | 0 | 18% | 26% | 0 | 0 | 12 |  |  | rewritten |
-| AI Engineering: LLMs, Prompting, Retrieval and Evaluation | 13 | 122 | 74 | 25 | 13 | 0 | 10 | 0 | 7% | 8% | 0 | 0 | 14 |  |  | rewritten |
-| AI Agents and Agent Architecture | 13 | 135 | 87 | 22 | 14 | 0 | 12 | 0 | 30% | 12% | 0 | 0 | 14 |  |  | rewritten |
+| Data Engineering: Pipelines, Warehouses and Lakehouses | 14 | 135 | 109 | 2 | 13 | 0 | 11 | 0 | 2% | 5% | 0 | 0 | 44 |  |  | rewritten |
+| Analytics Engineering and Data Governance | 14 | 142 | 105 | 9 | 17 | 0 | 11 | 0 | 13% | 14% | 0 | 0 | 15 |  |  | rewritten |
+| Machine Learning, from Models to MLOps | 13 | 131 | 115 | 5 | 1 | 0 | 10 | 0 | 15% | 21% | 0 | 0 | 12 |  |  | rewritten |
+| AI Engineering: LLMs, Prompting, Retrieval and Evaluation | 13 | 122 | 99 | 0 | 13 | 0 | 10 | 0 | 5% | 13% | 0 | 0 | 14 |  |  | rewritten |
+| AI Agents and Agent Architecture | 13 | 135 | 108 | 1 | 14 | 0 | 12 | 0 | 19% | 12% | 0 | 0 | 14 |  |  | rewritten |
 
 ## Science
 
@@ -76,11 +76,11 @@ whether the course has coding projects, and whether a review record binds the bu
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Physics: Motion and Forces | 18 | 231 | 61 | 170 | 0 | 0 | 0 | 0 | 35% | 10% | 0 | 3 | 20 |  | yes | targeted |
 | Physics II: Waves, Electricity and Magnetism, and Heat | 15 | 162 | 28 | 133 | 1 | 0 | 0 | 0 | 14% | 14% | 0 | 0 | 8 |  |  | targeted |
-| Astronomy: From Sky to Cosmos | 12 | 138 | 49 | 84 | 5 | 0 | 0 | 0 | 34% | 14% | 0 | 3 | 26 |  | yes | targeted |
+| Astronomy: From Sky to Cosmos | 12 | 138 | 133 | 0 | 5 | 0 | 0 | 0 | 32% | 13% | 0 | 3 | 26 |  | yes | targeted |
 | Chemistry: Atoms to Reactions | 12 | 130 | 47 | 83 | 0 | 0 | 0 | 0 | 83% | 9% | 0 | 3 | 11 |  | yes | targeted |
-| Biology: Cells to Ecosystems | 16 | 130 | 92 | 18 | 7 | 0 | 13 | 0 | 19% | 15% | 0 | 3 | 18 |  | yes | rewritten |
-| How the Body Works | 12 | 113 | 61 | 27 | 4 | 0 | 21 | 8 | 35% | 10% | 0 | 0 | 29 |  |  | new |
-| Earth and Environmental Science | 12 | 115 | 66 | 38 | 0 | 0 | 11 | 22 | 21% | 12% | 0 | 0 | 51 |  |  | rewritten |
+| Biology: Cells to Ecosystems | 16 | 130 | 107 | 3 | 7 | 0 | 13 | 0 | 18% | 15% | 0 | 3 | 18 |  | yes | rewritten |
+| How the Body Works | 12 | 113 | 88 | 0 | 4 | 0 | 21 | 8 | 32% | 11% | 0 | 0 | 29 |  |  | new |
+| Earth and Environmental Science | 12 | 115 | 104 | 0 | 0 | 0 | 11 | 22 | 15% | 13% | 0 | 0 | 51 |  |  | rewritten |
 
 ## Engineering and making
 
@@ -89,49 +89,49 @@ whether the course has coding projects, and whether a review record binds the bu
 | Engineering: Structures and Machines | 12 | 153 | 38 | 113 | 2 | 0 | 0 | 0 | 20% | 14% | 0 | 3 | 16 |  | yes | targeted |
 | Electronics Foundations | 5 | 70 | 25 | 39 | 6 | 0 | 0 | 0 | 37% | 16% | 1 | 0 | 5 |  | yes | targeted |
 | Mechanisms and Machine Design | 12 | 138 | 33 | 100 | 5 | 0 | 0 | 0 | 23% | 15% | 0 | 0 | 34 |  |  | targeted |
-| Materials and Manufacturing | 13 | 128 | 77 | 41 | 1 | 0 | 9 | 0 | 9% | 16% | 0 | 0 | 9 |  |  | rewritten |
+| Materials and Manufacturing | 13 | 128 | 113 | 5 | 1 | 0 | 9 | 0 | 8% | 16% | 0 | 0 | 9 |  |  | rewritten |
 | Control Theory | 12 | 146 | 25 | 120 | 1 | 0 | 0 | 0 | 28% | 8% | 0 | 0 | 17 |  |  | targeted |
 | Mechatronics and Robotics | 13 | 141 | 37 | 103 | 1 | 0 | 0 | 0 | 46% | 14% | 0 | 0 | 32 |  |  | targeted |
-| Industrial and Product Design | 11 | 106 | 73 | 15 | 6 | 0 | 12 | 0 | 8% | 0% | 0 | 0 | 13 |  |  | rewritten |
-| Small Buildings and Architectural Design | 12 | 112 | 68 | 30 | 2 | 0 | 12 | 0 | 18% | 0% | 0 | 0 | 11 |  |  | rewritten |
+| Industrial and Product Design | 11 | 106 | 86 | 2 | 6 | 0 | 12 | 0 | 8% | 2% | 0 | 0 | 13 |  |  | rewritten |
+| Small Buildings and Architectural Design | 12 | 112 | 91 | 7 | 2 | 0 | 12 | 0 | 18% | 4% | 0 | 0 | 11 |  |  | rewritten |
 
 ## Mind, society and decisions
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Psychology: How Minds Work | 12 | 105 | 68 | 14 | 14 | 0 | 9 | 7 | 13% | 7% | 0 | 3 | 46 |  | yes | rewritten |
-| Economics: Markets and Strategy | 12 | 132 | 83 | 33 | 6 | 0 | 10 | 7 | 15% | 1% | 0 | 3 | 23 |  | yes | rewritten |
-| Decision Theory | 12 | 113 | 71 | 32 | 0 | 0 | 10 | 0 | 5% | 14% | 0 | 0 | 21 |  |  | rewritten |
+| Psychology: How Minds Work | 12 | 105 | 82 | 0 | 14 | 0 | 9 | 7 | 12% | 10% | 0 | 3 | 46 |  | yes | rewritten |
+| Economics: Markets and Strategy | 12 | 132 | 108 | 8 | 6 | 0 | 10 | 7 | 11% | 4% | 0 | 3 | 23 |  | yes | rewritten |
+| Decision Theory | 12 | 113 | 85 | 18 | 0 | 0 | 10 | 0 | 5% | 14% | 0 | 0 | 21 |  |  | rewritten |
 
 ## History, language and writing
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Philosophy: Knowledge, Mind and Ethics | 13 | 118 | 84 | 7 | 19 | 0 | 8 | 14 | 17% | 11% | 0 | 3 | 35 |  | yes | rewritten |
-| History: How the Past Is Known | 12 | 105 | 72 | 8 | 19 | 0 | 6 | 5 | 13% | 3% | 0 | 0 | 25 |  |  | rewritten |
-| The Roman Republic | 12 | 101 | 64 | 14 | 8 | 0 | 15 | 51 | 14% | 9% | 0 | 0 | 32 |  |  | new |
-| Linguistics | 12 | 119 | 82 | 9 | 16 | 0 | 12 | 7 | 44% | 18% | 0 | 0 | 46 |  |  | rewritten |
-| English: Reading, Writing and Rhetoric | 12 | 105 | 52 | 24 | 19 | 0 | 10 | 0 | 27% | 13% | 12 | 3 | 45 |  | yes | targeted |
-| Reading and Research | 10 | 86 | 45 | 11 | 20 | 0 | 10 | 11 | 16% | 16% | 0 | 0 | 14 |  |  | rewritten |
-| Writing Longer Pieces | 12 | 108 | 86 | 9 | 1 | 0 | 12 | 7 | 20% | 17% | 12 | 0 | 34 |  |  | rewritten |
-| Speaking, Argument and Debate | 12 | 124 | 98 | 8 | 6 | 0 | 12 | 7 | 14% | 18% | 12 | 0 | 15 |  |  | rewritten |
-| Creative and Game Writing | 12 | 115 | 94 | 7 | 2 | 0 | 12 | 12 | 17% | 14% | 12 | 0 | 12 |  |  | rewritten |
+| Philosophy: Knowledge, Mind and Ethics | 13 | 118 | 90 | 1 | 19 | 0 | 8 | 14 | 18% | 11% | 0 | 3 | 35 |  | yes | rewritten |
+| History: How the Past Is Known | 12 | 105 | 75 | 5 | 19 | 0 | 6 | 5 | 12% | 4% | 0 | 0 | 25 |  |  | rewritten |
+| The Roman Republic | 12 | 101 | 77 | 0 | 8 | 0 | 16 | 51 | 13% | 10% | 0 | 0 | 32 |  |  | new |
+| Linguistics | 12 | 119 | 84 | 7 | 16 | 0 | 12 | 7 | 44% | 19% | 0 | 0 | 46 |  |  | rewritten |
+| English: Reading, Writing and Rhetoric | 12 | 105 | 54 | 22 | 19 | 0 | 10 | 0 | 27% | 13% | 12 | 3 | 45 |  | yes | targeted |
+| Reading and Research | 10 | 86 | 54 | 2 | 20 | 0 | 10 | 11 | 13% | 13% | 0 | 0 | 14 |  |  | rewritten |
+| Writing Longer Pieces | 12 | 108 | 95 | 0 | 1 | 0 | 12 | 7 | 20% | 16% | 12 | 0 | 34 |  |  | rewritten |
+| Speaking, Argument and Debate | 12 | 124 | 106 | 0 | 6 | 0 | 12 | 7 | 12% | 18% | 12 | 0 | 15 |  |  | rewritten |
+| Creative and Game Writing | 12 | 115 | 101 | 0 | 2 | 0 | 12 | 12 | 17% | 14% | 12 | 0 | 12 |  |  | rewritten |
 
 ## Music and sound
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Music Theory | 12 | 119 | 77 | 15 | 15 | 0 | 12 | 5 | 58% | 1% | 0 | 0 | 40 |  |  | rewritten |
-| Sound and Audio Fundamentals | 13 | 124 | 23 | 94 | 7 | 0 | 0 | 0 | 45% | 13% | 0 | 0 | 8 |  |  | targeted |
+| Music Theory | 12 | 119 | 80 | 12 | 15 | 0 | 12 | 5 | 57% | 3% | 0 | 0 | 40 |  |  | rewritten |
+| Sound and Audio Fundamentals | 13 | 124 | 70 | 47 | 7 | 0 | 0 | 0 | 31% | 14% | 0 | 0 | 8 |  |  | targeted |
 
 ## First aid
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| First Aid | 14 | 114 | 93 | 7 | 3 | 0 | 11 | 0 | 34% | 16% | 0 | 0 | 43 |  |  | rewritten |
+| First Aid | 14 | 114 | 100 | 0 | 3 | 0 | 11 | 0 | 33% | 16% | 0 | 0 | 43 |  |  | rewritten |
 
 ## Not in the library
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Drawing and Visual Art Fundamentals (archived) | 13 | 127 | 95 | 15 | 5 | 0 | 12 | 9 | 20% | 5% | 0 | 0 | 13 |  |  | rewritten |
+| Drawing and Visual Art Fundamentals (archived) | 13 | 127 | 107 | 3 | 5 | 0 | 12 | 9 | 14% | 7% | 0 | 0 | 13 |  |  | rewritten |

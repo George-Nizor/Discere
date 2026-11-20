@@ -13,7 +13,8 @@ import { describe, expect, it } from "vitest";
  * practical skill: most questions describe a drawing, a habit or a mistake and ask the learner to
  * judge it. Public-domain writing on drawing (Ruskin, Leonardo, Speed, Cennini) appears as extracts.
  * Numeric questions stay only where the number is the point, such as heads in a figure or a step on
- * the value scale, and in the worked examples whose blanks are arithmetic by design.
+ * the value scale. The worked-example blanks that used to compute a figure (a scaled width, a grey
+ * level, a shadow length) now ask which way or roughly how much, as multiple choice.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -70,18 +71,38 @@ describe("questions in Drawing and Visual Art Fundamentals", () => {
     }
   });
 
-  it("keeps numeric questions to the worked-example blanks and the few places where the number is the point", () => {
+  it("keeps numeric questions to the few places where the number is the point", () => {
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(15);
-    const blanks = new Set(
-      bundle.lessons.flatMap((lesson) =>
-        lesson.steps.flatMap((step) =>
-          (step.workedSteps ?? []).map((line) => line.blank?.questionId ?? ""),
-        ),
-      ),
-    );
-    expect(numeric.filter((question) => !blanks.has(question.id)).length).toBeLessThanOrEqual(5);
+    expect(numeric.map((question) => question.id).sort()).toEqual([
+      "dravaf-proportion-and-measuring-heads-tall",
+      "dravaf-seeing-shapes-door-parts",
+      "dravaf-value-and-the-scale-nine-step",
+    ]);
     for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
+  });
+
+  it("asks the former calculation questions as judgements with options", () => {
+    const converted = [
+      "dravaf-proportion-and-measuring-fade-width",
+      "dravaf-form-and-ellipses-check-minor",
+      "dravaf-depth-cues-fade-25",
+      "dravaf-one-point-perspective-back-height",
+      "dravaf-two-point-perspective-drawn-forearm",
+      "dravaf-value-and-the-scale-grey-200",
+      "dravaf-value-and-the-scale-grey-yellow",
+      "dravaf-light-and-form-child-length",
+      "dravaf-edges-and-rendering-two-layers",
+      "dravaf-edges-and-rendering-faint-cover",
+      "dravaf-colour-theory-complement-green",
+      "dravaf-a-complete-study-values-45",
+    ];
+    for (const id of converted) {
+      const question = questions.get(id) as Question;
+      expect(kind(question), id).toBe("choice");
+      expect(question.answerAuthority.kind, id).toBe("text");
+      expect(question.hints, id).toHaveLength(2);
+      expect(question.calculator, id).toBe("off");
+    }
   });
 
   it("puts writing on drawing in front of the learner in six to ten questions", () => {

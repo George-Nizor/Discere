@@ -508,26 +508,40 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(
       question("bayesian-evidence-8-v2").choices!.map((c) => c.label).sort(),
     ).toEqual(["5%", "8%", "90%", "95%"].sort()); // the prior, the false alarm rate, the hit rate and the share without it
-    // 2-v2 (in the lesson): the false alarms among the 990 people without the condition.
-    expect(positives(1000, 0.01, 0.9, 0.1).well).toBeCloseTo(key("bayesian-evidence-2-v2"), 9);
-    expect(
-      question("bayesian-evidence-2-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
-    ).toEqual([positives(1000, 0.01, 0.9, 0.1).ill, 1000 * 0.1, 990 - positives(1000, 0.01, 0.9, 0.1).well]);
+    const rightLabel = (n: string) => {
+      const q = question(n);
+      return q.choices!.find((c) => c.id === correctChoices(q)[0])!.label;
+    };
+    // 2-v2 (in the lesson): 99 false alarms among the 990 people without the condition, against 9
+    // true positives among the 10 who have it, so about eleven times as many.
+    const rare = positives(1000, 0.01, 0.9, 0.1);
+    expect(rare.ill).toBeCloseTo(9, 9);
+    expect(rare.well).toBeCloseTo(99, 9);
+    expect(rare.well / rare.ill).toBeCloseTo(11, 9);
+    expect(rightLabel("bayesian-evidence-2-v2")).toMatch(/^About ten times as many/u);
+    // 3: a hit rate of 0.8 over a false alarm rate of 0.05 is a factor of 16. Taking the hit rate
+    // as odds on its own gives 4, and the gap between the rates is 75 percentage points.
+    expect(0.8 / 0.05).toBeCloseTo(16, 9);
+    expect(0.8 / (1 - 0.8)).toBeCloseTo(4, 9);
+    expect(80 - 5).toBe(75);
+    expect(rightLabel("bayesian-evidence-3")).toBe("About 16 times");
+    // 4: 80 true and 45 false positives, so 64%, about two thirds. The hit rate is 80%, the base
+    // rate 10% and the rate for healthy people 95%.
     const c = positives(1000, 0.1, 0.8, 0.05);
-    expect((100 * c.ill) / (c.ill + c.well)).toBeCloseTo(key("bayesian-evidence-4"), 9);
-    // P(H | E) with P(H) = 0.2, P(E | H) = 0.5, P(E | not-H) = 0.25.
+    expect(c.ill).toBeCloseTo(80, 9);
+    expect(c.well).toBeCloseTo(45, 9);
+    expect((100 * c.ill) / (c.ill + c.well)).toBeCloseTo(64, 9);
+    expect(c.ill / (c.ill + c.well)).toBeGreaterThan(0.6);
+    expect(c.ill / (c.ill + c.well)).toBeLessThan(0.7);
+    expect(rightLabel("bayesian-evidence-4")).toMatch(/^About two thirds/u);
+    // 5: P(H | E) with P(H) = 0.2, P(E | H) = 0.5, P(E | not-H) = 0.25 is a third, up from a fifth.
     const joint = 0.2 * 0.5;
-    // The item asks for a decimal to three places, so the stored key is the posterior rounded to
-    // three places, and the exact 1/3 stays inside the item's own tolerance.
     const posterior = joint / (joint + 0.8 * 0.25);
     expect(posterior).toBeCloseTo(1 / 3, 12);
-    expect(Number(posterior.toFixed(3))).toBeCloseTo(key("bayesian-evidence-5"), 9);
-    const five = question("bayesian-evidence-5");
-    expect(five.prompt).toContain("to three places");
-    for (const answer of [String(posterior), "0.333", "0.3333", "1/3"])
-      expect(correctNumber(five, answer), answer).toBe(true);
-    for (const answer of ["0.3", "0.34", "0.5", "0.1"])
-      expect(correctNumber(five, answer), answer).toBe(false);
+    expect(joint).toBeCloseTo(0.1, 12);
+    expect(joint + 0.8 * 0.25).toBeCloseTo(0.3, 12);
+    expect(rightLabel("bayesian-evidence-5")).toMatch(/^About a third/u);
+    expect(question("bayesian-evidence-5").choices).toHaveLength(4);
     const d = positives(1000, 0.5, 0.9, 0.1);
     expect((100 * d.ill) / (d.ill + d.well)).toBeCloseTo(90, 9);
     // 10-v2 (in the lesson): the false alarm rate is now 30%, so 450 of the 600 positives are ill.
@@ -566,13 +580,24 @@ describe("Philosophy: Knowledge, Mind and Ethics (v2 lessons)", () => {
     expect(expectedUtility([[0.5, 100], [0.5, 0]])).toBe(50);
     expect(expectedUtility([[0.6, 100], [0.4, 0]])).toBeCloseTo(60, 9);
     expect(expectedUtility([[0.9, 20], [0.1, -30]])).toBeCloseTo(15, 9);
-    // 2-v2 is the harm term alone: probability 0.1 of a harm counted as −30.
-    expect(expectedUtility([[0.1, -30]])).toBeCloseTo(key("consequentialism-2-v2"), 9);
-    expect(
-      question("consequentialism-2-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []),
-    ).toEqual([3, -30]);
+    // 2-v2 is the harm term alone: probability 0.1 of a harm counted as −30, so −3, which is
+    // negative and a tenth of the harm itself.
+    const harm = expectedUtility([[0.1, -30]]);
+    expect(harm).toBeCloseTo(-3, 9);
+    expect(harm / -30).toBeCloseTo(0.1, 9);
+    const labelOf = (n: string) => {
+      const q = question(n);
+      return q.choices!.find((c) => c.id === correctChoices(q)[0])!.label;
+    };
+    expect(labelOf("consequentialism-2-v2")).toBe("Negative, about a tenth of the harm itself");
     expect(expectedUtility([[0.7, 10], [0.3, -20]])).toBeCloseTo(1, 9); // worked example
-    expect(expectedUtility([[0.8, 50], [0.2, -10]])).toBeCloseTo(key("consequentialism-10"), 9);
+    // 10: 0.8 × 50 + 0.2 × (−10) = 38, just under 40. Leaving the harm out gives 40, adding it
+    // gives 42, and the plain average of the two outcomes is 20.
+    expect(expectedUtility([[0.8, 50], [0.2, -10]])).toBeCloseTo(38, 9);
+    expect(0.8 * 50).toBeCloseTo(40, 9);
+    expect(0.8 * 50 + 0.2 * 10).toBeCloseTo(42, 9);
+    expect(mean([50, -10])).toBe(20);
+    expect(labelOf("consequentialism-10")).toMatch(/^Just under 40/u);
     expect(4 + 4 - 5).toBe(3); // policy X total
     expect(2 + 2 + 2 - (4 + 4 - 5)).toBe(3);
   });

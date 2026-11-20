@@ -42,81 +42,213 @@ const tan = (degrees: number) => Math.tan(rad(degrees));
 const section = (b: number, d: number) => (b * d * d) / 6 / 1000; // cm3
 
 /**
- * Each numeric answer is recomputed here. `uses` lists numbers that must appear in the prompt, so the
- * calculation cannot drift from the wording. A question asked in a worked or faded example continues the
- * example's text, so its inputs (marked `example`) may come from that text.
+ * The seven questions that still ask for a computed number are recomputed here. `uses` lists numbers that
+ * must appear in the prompt, so the calculation cannot drift from the wording. A question asked in a worked
+ * or faded example continues the example's text, so its inputs may come from that text.
  */
 const recompute: Record<string, { value: () => number; uses?: number[]; example?: string }> = {
-  "site-and-sun-neighbour-wall-40": {
-    value: () => 6 - 8 * tan(90 - 40 - 23.44),
-    uses: [6, 8, 26.56],
-  },
-  "site-and-sun-overhang-june": { value: () => 0.8 * tan(61.4), uses: [0.8, 61.4, 1.1] },
-  "site-and-sun-shadow-9m-50": { value: () => 9 / tan(16.56), uses: [9, 50, 16.56] },
-  "programme-and-areas-gross-34-v2": { value: () => 40 * 2200, uses: [34, 40, 2200] },
-  "programme-and-areas-corridor-cost": {
-    value: () => Math.round(((68 / 0.75 - 68 / 0.85) * 2200) / 100) * 100,
-    uses: [68, 85, 75, 2200],
-  },
   "plan-section-elevation-stud-1-20": { value: () => 120 * 20, uses: [120] },
   "circulation-and-stairs-going-175": { value: () => 630 - 2 * 175, uses: [175, 630] },
   "circulation-and-stairs-run-2600": {
     value: () => Math.round(14 * (630 - 2 * (2600 / 15)) - 3600),
     uses: [2600, 15, 14, 630],
   },
-  "structure-small-buildings-line-load-06": { value: () => 2.925 * 0.6, uses: [0.6, 0.4, 2.925] },
   "structure-small-buildings-moment-3m": { value: () => (1.17 * 3 * 3) / 8, uses: [3, 1.17] },
-  "structure-small-buildings-max-span": {
-    value: () => Math.sqrt((8 * ((7 * section(47, 145) * 1000) / 1e6)) / 1.17),
-    uses: [3.6, 47, 145, 164.7, 7, 1.17],
-  },
-  "daylight-df-bedroom": { value: () => (90 / 6000) * 100, uses: [90, 6000] },
   "daylight-depth-18": { value: () => 6 / 4.5 + 6 / 2.1, uses: [6, 4.5, 2.1] },
   "daylight-practice-2-v2": { value: () => 5 / 3.5 + 5 / 2.4, uses: [5, 3.5, 2.4, 4] },
+  "roofs-and-rain-pitch-1-5": { value: () => deg(Math.atan(1.5 / 3.0)), uses: [1.5] },
+};
+
+/**
+ * The 23 questions that used to ask for a number now ask for a judgement from options. Each entry names the
+ * right option, checks that the figure behind it holds (with the number the prompt gives for the steepness of
+ * a ray, or the share, or the ratio), checks the figures the wrong options come from, and lists numbers that
+ * the prompt must still carry.
+ */
+const judged: Record<
+  string,
+  { right: string; holds: () => boolean; mistakes?: () => boolean; uses: number[] }
+> = {
+  "site-and-sun-neighbour-wall-40": {
+    right: "From about 2 m up",
+    // The prompt says a ray falls 1 m for every 2 m (tan 26.56 degrees is 0.5), so over 8 m it falls 4 m.
+    holds: () => Math.abs(tan(26.56) - 0.5) < 1e-3 && Math.round(6 - 8 * 0.5) === 2,
+    mistakes: () => 8 * 0.5 === 4,
+    uses: [6, 8, 26.56],
+  },
+  "site-and-sun-overhang-june": {
+    right: "About 1.5 m, which reaches past the sill",
+    holds: () => Math.abs(0.8 * tan(61.4) - 1.47) < 0.02 && 0.8 * 1.8 > 1.1 && tan(61.4) > 1.8 && tan(61.4) < 1.9,
+    mistakes: () => Math.abs(0.8 / tan(61.4) - 0.44) < 0.02 && 0.8 < 1.1,
+    uses: [0.8, 1.1, 61.4],
+  },
+  "programme-and-areas-corridor-cost": {
+    right: "About 23,500 more",
+    holds: () => Math.abs(((68 / 0.75 - 68 / 0.85) * 2200) - 23467) < 1 && 68 / 0.85 === 80,
+    mistakes: () => Math.round(68 * 0.1 * 2200) === 14960 && Math.round((68 / 0.75) * 2200) === 199467,
+    uses: [68, 85, 80, 75, 2200],
+  },
+  "structure-small-buildings-line-load-06": {
+    right: "About half as much again",
+    holds: () => Math.abs(2.925 * 0.6 - 1.755) < 1e-9 && Math.abs(0.6 / 0.4 - 1.5) < 1e-9,
+    mistakes: () => Math.abs((0.6 - 0.4) / 0.4 - 0.5) < 1e-9,
+    uses: [0.6, 0.4, 2.925, 1.17],
+  },
+  "structure-small-buildings-max-span": {
+    right: "About 2.8 m",
+    holds: () => {
+      const capacity = (7 * section(47, 145) * 1000) / 1e6; // kN m
+      const demand = (1.17 * 3.6 * 3.6) / 8;
+      return (
+        Math.abs(capacity - 1.15) < 0.01 &&
+        Math.abs(demand - 1.9) < 0.01 &&
+        Math.abs(3.6 * Math.sqrt(capacity / demand) - 2.8) < 0.05
+      );
+    },
+    mistakes: () => {
+      const share = 1.153 / 1.895;
+      return Math.abs(3.6 * share - 2.2) < 0.05 && Math.abs(3.6 * share * share - 1.3) < 0.05;
+    },
+    uses: [3.6, 47, 145, 1.17, 1.9, 1.15],
+  },
+  "daylight-df-bedroom": {
+    right: "About 1.5 percent",
+    holds: () => Math.abs((90 / 6000) * 100 - 1.5) < 1e-9,
+    mistakes: () => Math.abs(90 / 6000 - 0.015) < 1e-9 && Math.abs((6000 / 90) - 66.7) < 0.1,
+    uses: [90, 6000],
+  },
   "heat-flow-and-u-values-wool-to-match-pir": {
-    value: () => 0.035 * (0.1 / 0.022) * 1000,
+    right: "About 160 mm",
+    holds: () => Math.abs(0.035 * (0.1 / 0.022) * 1000 - 159) < 0.5 && Math.abs(0.035 / 0.022 - 1.59) < 0.01,
+    mistakes: () => Math.abs((0.022 / 0.035) * 100 - 62.9) < 0.1,
     uses: [100, 0.022, 0.035],
   },
-  "heat-flow-and-u-values-u-no-insulation": { value: () => 1 / 1.23, uses: [1.23] },
-  "heat-flow-and-u-values-q-25": { value: () => 0.173 * 25 * 15, uses: [25, 0.173, 20, 5] },
-  "heat-flow-and-u-values-leave-out-pir": {
-    value: () => (0.81 - 0.173) * 30 * (21 - 3),
-    uses: [30, 21, 3, 0.173, 0.81],
+  "heat-flow-and-u-values-u-no-insulation": {
+    right: "It rises to about five times as much",
+    holds: () => Math.abs(5.78 / 1.23 - 4.7) < 0.01 && Math.abs(1 / 1.23 - 0.81) < 0.005,
+    mistakes: () => Math.abs(4.545 / 5.78 - 0.79) < 0.01 && Math.abs(0.77 / 0.022 - 35) < 0.01,
+    uses: [5.78, 0.173, 1.23],
+  },
+  "heat-flow-and-u-values-q-25": {
+    right: "It rises by about a third",
+    holds: () => Math.abs((20 - 0) / (20 - 5) - 4 / 3) < 1e-9 && Math.abs(0.173 * 25 * 15 - 64.9) < 0.05,
+    mistakes: () => 5 / 20 === 0.25 && 5 / 15 > 0.33,
+    uses: [25, 0.173, 20, 5, 0],
   },
   "air-moisture-and-bridges-leaky-extra": {
-    value: () => 0.33 * 200 * (2.0 - 0.5) * 20,
-    uses: [200, 0.5, 20],
+    right: "About four times as much",
+    holds: () => 2.0 / 0.5 === 4 && Math.abs(0.33 * 200 * (2.0 - 0.5) * 20 - 1980) < 1e-6,
+    mistakes: () => 2.0 - 0.5 === 1.5,
+    uses: [200, 20, 0.5],
   },
   "air-moisture-and-bridges-ts-lintel": {
-    value: () => 20 - 1.2 * 0.13 * 20,
-    uses: [1.2, 20, 0.13],
+    right: "About 17 °C",
+    holds: () =>
+      Math.abs(20 - 1.2 * 0.13 * 20 - 16.88) < 1e-9 &&
+      Math.abs(1.2 * 0.13 * 20 - 3.12) < 1e-9 &&
+      0.173 * 0.13 * 20 < 0.5,
+    mistakes: () => Math.abs(20 - 0.173 * 0.13 * 20 - 19.55) < 0.01 && 20 + 3.12 > 23,
+    uses: [20, 0, 3, 0.5, 19.55],
   },
   "comfort-and-passive-design-seminar-gain": {
-    value: () => 20 * 1.2 * 58.2 * 1.8,
-    uses: [20, 1.2, 58.2, 1.8],
+    right: "About 2.5 kW",
+    holds: () => Math.abs(1.2 * 58.2 * 1.8 - 125.7) < 0.1 && Math.abs(20 * 1.2 * 58.2 * 1.8 - 2514) < 1,
+    mistakes: () => Math.abs(1.2 * 58.2 * 1.8 * 20 * 10 - 25140) < 10,
+    uses: [20, 1.2, 58.2, 1.8, 125],
   },
   "comfort-and-passive-design-overhang-40": {
-    value: () => 0.5 * tan(73.44),
-    uses: [73.44, 0.5, 0.3, 1.5],
+    right: "All of it: the shadow reaches about 1.7 m",
+    holds: () => Math.abs(0.5 * tan(73.44) - 1.68) < 0.01 && Math.abs(tan(73.44) - 3.4) < 0.05 && 0.5 * tan(73.44) > 1.5,
+    mistakes: () => Math.abs(0.5 / tan(73.44) - 0.15) < 0.01 && 0.5 > 0.3 && 0.5 < 1.5,
+    uses: [73.44, 3.4, 0.3, 0.5, 1.5],
   },
-  "roofs-and-rain-ridge-7-40": { value: () => 3.5 * tan(40), uses: [7, 40] },
-  "roofs-and-rain-pitch-1-5": { value: () => deg(Math.atan(1.5 / 3.0)), uses: [1.5] },
-  "roofs-and-rain-rain-80": { value: () => (80 * 36) / 3600, uses: [80, 36, 0.6] },
-  "roofs-and-rain-loft-pitch": { value: () => deg(Math.atan(2.4 / 4)), uses: [8, 2.4] },
-  "a-small-building-end-to-end-walls-ua": { value: () => 44 * 0.173, uses: [44, 0.173] },
+  "roofs-and-rain-ridge-7-40": {
+    right: "Just under the limit, by under 0.1 m",
+    holds: () => {
+      const rise = 3.5 * tan(40);
+      return Math.abs(tan(40) - 0.84) < 0.005 && rise < 3.0 && 3.0 - rise < 0.1 && Math.abs(rise - 2.94) < 0.01;
+    },
+    mistakes: () => Math.abs(3.5 / 0.84 - 4.17) < 0.01 && Math.abs(7 * 0.84 - 5.88) < 0.01,
+    uses: [7, 40, 0.84],
+  },
+  "roofs-and-rain-rain-80": {
+    right: "About 0.8 L/s",
+    holds: () => Math.abs((80 * 36) / 3600 - 0.8) < 1e-9 && 80 * 36 === 2880 && (80 * 36) / 3600 > 0.6,
+    mistakes: () => Math.abs(2880 / 1000 - 2.88) < 1e-9 && 2880 / 60 === 48,
+    uses: [80, 36, 0.6],
+  },
+  "roofs-and-rain-loft-pitch": {
+    right: "About 31 degrees",
+    holds: () =>
+      Math.abs(deg(Math.atan(2.4 / 4)) - 31.0) < 0.05 && Math.abs(tan(30) - 0.58) < 0.005 && 2.4 / 4 > tan(30),
+    mistakes: () =>
+      Math.abs(deg(Math.atan(2.4 / 8)) - 16.7) < 0.05 && Math.abs(4 * tan(45) - 4) < 1e-9 && Math.abs(4 * tan(60) - 6.9) < 0.05,
+    uses: [8, 2.4, 30, 0.58, 45],
+  },
+  "a-small-building-end-to-end-walls-ua": {
+    right: "About 8 W/K",
+    holds: () => Math.abs(44 * 0.173 - 7.6) < 0.05 && 44 * 0.173 > 5 && 44 * 0.173 < 10,
+    mistakes: () => Math.abs(44 / 0.173 - 254) < 1,
+    uses: [44, 0.173],
+  },
   "a-small-building-end-to-end-fabric-first": {
-    value: () => (44 * 0.45 + 21.6) * 20,
-    uses: [0.45, 44, 21.6, 20],
+    right: "About 40 percent more",
+    holds: () => {
+      const before = 44 * 0.173 + 21.6;
+      const after = 44 * 0.45 + 21.6;
+      return Math.abs(before - 29.2) < 0.05 && Math.abs(after - 41.4) < 1e-9 && Math.abs(after / before - 1.42) < 0.01;
+    },
+    mistakes: () => Math.abs((41.4 - 29.2) / 41.4 - 0.29) < 0.01 && Math.abs((44 * 0.45) / (44 * 0.173) - 2.6) < 0.01,
+    uses: [7.6, 21.6, 29.2, 19.8],
+  },
+  "site-and-sun-shadow-9m-50": {
+    right: "About 30 m",
+    holds: () => Math.abs(9 / tan(16.56) - 30.3) < 0.1 && Math.abs(tan(16.56) - 0.3) < 0.005,
+    mistakes: () => Math.abs(9 / tan(40) - 10.7) < 0.05 && Math.abs(9 * tan(16.56) - 2.7) < 0.05,
+    uses: [9, 50, 16.56, 0.3],
+  },
+  "programme-and-areas-gross-34-v2": {
+    right: "About 13,000 short",
+    holds: () => 40 * 2200 === 88000 && Math.abs(34 * 2200 - 74800) < 1 && (40 - 34) * 2200 === 13200,
+    mistakes: () => 40 - 34 === 6 && (40 - 34) * 2200 > 6 * 1000,
+    uses: [34, 40, 2200, 75000],
+  },
+  "heat-flow-and-u-values-leave-out-pir": {
+    right: "About 340 W more",
+    holds: () => {
+      const dT = 21 - 3;
+      const before = 0.173 * 30 * dT;
+      const after = 0.81 * 30 * dT;
+      return Math.abs(before - 93.4) < 0.1 && Math.abs(after - before - 344) < 1 && Math.abs(0.81 / 0.173 - 4.68) < 0.01;
+    },
+    mistakes: () => Math.abs((0.81 - 0.173) * 30 - 19.1) < 0.05 && Math.abs(0.81 * 30 * 18 - 437.4) < 0.1,
+    uses: [30, 3, 21, 0.173, 93, 0.81],
   },
   "a-small-building-end-to-end-double-glass-v2": {
-    value: () => (8 - 4) * 1.4 * 20,
-    uses: [8, 1.4, 20],
+    right: "About 110 W",
+    holds: () => Math.abs(1.4 * 20 - 28) < 1e-9 && Math.abs(4 * 28 - 112) < 1e-9 && Math.abs(29.2 * 20 - 584) < 1e-9,
+    mistakes: () => Math.abs(4 * 1.4 - 5.6) < 1e-9 && 8 * 28 === 224 && 584 > 560,
+    uses: [4, 8, 1.4, 20, 28, 584],
   },
   "a-small-building-end-to-end-glass-share": {
-    value: () => (100 * 3 * 1.4) / (36 * 0.173 + 3 * 1.4),
-    uses: [36, 0.173, 3, 1.4],
+    right: "About 40 percent",
+    holds: () => {
+      const wall = 36 * 0.173;
+      const glass = 3 * 1.4;
+      return (
+        Math.abs((glass / (wall + glass)) * 100 - 40.3) < 0.1 &&
+        36 / 3 === 12 &&
+        Math.abs(1.4 / 0.173 - 8.09) < 0.01 &&
+        Math.abs((8 / (12 + 8)) * 100 - 40) < 1e-9
+      );
+    },
+    mistakes: () => Math.abs((3 / 39) * 100 - 7.7) < 0.05 && Math.abs((wallShare(36, 0.173, 3, 1.4)) - 59.7) < 0.1,
+    uses: [36, 0.173, 3, 1.4, 12, 8],
   },
 };
+const wallShare = (wallArea: number, wallU: number, glassArea: number, glassU: number) =>
+  ((wallArea * wallU) / (wallArea * wallU + glassArea * glassU)) * 100;
+const words = (text: string) => text.split(/\s+/u).filter(Boolean).length;
 const mentions = (prompt: string, value: number) => {
   const text = prompt.replace(/,/gu, "");
   return new RegExp(
@@ -154,11 +286,15 @@ describe("questions in Small Buildings and Architectural Design", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types and at most one sum", () => {
+  it("ends each lesson with three questions of at least two types unless one was an estimate, and at most one sum", () => {
+    // These two lessons used to end on one sum and two choices. The sum is now a choice as well, so each of
+    // them ends on three choices, and none of them asks for a computed number.
+    const estimateLessons = new Set(["heat-flow-and-u-values", "roofs-and-rain"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (!estimateLessons.has(lesson.id))
+        expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
       expect(types.filter((type) => type === "numeric").length, lesson.id).toBeLessThanOrEqual(1);
     }
   });
@@ -198,6 +334,40 @@ describe("questions in Small Buildings and Architectural Design", () => {
       ).toBeLessThanOrEqual(absoluteTolerance + 1e-9);
       for (const number of entry.uses ?? [])
         expect(mentions(question.prompt, number), `${question.id} mentions ${number}`).toBe(true);
+    }
+  });
+
+  it("asks for no computed number in the lessons these questions came from, except where listed", () => {
+    expect(Object.keys(judged)).toHaveLength(23);
+    expect(Object.keys(recompute)).toHaveLength(7);
+    expect(
+      bundle.flashcards.filter((card) => card.answerAuthority?.kind === "numeric").map((card) => card.id),
+    ).toEqual([
+      "smabad-site-and-sun-card-1",
+      "smabad-plan-section-elevation-card-1",
+      "smabad-circulation-and-stairs-card-1",
+      "smabad-the-drawn-set-card-1",
+      "smabad-a-small-building-end-to-end-card-1",
+    ]);
+  });
+
+  it("keeps each converted judgement true to its figures", () => {
+    for (const [id, entry] of Object.entries(judged)) {
+      const question = questions.get(`smabad-${id}`);
+      if (!question) throw new Error(id);
+      expect(kind(question), id).toBe("choice");
+      expect(question.responseType, id).toBe("short_text");
+      expect(question.calculator, id).toBe("off");
+      expect(question.answerAuthority.kind, id).toBe("text");
+      if (question.answerAuthority.kind !== "text") continue;
+      expect(question.answerAuthority.exampleAnswer, id).toBe(entry.right);
+      expect(question.answerAuthority.acceptedIdeas, id).toEqual([entry.right]);
+      expect(question.choices?.filter((choice) => choice.label === entry.right), id).toHaveLength(1);
+      expect(question.hints, id).toHaveLength(2);
+      expect(entry.holds(), `${id} holds`).toBe(true);
+      if (entry.mistakes) expect(entry.mistakes(), `${id} mistakes`).toBe(true);
+      for (const number of entry.uses)
+        expect(mentions(question.prompt, number), `${id} mentions ${number}`).toBe(true);
     }
   });
 
@@ -359,8 +529,13 @@ describe("questions in Small Buildings and Architectural Design", () => {
       );
       for (const choice of others)
         expect(explained.has(choice.id), `${question.id} ${choice.id}`).toBe(true);
-      for (const item of question.misconceptions ?? [])
+      for (const item of question.misconceptions ?? []) {
         expect(item.feedback.trim().length, question.id).toBeGreaterThan(20);
+        expect(item.feedback.toLowerCase(), question.id).not.toContain(
+          right[0]?.label.toLowerCase(),
+        );
+      }
+      expect(words(question.onCorrect ?? ""), question.id).toBeLessThanOrEqual(45);
       places.add(question.choices.indexOf(right[0] as (typeof question.choices)[number]));
     }
     expect(rightLongest / threeOrMore).toBeLessThanOrEqual(0.3);

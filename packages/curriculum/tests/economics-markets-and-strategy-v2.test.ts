@@ -120,8 +120,13 @@ describe("Economics v2: the course is converted", () => {
 describe("Lesson 1: opportunity cost and the frontier", () => {
   const I = "econ-opportunity-cost-and-the-frontier-";
   it("recomputes the keys", () => {
-    near(I + "3", 70 - 40);
-    near(I + "unit-cost", (70 - 40) / (60 - 40));
+    // The third step gives up 30 machines for 20 food: three times the first step's 10, and 1.5 a unit
+    // against the 1.25 of the straight frontier.
+    expect((70 - 40) / (100 - 90)).toBe(3);
+    expect((70 - 40) / (60 - 40)).toBe(1.5);
+    expect((70 - 40) / (60 - 40) > 100 / 80).toBe(true);
+    expect(marked(I + "3")).toEqual(["Three times as many machines"]);
+    expect(marked(I + "unit-cost")).toEqual(["Higher, at about 1.5 machines"]);
     // Teaching screens: £8 book against £4 teas, Workshop B's table, the first step along the frontier.
     expect(8 / 4).toBe(2);
     expect(40 / 20).toBe(2);
@@ -133,7 +138,7 @@ describe("Lesson 1: opportunity cost and the frontier", () => {
     const bowed = [[0, 100], [20, 90], [40, 70], [60, 40], [80, 0]] as const;
     const steps = bowed.slice(1).map(([x, y], i) => (bowed[i]![1] - y) / (x - bowed[i]![0]));
     expect(steps).toEqual([0.5, 1, 1.5, 2]);
-    near(I + "unit-cost", steps[2]!);
+    expect(steps[2]).toBe(1.5);
     // 30 chairs use half of a 60-chair week, leaving time for 10 of 20 tables; 5 is inside.
     expect(5 < 20 * (1 - 30 / 60)).toBe(true);
     expect(marked(I + "2")).toEqual(["Inside the frontier"]);
@@ -144,8 +149,14 @@ describe("Lesson 2: comparative advantage", () => {
   const I = "econ-comparative-advantage-";
   it("recomputes the keys", () => {
     expect(6 / 4 < 12 / 6).toBe(true); // Ben's cake is cheaper than Ana's
-    near(I + "received", 2 * 1.75);
-    near(I + "3", 2 * 1.75 - 3);
+    // Ben is paid 2 × 1.75 = 3.5 loaves for cakes that cost him 2 × 1.5 = 3, so he is half a loaf ahead.
+    expect(2 * 1.75).toBe(3.5);
+    expect(2 * 1.75 > 2 * 1.5).toBe(true);
+    expect(2 * 1.75 - 3).toBe(0.5);
+    expect(1.75 < 2).toBe(true); // below Ana's cost, which is why she gains too
+    expect(2 - 1.75).toBe(0.25);
+    expect(marked(I + "received")).toEqual(["More, since 1.75 is above his cost of 1.5 a cake"]);
+    expect(marked(I + "3")).toEqual(["A little better off, by about half a loaf"]);
     // Dev's cake costs 4/4 loaves against Cleo's 10/2.
     expect(4 / 4 < 10 / 2).toBe(true);
     expect(1.5 < 1.8 && 1.8 < 2).toBe(true);
@@ -172,8 +183,14 @@ describe("Lesson 3: thinking at the margin", () => {
   const costs = [30, 35, 45, 50, 60];
   it("recomputes the keys", () => {
     expect(takeWhile(benefits, (b, i) => b >= costs[i]!)).toHaveLength(key(I + "1"));
-    near(I + "hour-2-net", 70 - 35);
-    near(I + "2", 90 - 30 + (70 - 35) + (55 - 45));
+    // The café's first three nets are 60, 35 and 10: every hour adds, and each adds less than the last.
+    const hourNets = [90 - 30, 70 - 35, 55 - 45];
+    expect(hourNets).toEqual([60, 35, 10]);
+    expect(hourNets.reduce((sum, n) => sum + n, 0)).toBe(105);
+    expect(hourNets.every((n, i) => n > 0 && (i === 0 || n < hourNets[i - 1]!))).toBe(true);
+    expect((70 - 35) / 70).toBe(0.5);
+    expect(marked(I + "hour-2-net")).toEqual(["About half of it"]);
+    expect(marked(I + "2")).toEqual(["It rises each time, by less each time"]);
     const dearer = costs.map((c) => c + 20);
     const batches = [120, 90, 60, 30].filter((b) => b >= 50);
     expect(215 - 160).toBe(55);
@@ -201,7 +218,10 @@ describe("Lesson 4: demand and supply", () => {
   const I = "econ-demand-and-supply-";
   it("recomputes the keys", () => {
     near(I + "2", equilibrium(100, 2, -20, 4).price);
-    near(I + "3", equilibrium(100, 2, -20, 4).quantity);
+    expect(equilibrium(100, 2, -20, 4).quantity).toBe(60);
+    expect(100 - 2 * 0).toBe(100); // the quantity buyers want at a price of £0
+    expect(6 * 20).toBe(120); // 6P, the line before the division
+    expect(marked(I + "3")).toEqual(["About 60 tickets"]);
     // Teaching screens: the lolly stall, Qd = 60 − 5P against Qs = 5P.
     expect(60 - 5 * 4).toBe(40);
     expect(60 - 5 * 8).toBe(20);
@@ -216,8 +236,15 @@ describe("Lesson 4: demand and supply", () => {
 describe("Lesson 5: shifts and movements", () => {
   const I = "econ-shifts-and-movements-";
   it("recomputes the keys", () => {
-    near(I + "2", equilibrium(130, 2, -20, 4).price);
-    near(I + "new-quantity", equilibrium(130, 2, -20, 4).quantity);
+    // A shift of 30 kilos at £20 is closed by a price rise of 30 ÷ (2 + 4) = £5, and the quantity rises by 20.
+    const beans = equilibrium(100, 2, -20, 4);
+    const richer = equilibrium(130, 2, -20, 4);
+    expect(richer.price - beans.price).toBe(5);
+    expect(30 / (2 + 4)).toBe(5);
+    expect(richer.quantity - beans.quantity).toBe(20);
+    expect(30 / 2).toBe(15); // the rise if supply did not respond
+    expect(marked(I + "2")).toEqual(["By about £5"]);
+    expect(marked(I + "new-quantity")).toEqual(["Up by about 20 kg, less than 30"]);
     expect(equilibrium(70, 2, -20, 4)).toEqual({ price: 15, quantity: 40 });
     // Teaching screens: the lolly stall.
     expect(60 - 5 * 4).toBe(40);
@@ -234,9 +261,14 @@ describe("Lesson 5: shifts and movements", () => {
 describe("Lesson 6: price elasticity", () => {
   const I = "econ-price-elasticity-";
   it("recomputes the keys", () => {
-    near(I + "quantity-percent", (10 / 100) * 100);
-    near(I + "3", elasticity(95, 105, 6, 4));
-    near(I + "1", elasticity(35, 65, 11, 9));
+    expect((10 / 100) * 100).toBe(10);
+    expect(10 / (95 + 105)).toBeCloseTo(0.05, 12); // dividing by the sum, not the average
+    expect(elasticity(95, 105, 6, 4)).toBeCloseTo(0.25, 9); // inelastic
+    expect(elasticity(35, 65, 11, 9)).toBeCloseTo(3, 9); // quantity moves three times as far as price
+    expect(30 / 2).toBe(15); // raw changes set side by side
+    expect(marked(I + "quantity-percent")).toEqual(["About a tenth of the average"]);
+    expect(marked(I + "3")).toEqual(["Inelastic, since sales rose by the smaller percentage"]);
+    expect(marked(I + "1")).toEqual(["About three times as large"]);
     expect(elasticity(130, 70, 4, 6)).toBeCloseTo(1.5, 9);
     // 30% on 10% is 3, above 1: elastic. At 0.4 a price cut lowers revenue.
     expect(30 / 10 > 1).toBe(true);
@@ -279,12 +311,21 @@ describe("Lesson 7: consumer and producer surplus", () => {
   const I = "econ-consumer-and-producer-surplus-";
   it("recomputes the keys", () => {
     const coffee = equilibrium(100, 2, -20, 4);
-    near(I + "2", tri(coffee.quantity, 100 / 2 - coffee.price));
-    near(I + "3", tri(coffee.quantity, coffee.price - 20 / 4));
+    const cs = tri(coffee.quantity, 100 / 2 - coffee.price);
+    const ps = tri(coffee.quantity, coffee.price - 20 / 4);
+    expect([cs, ps]).toEqual([900, 450]);
+    expect(100 / 2 - coffee.price).toBe(30);
+    expect(coffee.price - 20 / 4).toBe(15);
+    expect(ps / cs).toBe(0.5);
+    expect(tri(coffee.quantity, coffee.price) / cs).toBeCloseTo(2 / 3, 12); // the whole £20 taken as the height
+    expect(marked(I + "2")).toEqual(["Half of 60 tickets times £30"]);
+    expect(marked(I + "3")).toEqual(["Half as large"]);
     const m5 = equilibrium(80, 2, 0, 2);
     const c1 = equilibrium(100, 5, 0, 5);
     const c2 = equilibrium(80, 4, -16, 4);
-    near(I + "check-3", tri(c1.quantity - 40, (100 - 40) / 5 - 40 / 5));
+    expect(tri(c1.quantity - 40, (100 - 40) / 5 - 40 / 5)).toBe(20);
+    expect(tri(10, 4) / (10 * 4)).toBe(0.5); // half of a £4 gap on each of the 10 blocked units
+    expect(marked(I + "check-3")).toEqual(["About half as much"]);
     const bagels = equilibrium(90, 3, -10, 2);
     expect(tri(bagels.quantity, 90 / 3 - bagels.price)).toBe(150);
     expect(18 < 22).toBe(true);
@@ -320,9 +361,20 @@ describe("Lesson 7: consumer and producer surplus", () => {
 describe("Lesson 8: taxes and deadweight loss", () => {
   const I = "econ-taxes-and-deadweight-loss-";
   it("recomputes the keys", () => {
-    near(I + "2", 6 * equilibrium(100, 2, -20, 4, 6).quantity);
-    near(I + "3", tri(equilibrium(100, 2, -20, 4).quantity - equilibrium(100, 2, -20, 4, 6).quantity, 6));
-    near(I + "4", equilibrium(120, 4, -30, 2, 6).price - equilibrium(120, 4, -30, 2).price);
+    const gigs = equilibrium(100, 2, -20, 4);
+    const gigsTaxed = equilibrium(100, 2, -20, 4, 6);
+    const revenue = 6 * gigsTaxed.quantity;
+    const loss = tri(gigs.quantity - gigsTaxed.quantity, 6);
+    expect([revenue, loss]).toEqual([312, 24]);
+    expect(revenue).toBeLessThan(6 * gigs.quantity); // a little less than £360
+    expect(loss / revenue).toBeLessThan(0.1);
+    expect(tri(gigsTaxed.quantity, 6) / revenue).toBe(0.5); // the 52 tickets still sold taken as the base
+    const gyms = equilibrium(120, 4, -30, 2, 6).price - equilibrium(120, 4, -30, 2).price;
+    expect(gyms).toBe(2);
+    expect(gyms / 6).toBeCloseTo(1 / 3, 12);
+    expect(marked(I + "2")).toEqual(["A little less, since 8 tickets drop out"]);
+    expect(marked(I + "3")).toEqual(["Under a tenth of it"]);
+    expect(marked(I + "4")).toEqual(["About a third of it"]);
     const c2 = equilibrium(100, 4, -20, 4, 4);
     expect(equilibrium(60, 2, -20, 2, 4)).toEqual({ price: 22, quantity: 16 });
     expect(20 - 6).toBe(14);
@@ -362,9 +414,19 @@ describe("Lesson 9: controls and externalities", () => {
   const efficient = (a: number, b: number, c: number, d: number, damage: number) =>
     equilibrium(a, b, c, d, damage).quantity;
   it("recomputes the keys", () => {
-    near(I + "1", 100 - 2 * 12 - (-20 + 4 * 12));
-    near(I + "offered-at-floor", -20 + 4 * 30);
-    near(I + "2", -20 + 4 * 30 - (100 - 2 * 30));
+    const [wanted, offeredAt12] = [100 - 2 * 12, -20 + 4 * 12];
+    expect([wanted, offeredAt12]).toEqual([76, 28]);
+    expect((wanted - offeredAt12) / offeredAt12).toBeGreaterThan(1.5); // nearly twice the 28 that sell
+    expect((wanted - offeredAt12) / offeredAt12).toBeLessThan(2);
+    expect(wanted / offeredAt12).toBeGreaterThan(2.5);
+    expect(20 - 12).toBe(8);
+    const [offered, bought] = [-20 + 4 * 30, 100 - 2 * 30];
+    expect([offered, bought]).toEqual([100, 40]);
+    expect(offered / bought).toBe(2.5);
+    expect((offered - bought) / offered).toBe(0.6);
+    expect(marked(I + "1")).toEqual(["Nearly twice as many"]);
+    expect(marked(I + "offered-at-floor")).toEqual(["More than twice as many, about 100"]);
+    expect(marked(I + "2")).toEqual(["About three fifths of them"]);
     expect(-20 + 4 * 26 - (100 - 2 * 26)).toBe(36);
     // A ceiling of £30 sits above the £20 equilibrium, so it does not bind.
     expect(30 > equilibrium(100, 2, -20, 4).price).toBe(true);
@@ -396,8 +458,15 @@ describe("Lesson 10: costs and profit", () => {
   const tc = (q: number, fixed: number) => fixed + q * q;
   it("recomputes the keys", () => {
     // ATC = f/q + q is lowest where 2q = f/q + q, so q = sqrt(f).
-    near(I + "2", Math.sqrt(100));
-    near(I + "atc-low", tc(10, 100) / 10);
+    expect(Math.sqrt(100)).toBe(10);
+    expect(100 / 36).toBeCloseTo(2.78, 2); // the rent grows 2.8 times
+    expect(Math.sqrt(100) / Math.sqrt(36)).toBeCloseTo(1.67, 2); // the best output only 1.7 times
+    expect(Math.sqrt(100) / Math.sqrt(36)).toBeLessThan(100 / 36);
+    expect(tc(10, 100) / 10).toBe(20);
+    expect(tc(6, 36) / 6).toBe(12);
+    expect(tc(10, 100) / 10).toBeGreaterThan(tc(6, 36) / 6);
+    expect(marked(I + "2")).toEqual(["At more than 6 units, but rising less than the rent"]);
+    expect(marked(I + "atc-low")).toEqual(["Higher, since the larger rent adds to each unit's cost"]);
     expect(Math.sqrt(400)).toBe(20);
     near(I + "3", 30 / 2);
     const q16 = 16 / 2;
@@ -443,8 +512,17 @@ describe("Lesson 11: monopoly", () => {
   };
   it("recomputes the keys", () => {
     near(I + "output-mr-mc", monopoly(100, 1, 20).q);
-    near(I + "2", monopoly(100, 1, 20).p);
-    near(I + "4", tri(80 - 40, 60 - 20));
+    const firstMarket = monopoly(100, 1, 20);
+    expect(firstMarket.p / 20).toBe(3);
+    expect(firstMarket.q).toBe(40);
+    expect(firstMarket.competitive).toBe(80);
+    const lost = tri(firstMarket.competitive - firstMarket.q, firstMarket.p - 20);
+    const monopolyProfit = (firstMarket.p - 20) * firstMarket.q;
+    expect([lost, monopolyProfit]).toEqual([800, 1600]);
+    expect(lost / monopolyProfit).toBe(0.5);
+    expect(tri(firstMarket.competitive - firstMarket.q, 20) / monopolyProfit).toBe(0.25);
+    expect(marked(I + "2")).toEqual(["About three times as high"]);
+    expect(marked(I + "4")).toEqual(["About half of it"]);
     const s2 = monopoly(90, 1, 30);
     near(I + "check-2", (s2.p - 30) * s2.q);
     const s3 = monopoly(100, 2, 20);

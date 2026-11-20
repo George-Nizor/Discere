@@ -11,9 +11,11 @@ import { describe, expect, it } from "vitest";
 /**
  * System Design follows the way DevOps and Delivery and History ask questions (docs/question-writing-guide.md),
  * adapted to a course with two skills: estimation, where a number is the design point, and design judgement.
- * Numeric questions stay where an estimate decides something (a fleet size, a hit rate, a restore time, a
- * burn rate) or where a worked example asks for one step of arithmetic. Everything else puts a requirement,
- * a failure or an architecture in front of the learner and asks which choice fits or what fails.
+ * No question asks the learner to compute an exact figure, because a calculator or an assistant does that in
+ * practice. The estimates (a fleet size, a hit rate, a restore time, a burn rate) are multiple choice: the
+ * learner judges which option the figures support, and each wrong option is a slip people make with them.
+ * Everything else puts a requirement, a failure or an architecture in front of the learner and asks which
+ * choice fits or what fails.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/system-design/bundle.json", import.meta.url), "utf8"),
@@ -29,86 +31,237 @@ const kind = (question: Question): "numeric" | "choice" | "typed" | "order" | "s
         : "typed";
 
 /**
- * Each numeric answer is recomputed here. `uses` lists numbers that must appear in the prompt, so the
- * calculation cannot drift from the wording. A question asked in a worked or faded example continues the
- * example's text, so its inputs (marked `example`) come from that text and not from the prompt.
+ * Each converted estimate is checked here against its figures. `right` is the label of the right option,
+ * `holds` recomputes the fact that option states, and `mistakes` recomputes the figures that the wrong
+ * options come from. `uses` lists numbers that must appear in the prompt, so the question cannot drift from
+ * the figures it is checked against.
  */
-const recompute: Record<string, { value: () => number; uses?: number[]; example?: string }> = {
-  "requirements-and-scope-faded-reads": { value: () => 12 * 150, uses: [12, 150] },
-  "requirements-and-scope-writes-from-reads": { value: () => 3000 / 150, uses: [3000, 150, 25] },
-  "back-of-the-envelope-estimation-why-twelve": { value: () => 80 * 12, uses: [80, 12] },
+type Judged = { right: string; holds: () => boolean; mistakes?: () => boolean; uses: number[] };
+const servers = (urlsPerMonth: number, readsPerWrite: number) =>
+  Math.ceil((((urlsPerMonth / 2_592_000) * readsPerWrite) * 3) / (2000 * 0.7));
+const judged: Record<string, Judged> = {
+  "requirements-and-scope-faded-reads": {
+    right: "About 1,800 reads per second",
+    holds: () => 12 * 150 === 1800 && 12 / (12 * 150 + 12) < 0.01,
+    mistakes: () => 12 + 150 === 162 && 10 * 150 === 1500,
+    uses: [12, 150],
+  },
+  "requirements-and-scope-writes-from-reads": {
+    right: "About 20 writes per second, just within the limit",
+    holds: () => 3000 / 150 === 20 && 3000 / 150 < 25,
+    mistakes: () => 3000 * 150 === 450_000,
+    uses: [3000, 150, 25],
+  },
+  "back-of-the-envelope-estimation-why-twelve": {
+    right: "About 1 TB",
+    holds: () => 80 * 12 === 960 && Math.round((80 * 12) / 1000) === 1,
+    mistakes: () => 80 + 12 === 92 && Math.round(80 / 12) === 7,
+    uses: [80, 12],
+  },
   "back-of-the-envelope-estimation-faded-five-years": {
-    value: () => (2_000_000 * 1000 * 5 * 365) / 1e12,
-    example: "2,000,000 records of 1,000 bytes a day for 5 x 365 days",
+    right: "About 4 TB",
+    holds: () => 2 * 5 * 365 === 3650 && Math.round((2 * 5 * 365) / 1000) === 4,
+    mistakes: () => 2 * 5 === 10 && 2 * 365 === 730,
+    uses: [2, 5],
   },
   "back-of-the-envelope-estimation-practice-1-v2": {
-    value: () => Math.ceil(((5e6 * 40) / 86400) * 3 / (2000 * 0.7)),
-    uses: [5, 40, 3, 2000, 70, 86400],
+    right: "About 5 servers",
+    holds: () => Math.ceil((((5e6 * 40) / 86_400) * 3) / (2000 * 0.7)) === 5,
+    mistakes: () =>
+      Math.ceil((5e6 * 40) / 86_400 / 2000) === 2 &&
+      Math.round((((5e6 * 40) / 3600) * 3) / 1400 / 10) * 10 === 120,
+    uses: [5, 40, 2000, 70],
   },
-  "latency-throughput-and-tails-littles-law-1": { value: () => 400 * (250 / 1000), uses: [400, 50, 250, 80] },
-  "latency-throughput-and-tails-why-subtract": { value: () => 1 - 0.951, uses: [0.951] },
-  "latency-throughput-and-tails-faded-twenty": { value: () => Math.round((1 - 0.99 ** 20) * 100), uses: [20, 1] },
-  "latency-throughput-and-tails-practice-3-v2": { value: () => Math.round((1 - 0.98 ** 40) * 100), uses: [40, 98] },
-  "scaling-and-load-balancing-after-a-failure": { value: () => (2400 / 5 / 500) * 100, uses: [2400, 6, 500] },
+  "latency-throughput-and-tails-littles-law-1": {
+    right: "About 100, so the pool runs out",
+    holds: () => 400 * (250 / 1000) === 100 && 400 * (250 / 1000) > 80,
+    mistakes: () => 400 * (50 / 1000) === 20 && 400 + 250 === 650 && 400 * 250 === 100_000,
+    uses: [400, 50, 250, 80],
+  },
+  "latency-throughput-and-tails-why-subtract": {
+    right: "About 5% of the time",
+    holds: () => Math.abs(0.99 ** 5 - 0.951) < 0.001 && Math.round((1 - 0.951) * 100) === 5,
+    mistakes: () => Math.round((0.951 * 100) / 5) * 5 === 95,
+    uses: [5, 0.951],
+  },
+  "latency-throughput-and-tails-faded-twenty": {
+    right: "About 20% of the time",
+    holds: () => Math.round((1 - 0.99 ** 20) * 100) === 18 && Math.round(20 * 1) === 20,
+    mistakes: () => 1 - 0.99 ** 100 > 0.63,
+    uses: [20, 1],
+  },
+  "latency-throughput-and-tails-practice-3-v2": {
+    right: "A little over half the time",
+    holds: () => 1 - 0.98 ** 40 > 0.5 && 1 - 0.98 ** 40 < 0.6,
+    mistakes: () => Math.round(40 * 2) === 80,
+    uses: [40, 98],
+  },
+  "scaling-and-load-balancing-after-a-failure": {
+    right: "About 96%, close to full",
+    holds: () => Math.round((2400 / 5 / 500) * 100) === 96,
+    mistakes: () => 2400 / 6 / 500 === 0.8 && 5 * 500 === 2500 && 5 * 500 > 2400,
+    uses: [2400, 6, 500],
+  },
   "scaling-and-load-balancing-faded-fleet": {
-    value: () => Math.ceil(8000 / (600 * 0.6)),
-    example: "peak 8,000, servers of 600 at 60%",
+    right: "About 23 servers",
+    holds: () => Math.ceil(8000 / (600 * 0.6)) === 23,
+    mistakes: () =>
+      Math.round((8000 * 0.6) / 600) === 8 &&
+      Math.round(8000 / 600) === 13 &&
+      Math.round(8000 / (600 * 0.4)) === 33,
+    uses: [8000, 600, 60],
   },
-  "caching-faded-latency": { value: () => 1 + (1 - 0.99) * 20, uses: [1, 20, 99] },
-  "caching-practice-1-v2": { value: () => (1 - 1500 / 10000) * 100, uses: [1500, 10000] },
+  "caching-faded-latency": {
+    right: "About 1.2 ms",
+    holds: () => Math.abs(1 + (1 - 0.99) * 20 - 1.2) < 1e-9,
+    mistakes: () => Math.floor((1 + 20) / 2) === 10 && 1 + 20 === 21,
+    uses: [1, 20, 99],
+  },
+  "caching-practice-1-v2": {
+    right: "About 85%",
+    holds: () => Math.round((1 - 1500 / 10_000) * 100) === 85,
+    mistakes: () =>
+      (1500 / 10_000) * 100 === 15 && 10_000 * (1 - 0.5) === 5000 && Math.round(10_000 * (1 - 0.99)) === 100,
+    uses: [1500, 10_000],
+  },
   "databases-and-indexes-levels-for-hundred-million": {
-    value: () => {
+    right: "About 4 levels",
+    holds: () => {
       let levels = 0;
       while (100 ** levels < 100_000_000) levels += 1;
-      return levels;
+      return levels === 4;
     },
-    uses: [100, 100000000],
+    mistakes: () => String(100_000_000).length - 1 === 8 && 100 ** 2 === 10_000,
+    uses: [100, 100_000_000],
   },
-  "databases-and-indexes-faded-scan-v2": { value: () => 30_000_000 / 100, uses: [30000000, 100] },
-  "replication-and-partitioning-shard-of-eleven": { value: () => 11 % 3, uses: [11, 3] },
+  "databases-and-indexes-faded-scan-v2": {
+    right: "About 300,000 pages",
+    holds: () => 30_000_000 / 100 === 300_000 && 300_000 / 5 > 10_000,
+    mistakes: () => 30_000_000 / 100 / 100 === 3000,
+    uses: [30_000_000, 100],
+  },
   "replication-and-partitioning-faded-keys": {
-    value: () => Array.from({ length: 24 }, (_, key) => key).filter((key) => key % 4 === key % 6).length,
+    right: "About a third of them",
+    holds: () =>
+      Array.from({ length: 24 }, (_, key) => key).filter((key) => key % 4 === key % 6).length / 24 === 1 / 3,
     uses: [24, 4, 6],
   },
+  "replication-and-partitioning-shard-of-eleven": {
+    right: "It moves, because dividing by 4 changes the remainder",
+    holds: () => 11 % 3 === 2 && 11 % 4 === 3,
+    uses: [11, 3, 4],
+  },
   "replication-and-partitioning-practice-2-v2": {
-    value: () => Math.max(Math.ceil(6000 / 500), Math.ceil(24000 / 2500)),
-    uses: [6, 500, 24000, 2500],
+    right: "Storage, which needs about 12 shards",
+    holds: () =>
+      Math.ceil(6000 / 500) === 12 &&
+      Math.ceil(24_000 / 2500) === 10 &&
+      24_000 / 12 / 2500 === 0.8,
+    mistakes: () => Math.ceil(6000 / 500) + Math.ceil(24_000 / 2500) === 22,
+    uses: [6, 500, 24_000, 2500],
   },
   "consistency-and-quorums-faded-read": {
-    value: () => {
+    right: "4 replicas",
+    holds: () => {
       let reads = 1;
       while (reads + 4 <= 7) reads += 1;
-      return reads;
+      return reads === 4 && 3 + 4 === 7 && 7 - 4 === 3;
     },
-    example: "N = 7 and W = 4",
+    uses: [7, 4],
   },
-  "queues-and-event-streams-time-to-the-limit": { value: () => 90000 / (130 - 100) / 60, uses: [90000, 130, 100] },
-  "queues-and-event-streams-net-drain": { value: () => 100 - 60, uses: [100, 60] },
-  "queues-and-event-streams-faded-drain": { value: () => 9000 / 40, example: "9,000 messages at 40 per second" },
-  "timeouts-retries-and-circuit-breakers-four-layers": { value: () => 20 * 3 ** 3, uses: [3, 300, 20] },
+  "queues-and-event-streams-time-to-the-limit": {
+    right: "About 50 minutes",
+    holds: () => 90_000 / (130 - 100) / 60 === 50,
+    mistakes: () =>
+      Math.round(90_000 / (130 + 100) / 60) === 7 &&
+      Math.round(90_000 / 130 / 60) === 12 &&
+      90_000 / (130 - 100) === 3000,
+    uses: [90_000, 130, 100],
+  },
+  "queues-and-event-streams-net-drain": {
+    right: "By 40 messages per second",
+    holds: () => 100 - 60 === 40,
+    mistakes: () => 100 + 60 === 160,
+    uses: [100, 60],
+  },
+  "queues-and-event-streams-faded-drain": {
+    right: "About 4 minutes",
+    holds: () => 9000 / (100 - 60) === 225 && Math.round(225 / 60) === 4,
+    mistakes: () => 9000 / 100 === 90,
+    uses: [9000, 100, 60],
+  },
+  "timeouts-retries-and-circuit-breakers-four-layers": {
+    right: "About 540 per second, well over its limit",
+    holds: () => 20 * 3 ** 3 === 540 && 540 > 300,
+    mistakes: () => 20 * 3 === 60 && 20 * (3 + 3 + 3) === 180,
+    uses: [3, 300, 20],
+  },
   "timeouts-retries-and-circuit-breakers-faded-chain-v2": {
-    value: () => 3 * 2 * 3,
-    example: "attempts of 3, 2 and 3 at A, B and C",
+    right: "About 18 calls",
+    holds: () => 3 * 2 * 3 === 18,
+    mistakes: () => 3 + 2 + 3 === 8 && 3 * 3 * 3 === 27,
+    uses: [3, 2],
   },
-  "availability-and-redundancy-four-in-series": { value: () => 0.999 ** 4 * 100, uses: [99.9, 99.95] },
+  "availability-and-redundancy-four-in-series": {
+    right: "About 99.6%",
+    holds: () => Math.round(0.999 ** 4 * 1000) / 10 === 99.6,
+    uses: [99.9, 99.95],
+  },
   "availability-and-redundancy-faded-series": {
-    value: () => 0.999 * (1 - 0.001 * 0.001) * 0.999 * 100,
-    example: "a 99.9% web tier, a pair of 99.9% replicas in parallel and a 99.9% database",
+    right: "The web tier and the database, since the pair adds almost no downtime",
+    holds: () => {
+      const pair = 1 - 0.001 * 0.001;
+      return (
+        1 - pair < (1 - 0.999) / 500 &&
+        Math.round(0.999 * pair * 0.999 * 1000) / 10 === 99.8 &&
+        Math.round(pair * 1e6) / 1e4 === 99.9999
+      );
+    },
+    uses: [99.9, 99.9999],
   },
-  "availability-and-redundancy-restore-time": { value: () => 2_000_000 / 125 / 3600, uses: [2, 125, 1] },
-  "observability-and-slos-fast-burn": { value: () => ((14.4 * 1) / (30 * 24)) * 100, uses: [14.4, 30] },
-  "observability-and-slos-even-pace-six": { value: () => (20000 * 6) / 30, uses: [20000, 6, 30] },
-  "observability-and-slos-faded-burn": { value: () => 4000 / ((6000 * 10) / 30), example: "4,000 failures against a 6,000 budget at day 10" },
+  "availability-and-redundancy-restore-time": {
+    right: "About 4 hours",
+    holds: () => Math.round(2_000_000 / 125 / 3600) === 4 && 2_000_000 / 125 / 3600 > 1,
+    mistakes: () => Math.round(2000 / 60 / 5) * 5 === 35 && (125 * 3600) / 1000 === 450,
+    uses: [2, 125, 1],
+  },
+  "observability-and-slos-fast-burn": {
+    right: "About 2%",
+    holds: () => Math.round(((14.4 * 1) / (30 * 24)) * 100) === 2 && Math.round(30 * 24 / 14.4) === 50,
+    mistakes: () => Math.round((100 / 720) * 10) / 10 === 0.1,
+    uses: [14.4, 30],
+  },
+  "observability-and-slos-even-pace-six": {
+    right: "About 4,000 failures",
+    holds: () => (20_000 * 6) / 30 === 4000,
+    mistakes: () => 20_000 * 0.06 === 1200 && Math.round(20_000 / 6 / 100) * 100 === 3300,
+    uses: [20_000, 6, 30],
+  },
+  "observability-and-slos-faded-burn": {
+    right: "About twice as fast as an even pace",
+    holds: () => 4000 / ((6000 * 10) / 30) === 2 && 30 / 2 === 15,
+    uses: [6000, 4000, 10, 30],
+  },
   "design-a-url-shortener-practice-1-v2": {
-    value: () => Math.ceil((((60e6 / 2592000) * 150) * 3) / (2000 * 0.7)),
-    uses: [60, 150, 2592000, 3, 2000, 70],
+    right: "About 8 servers",
+    holds: () => servers(60e6, 150) === 8 && servers(100e6, 100) === 9,
+    mistakes: () => Math.round(9 * (60 / 100)) === 5 && Math.round(9 * (150 / 100)) === 14,
+    uses: [100, 9, 60, 150],
   },
-  "design-a-feed-and-review-hanging-rate": { value: () => 200 * 0.1, uses: [200, 10] },
+  "design-a-feed-and-review-hanging-rate": {
+    right: "About 20 calls per second",
+    holds: () => Math.round(200 * 0.1) === 20,
+    mistakes: () => Math.round(200 * 0.9) === 180,
+    uses: [200, 10],
+  },
   "design-a-feed-and-review-faded-threads-v2": {
-    value: () => (20 * 30) / (500 * 0.1),
-    example: "20 servers of 30 threads, 500 requests per second, 10% hanging",
+    right: "About 12 seconds",
+    holds: () => (20 * 30) / (500 * 0.1) === 12,
+    mistakes: () => Math.round(((20 * 30) / 500) * 10) / 10 === 1.2 && (20 * 30) / 10 === 60,
+    uses: [20, 30, 500, 10],
   },
 };
+const words = (text: string) => text.split(/\s+/u).filter(Boolean).length;
 const mentions = (prompt: string, value: number) => {
   const text = prompt.replace(/,/gu, "");
   return new RegExp(`(^|[^\\d.])${String(value).replace(".", "\\.")}([^\\d]|\\.\\D|\\.$|$)`, "u").test(text);
@@ -141,59 +294,55 @@ describe("questions in System Design", () => {
     expect([...cards].filter((id) => !bundle.flashcards.some((card) => card.id === id))).toEqual([]);
   });
 
-  it("ends each lesson with three questions of at least two types and at most one sum", () => {
+  it("ends each lesson with three questions, of at least two types unless one was an estimate", () => {
+    // These four lessons used to end on one sum and two choices. The sum is now a choice as well, so each
+    // of them ends on three choices, and none ends on a question that asks for a computed number.
+    const estimateLessons = new Set([
+      "back-of-the-envelope-estimation",
+      "latency-throughput-and-tails",
+      "caching",
+      "design-a-url-shortener",
+    ]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
-      expect(types.filter((type) => type === "numeric").length, lesson.id).toBeLessThanOrEqual(1);
+      if (!estimateLessons.has(lesson.id))
+        expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      expect(types.filter((type) => type === "numeric"), lesson.id).toEqual([]);
     }
   });
 
-  it("keeps numeric questions to estimates that decide something and to worked-example steps", () => {
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(35);
-    const blanks = new Set(
-      bundle.lessons.flatMap((lesson) =>
-        lesson.steps.flatMap((step) =>
-          (step.workedSteps ?? []).map((line) => line.blank?.questionId ?? ""),
-        ),
-      ),
-    );
-    // Outside the worked and faded examples there are few, and each one sets a number against a limit.
-    expect(numeric.filter((question) => !blanks.has(question.id)).length).toBeLessThanOrEqual(15);
-    for (const question of numeric) {
-      expect(question.hints.length, question.id).toBe(3);
-      const authority = question.answerAuthority;
-      if (authority.kind !== "numeric") throw new Error(`${question.id} is not numeric`);
-      const decimals = (String(authority.value).split(".")[1] ?? "").length;
-      if (decimals > 0)
-        expect(authority.absoluteTolerance, question.id).toBeGreaterThanOrEqual(
-          0.5 * 10 ** -decimals - 1e-12,
-        );
-      for (const item of question.misconceptions ?? [])
-        for (const wrong of item.match.numeric ?? [])
-          expect(Math.abs(wrong - authority.value), question.id).toBeGreaterThan(
-            authority.absoluteTolerance,
-          );
-    }
+  it("asks for no computed number", () => {
+    expect(
+      bundle.questions.filter((question) => kind(question) === "numeric").map((question) => question.id),
+    ).toEqual([]);
+    expect(
+      bundle.flashcards.filter((card) => card.answerAuthority?.kind === "numeric").map((card) => card.id),
+    ).toEqual([
+      "sysd-back-of-the-envelope-estimation-card-1",
+      "sysd-latency-throughput-and-tails-card-1",
+      "sysd-replication-and-partitioning-card-2",
+    ]);
   });
 
-  it("recomputes every numeric answer from its prompt", () => {
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id.replace(/^sysd-/u, "")).sort()).toEqual(
-      Object.keys(recompute).sort(),
-    );
-    for (const question of numeric) {
-      const entry = recompute[question.id.replace(/^sysd-/u, "")];
-      if (!entry || question.answerAuthority.kind !== "numeric") throw new Error(question.id);
-      const { value, absoluteTolerance } = question.answerAuthority;
-      expect(Math.abs(entry.value() - value), `${question.id} recomputed ${entry.value()}`).toBeLessThanOrEqual(
-        absoluteTolerance + 1e-9,
-      );
-      for (const number of entry.uses ?? [])
-        expect(mentions(question.prompt, number), `${question.id} mentions ${number}`).toBe(true);
-      if (!entry.uses) expect(entry.example, question.id).toBeTruthy();
+  it("keeps each converted estimate true to its figures", () => {
+    expect(Object.keys(judged)).toHaveLength(33);
+    for (const [id, entry] of Object.entries(judged)) {
+      const question = questions.get(`sysd-${id}`);
+      if (!question) throw new Error(id);
+      expect(kind(question), id).toBe("choice");
+      expect(question.answerAuthority.kind, id).toBe("text");
+      if (question.answerAuthority.kind !== "text") continue;
+      expect(question.answerAuthority.exampleAnswer, id).toBe(entry.right);
+      expect(question.answerAuthority.acceptedIdeas, id).toEqual([entry.right]);
+      expect(
+        question.choices?.filter((choice) => choice.label === entry.right),
+        id,
+      ).toHaveLength(1);
+      expect(entry.holds(), `${id} holds`).toBe(true);
+      if (entry.mistakes) expect(entry.mistakes(), `${id} mistakes`).toBe(true);
+      for (const number of entry.uses)
+        expect(mentions(question.prompt, number), `${id} mentions ${number}`).toBe(true);
     }
   });
 
@@ -215,6 +364,21 @@ describe("questions in System Design", () => {
     expect(5 * 200 + 10).toBe(1010);
     expect(5 + 10 * 200).toBe(2005);
     expect(30e6 * 2000 * 36 * 3 / 1e12).toBeCloseTo(6.48, 6);
+    // Figures quoted by the feedback and answers of the converted estimates.
+    expect(0.99 ** 20).toBeCloseTo(0.818, 3);
+    expect(1 - 0.99 ** 20).toBeCloseTo(0.182, 3);
+    expect(0.98 ** 40).toBeCloseTo(0.446, 3);
+    expect(1 / (500 - 400)).toBeCloseTo(0.01, 9);
+    expect(1 / (500 - 480)).toBeCloseTo(0.05, 9);
+    expect(((5e6 * 40) / 86_400) * 3).toBeCloseTo(6944, 0);
+    expect(((5e6 * 40) / 86_400) * 3 / 4 / 2000).toBeCloseTo(0.868, 3);
+    expect(12 / (12 + 12 * 150)).toBeLessThan(0.01);
+    expect(1 / 720).toBeCloseTo(0.00139, 5);
+    expect(100_000_000 / (100 * 100 * 100 * 100)).toBe(1);
+    expect(2000 / 450).toBeGreaterThan(4);
+    expect(10_000 * (1 - 0.99)).toBeCloseTo(100, 6);
+    expect(1 + 0.01 * 20).toBeCloseTo(1.2, 9);
+    expect(0.9999 * 0.999 * 100).toBeCloseTo(99.89, 2);
   });
 
   it("puts a situation in front of the learner in most questions", () => {
@@ -275,8 +439,11 @@ describe("questions in System Design", () => {
       );
       for (const choice of others)
         expect(explained.has(choice.id), `${question.id} ${choice.id}`).toBe(true);
-      for (const item of question.misconceptions ?? [])
+      for (const item of question.misconceptions ?? []) {
         expect(item.feedback.trim().length, question.id).toBeGreaterThan(20);
+        expect(item.feedback.toLowerCase(), question.id).not.toContain(right[0]?.label.toLowerCase());
+      }
+      expect(words(question.onCorrect ?? ""), question.id).toBeLessThanOrEqual(45);
       places.add(question.choices.indexOf(right[0] as (typeof question.choices)[number]));
     }
     expect(rightLongest / threeOrMore).toBeLessThanOrEqual(0.3);
@@ -291,7 +458,7 @@ describe("questions in System Design", () => {
     expect(counts.order + counts.sort).toBeGreaterThanOrEqual(8);
     expect(counts.order + counts.sort).toBeLessThanOrEqual(12);
     expect(counts.choice + counts.typed).toBeGreaterThanOrEqual(bundle.questions.length * 0.6);
-    expect(counts.numeric).toBeLessThanOrEqual(35);
+    expect(counts.numeric).toBe(0);
   });
 
   it("writes an order question as distinct items and a sort question with every bin used", () => {

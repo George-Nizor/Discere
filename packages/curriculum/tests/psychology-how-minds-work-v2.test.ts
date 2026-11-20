@@ -4,8 +4,9 @@ import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 
 /**
- * Psychology: How Minds Work, all twelve lessons in the v2 format. Every numeric key is
- * recomputed here from the arithmetic the item describes, not read back from its authority.
+ * Psychology: How Minds Work, all twelve lessons in the v2 format. No question asks for a computed
+ * number: each one that used to is a multiple-choice judgement, and the figures its answer rests on
+ * are recomputed here from the study it describes.
  *
  * Lessons one to twelve are story lessons: teaching screens with no question, then practice. Their
  * prose also does arithmetic, so the numbers in the text are recomputed and checked against what
@@ -22,19 +23,12 @@ const byId = (id: string): Question => {
   if (!found) throw new Error(`missing ${id}`);
   return found;
 };
-const key = (id: string) => {
-  const authority = byId(id).answerAuthority;
-  if (authority.kind !== "numeric") throw new Error(`${id} is not numeric`);
-  return authority.value;
-};
 const marked = (id: string) => {
   const item = byId(id);
   if (item.answerAuthority.kind !== "text") throw new Error("not text");
   const authority = item.answerAuthority;
   return item.choices!.filter((c) => assessTextAnswer(c.label, authority).correct).map((c) => c.id);
 };
-const close = (id: string, expected: number, digits = 6) =>
-  expect(key(id)).toBeCloseTo(expected, digits);
 const pct = (part: number, whole: number) => (part / whole) * 100;
 const combine = (a: number, sa: number, b: number, sb: number) => {
   const wa = 1 / sa ** 2;
@@ -111,24 +105,93 @@ describe("Psychology v2: every lesson validates", () => {
   });
 });
 
-describe("Numeric questions: every key is recomputed from the study it describes", () => {
-  it("recomputes the keys of the numeric questions", () => {
-    close("correlation-and-cause-1", (-0.6) ** 2 * 100);
-    close("correlation-and-cause-4", pct(6, 20) - pct(30, 100));
-    close("experiments-and-assignment-4", 12 - 8);
-    close("effect-size-and-replication-1", (106 - 100) / 15);
-    close("effect-size-and-replication-4", (50.4 - 50) / 10);
-    close("effect-size-and-replication-5", pct(35, 97), 1);
-    close("signal-detection-2", 0.84 - -0.84);
-    close("perception-as-inference-1", combine(50, 2, 56, 4));
-    close("forgetting-and-spacing-1", recall(90, 10) * 100);
-    close("conditioning-1", rw(0.3, [1, 1]));
-    const a = positives(1000, 0.01, 0.9, 0.1);
-    close("base-rates-2", pct(a.tp, a.tp + a.fp), 1);
+describe("Judgement questions: the figures behind each answer are recomputed from the study", () => {
+  const converted = [
+    "correlation-and-cause-1",
+    "correlation-and-cause-4",
+    "experiments-and-assignment-4",
+    "effect-size-and-replication-1",
+    "effect-size-and-replication-4",
+    "effect-size-and-replication-5",
+    "signal-detection-2",
+    "perception-as-inference-1",
+    "forgetting-and-spacing-1",
+    "conditioning-1",
+    "base-rates-2",
+    "base-rates-4",
+    "anchors-and-intuition-2",
+    "social-influence-3",
+  ];
+
+  it("asks no numeric question, since a figure is judged and not computed", () => {
+    expect(bundle.questions.filter((item) => item.responseType === "numeric")).toEqual([]);
+    for (const id of converted) {
+      const item = byId(id);
+      expect(item.responseType, id).toBe("short_text");
+      expect(item.calculator, id).toBe("off");
+      expect(item.hints, id).toHaveLength(2);
+      expect(item.answerAuthority.kind, id).toBe("text");
+      expect(item.choices?.length, id).toBeGreaterThanOrEqual(3);
+      expect(marked(id), id).toHaveLength(1);
+    }
+  });
+
+  it("recomputes the figures that the answer to each converted question rests on", () => {
+    const said = (id: string) => byId(id).onCorrect ?? "";
+    // Shared variation is r squared, a little over a third for r = -0.6.
+    expect((-0.6) ** 2).toBeCloseTo(0.36, 9);
+    expect(said("correlation-and-cause-1")).toContain("0.36");
+    // 6 of 20 and 30 of 100 are the same rate, so the full moon changes nothing.
+    expect(pct(6, 20)).toBeCloseTo(pct(30, 100), 9);
+    expect(said("correlation-and-cause-4")).toContain("3 in 10");
+    // The drug adds 12 - 8 = 4 points, a third of the drug group's gain.
+    expect(12 - 8).toBe(4);
+    expect((12 - 8) / 12).toBeCloseTo(1 / 3, 9);
+    expect(said("experiments-and-assignment-4")).toContain("4 points");
+    // d = 6 / 15 = 0.4, between Cohen's small (0.2) and medium (0.5).
+    const trained = (106 - 100) / 15;
+    expect(trained).toBeCloseTo(0.4, 9);
+    expect(trained).toBeGreaterThan(0.2);
+    expect(trained).toBeLessThan(0.5);
+    expect(said("effect-size-and-replication-1")).toContain("0.4 of the 15-point");
+    // The replication's d is 0.04, a fraction of the published 0.6.
+    const replicated = (50.4 - 50) / 10;
+    expect(replicated).toBeCloseTo(0.04, 9);
+    expect(replicated).toBeLessThan(0.1);
+    expect(said("effect-size-and-replication-4")).toContain("0.4 points");
+    // 35 of 97 is 36%, a little over a third.
+    expect(pct(35, 97)).toBeGreaterThan(100 / 3);
+    expect(pct(35, 97)).toBeLessThan(40);
+    // d' = 0.84 + 0.84 = 1.68 against 1.28 + 1.28 = 2.56, about a third lower.
+    const second = 0.84 - -0.84;
+    expect(second).toBeCloseTo(1.68, 9);
+    expect(1 - second / (1.28 - -1.28)).toBeGreaterThan(0.3);
+    expect(1 - second / (1.28 - -1.28)).toBeLessThan(0.4);
+    expect(said("signal-detection-2")).toContain("1.68");
+    // Vision has four times touch's weight, so the estimate sits a fifth of the way across.
+    expect(1 / 2 ** 2 / (1 / 4 ** 2)).toBe(4);
+    expect(combine(50, 2, 56, 4)).toBeCloseTo(51.2, 9);
+    expect(said("perception-as-inference-1")).toContain("four times");
+    // t / 9S is 1, so recall is one half.
+    expect(recall(90, 10)).toBeCloseTo(0.5, 9);
+    // The second pairing adds 0.3 x 0.7 = 0.21, less than the first step of 0.3.
+    expect(rw(0.3, [1, 1]) - rw(0.3, [1])).toBeCloseTo(0.21, 9);
+    expect(said("conditioning-1")).toContain("0.3 × 0.7");
+    // 9 of the 108 positives are true, one in twelve, and 150 of 350 calls of blue are right.
+    const screening = positives(1000, 0.01, 0.9, 0.1);
+    expect(screening.tp).toBeCloseTo(9, 9);
+    expect(screening.tp + screening.fp).toBeCloseTo(108, 9);
+    expect((screening.tp + screening.fp) / screening.tp).toBeCloseTo(12, 9);
     const cab = positives(1000, 0.2, 0.75, 0.25);
-    close("base-rates-4", pct(cab.tp, cab.tp + cab.fp), 1);
-    close("anchors-and-intuition-2", index(35, 59, 20, 80));
-    close("social-influence-3", pct(26, 40) - pct(12, 40));
+    expect(cab.tp).toBeCloseTo(150, 9);
+    expect(cab.tp + cab.fp).toBeCloseTo(350, 9);
+    expect(pct(cab.tp, cab.tp + cab.fp)).toBeLessThan(50);
+    // The medians move 24 years across anchors 60 years apart, two fifths of the way.
+    expect(index(35, 59, 20, 80)).toBeCloseTo(0.4, 9);
+    // 26 of 40 is 65% and 12 of 40 is 30%, a fall of 35 percentage points, roughly half.
+    expect(pct(26, 40) - pct(12, 40)).toBeCloseTo(35, 9);
+    expect(pct(12, 40) / pct(26, 40)).toBeCloseTo(0.46, 2);
+    expect(said("social-influence-3")).toContain("35 percentage points");
   });
 
   it("states in the feedback the figures that the questions about studies work out", () => {

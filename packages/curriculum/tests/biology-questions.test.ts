@@ -12,8 +12,11 @@ import { describe, expect, it } from "vitest";
  * Biology: Cells to Ecosystems had its questions rewritten on 14 November 2026. Arithmetic dressed
  * in the subject's words became judgement about a case: what a control rules out, which variable to
  * hold fixed, what a table of counts supports, which cause a change in frequency points to. A number
- * stays where calculating it is the biology (a Punnett percentage, a dilution, an energy transfer).
- * Facts come from the course's OpenStax sections, and every figure in a prompt is recomputed here.
+ * stays only where calculating it is the biology (a Punnett percentage, a base count from Chargaff's
+ * rule). A second pass turned the remaining one-step sums into judgements on the same cases: how two
+ * concentrations compare, roughly what share of the energy reaches level 3, what a fourth round of
+ * division adds. Facts come from the course's OpenStax sections, and every figure in a prompt is
+ * recomputed here.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -121,11 +124,16 @@ describe("questions in Biology: Cells to Ecosystems", () => {
     ).toBeLessThanOrEqual(4);
   });
 
-  it("ends each lesson with three checks of at least two types", () => {
+  it("ends each lesson with three checks, of at least two types unless a sum became a choice", () => {
+    // These two lessons used to end on one sum and two choices. The sum is now a choice as well, so
+    // each of them ends on three choices.
+    const threeChoices = new Set(["water-across-a-membrane", "mitosis-and-growth"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (threeChoices.has(lesson.id))
+        expect(types, lesson.id).toEqual(["choice", "choice", "choice"]);
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
@@ -308,25 +316,10 @@ describe("questions in Biology: Cells to Ecosystems", () => {
 
   it("recomputes every numeric answer", () => {
     const expected: Record<string, number> = {
-      "diffusion-and-membranes-2": (10 + 6) / 2,
-      "water-across-a-membrane-3": 12 / 2,
-      "water-across-a-membrane-hook": 6 / 4,
-      "water-across-a-membrane-8": 20 / 2,
-      "light-to-sugar-2": 5 * 6,
-      "fuel-to-cell-work-2": 2 * 6,
       // A is 30%, so T is 30%, and the remaining 40% is shared equally by C and G.
       "copying-dna-chargaff": (100 - 2 * 30) / 2,
-      "mitosis-and-growth-8": 2 ** 4,
-      "meiosis-and-gametes-6-v2": 2 ** 4,
       "predicting-inheritance-2": percent(1, 4),
       "predicting-inheritance-7": percent(3, 4),
-      "natural-selection-1": percent(10, 40),
-      "natural-selection-3": percent(30, 50) - percent(15, 50),
-      "energy-between-levels-2": 2000 * 0.1 * 0.1,
-      "energy-between-levels-4": 300 / 0.1,
-      "energy-between-levels-5-v2": percent(1200, 8000),
-      "population-limits-hook": [0, 1, 2, 3, 4, 5, 6].find((day) => 2 ** day > 20) as number,
-      "population-limits-5": 70 + 16 - 9,
     };
     const numericQuestions = bundle.questions.filter((question) => kind(question) === "numeric");
     expect(numericQuestions.map((question) => question.id.replace(/^bio-/u, "")).sort()).toEqual(
@@ -337,6 +330,50 @@ describe("questions in Biology: Cells to Ecosystems", () => {
   });
 
   it("recomputes the figures in the questions that read a study or a table", () => {
+    // Questions that used to ask for a number: the figures their prompts, options and feedback quote.
+    expect((10 + 6) / 2).toBe(8);
+    expect(10 + 6).toBe(16);
+    expect(12 / 2 / (12 / 4)).toBe(2);
+    expect(6 / 2).toBe(3);
+    expect(6 / 4).toBe(1.5);
+    expect(20 / 4).toBe(5);
+    expect(20 / 2).toBe(10);
+    expect(5 * 6).toBe(30);
+    expect(2 * 6).toBe(12);
+    // Frequency is a share: A is a quarter and B a fifth, though B holds more blue organisms.
+    expect(percent(10, 40)).toBe(25);
+    expect(percent(20, 100)).toBe(20);
+    expect(percent(10, 40)).toBeGreaterThan(percent(20, 100));
+    // Doubling a larger share adds more points: 30 to 60 in meadow A, 10 to 20 in meadow B.
+    expect(percent(30, 50) - percent(15, 50)).toBe(30);
+    expect(percent(10, 50) - percent(5, 50)).toBe(10);
+    // Energy: a tenth taken twice is a hundredth, and a level that receives 300 kJ held ten times that.
+    expect(2000 * 0.1 * 0.1).toBeCloseTo(20, 9);
+    expect(0.1 * 0.1).toBeCloseTo(1 / 100, 9);
+    expect(300 / 0.1).toBeCloseTo(3000, 9);
+    expect(percent(1200, 8000)).toBe(15);
+    expect(8000 * 0.1).toBe(800);
+    expect(1200).toBeGreaterThan(800);
+    expect(75 / 0.15).toBeCloseTo(500, 9);
+    expect(500 / 75).toBeGreaterThan(6.5);
+    // Births, deaths and the pond: 7 more animals on 70, and doubling passes 20 on day 5.
+    expect(70 + 16 - 9).toBe(77);
+    expect((16 - 9) / 70).toBeCloseTo(0.1, 9);
+    expect(16 / 70).toBeGreaterThan(0.2);
+    const lilies = [0, 1, 2, 3, 4, 5, 6].map((day) => 2 ** day);
+    expect(lilies.find((area) => area > 20)).toBe(32);
+    expect(lilies.findIndex((area) => area > 20)).toBe(5);
+    expect(5 / 20).toBe(0.25);
+    // Four rounds of division: each round adds as many cells as exist, 1, 2, 4 and 8, so the fourth
+    // round (8) adds more than the first three together (7), and the total is 16.
+    const added = [1, 2, 3, 4].map((round) => 2 ** (round - 1));
+    expect(added).toEqual([1, 2, 4, 8]);
+    expect(
+      (added[3] as number) > (added[0] as number) + (added[1] as number) + (added[2] as number),
+    ).toBe(true);
+    expect(added.reduce((sum, value) => sum + value, 1)).toBe(16);
+    // Five pairs against four double the combinations, 32 against 16.
+    expect(2 ** 5 / 2 ** 4).toBe(2);
     // Counts across a membrane the solute crosses: the total stays 24, the sides meet at 12, and each
     // minute's loss on the left shrinks as the gap closes.
     const left = [20, 16, 13, 12, 12];

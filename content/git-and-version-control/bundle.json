@@ -3857,7 +3857,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Keep doubling 1,024 until you reach 5,000 or more, and count the doublings from ten."
+              "text": "Five times as many commits as 1,000 needs only a few more tests, because each doubling of the history adds a single test."
             }
           ],
           "visualStateId": "",
@@ -3992,7 +3992,7 @@
           "answerVisibility": "hidden-until-response"
         }
       ],
-      "orientation": "Use bisect and the pickaxe to locate the commit that introduced a bug, and compute how many steps bisect needs.",
+      "orientation": "Use bisect and the pickaxe to locate the commit that introduced a bug, and estimate how many steps bisect needs.",
       "visualStates": [],
       "visualKind": "none",
       "activityId": "",
@@ -4070,7 +4070,7 @@
             "initialCaseId": "s0"
           }
         },
-        "promise": "By the end you'll be able to compute how many tests bisect needs, run a bisect, and choose between bisect and the pickaxe.",
+        "promise": "By the end you'll be able to estimate how many tests bisect needs, run a bisect, and choose between bisect and the pickaxe.",
         "estimatedMinutes": 13,
         "whyItMatters": "Finding the commit that broke something is the payoff of keeping a clean history."
       },
@@ -9159,13 +9159,12 @@
         "steps",
         "pickaxe"
       ],
-      "prompt": "A bug appeared somewhere in the 5,000 commits between release v2.0 and v2.1. What is the largest number of tests `git bisect` needs to find the first bad commit?",
-      "responseType": "numeric",
+      "prompt": "A bug appeared somewhere in the 5,000 commits between release v2.0 and v2.1. Roughly how many tests does `git bisect` need, at most, to find the first bad commit?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Each test halves the range, so you want the smallest k with 2^k at least 5,000.",
-        "2^10 is 1,024, and each extra test doubles that.",
-        "Keep doubling from 1,024 until you pass 5,000, and count the doublings from ten."
+        "After one test how many commits are left to look through, and after a second?",
+        "A thousand commits take ten tests. Do five times as many commits take five times as many tests?"
       ],
       "sourceIds": [
         "progit-debugging",
@@ -9175,22 +9174,44 @@
       "skill": "compute-bisect-steps",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 13,
-        "unit": "",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "2^12 is 4,096, which is below 5,000, and 2^13 is 8,192, which is enough. So 13 tests are the most bisect needs."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About a dozen, since every test halves what is left"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About a dozen, since every test halves what is left"
       },
-      "onCorrect": "The count grows by one every time the history doubles, so even large histories need few tests.",
+      "onCorrect": "Each test halves the range, so one more test covers a history twice as long. 2^12 is 4,096, a little under 5,000, so 13 tests are enough, only a few more than the ten that 1,000 commits need.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 5,000, since every single commit needs its own test"
+        },
+        {
+          "id": "b",
+          "label": "About 2,500, since one test halves the commits"
+        },
+        {
+          "id": "c",
+          "label": "About a dozen, since every test halves what is left"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              12
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Twelve tests can separate 4,096 commits, which is fewer than 5,000."
+          "feedback": "That tests the commits one at a time. Bisect never tests them all, because each result rules out half of the commits that remain."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That halves the range once and stops. Bisect halves what is left again after every test, until one commit remains."
         }
       ]
     },
@@ -12359,13 +12380,12 @@
         "steps",
         "pickaxe"
       ],
-      "prompt": "Your team's history has 3,000 commits since the last release that passed its tests. What is the largest number of tests `git bisect` needs to find the first bad commit?",
-      "responseType": "numeric",
+      "prompt": "Your team's history has 3,000 commits since the last release that passed its tests. A history of 1,000 commits needs at most ten tests with `git bisect`. Roughly how many tests does 3,000 commits need?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Find the smallest k with 2^k at least 3,000.",
-        "2^10 is 1,024 and 2^11 is 2,048.",
-        "2^11 is 2,048, which is below 3,000, so the answer is the next exponent up."
+        "Does tripling the history triple the number of tests, or add only a few?",
+        "Ten tests cover about 1,000 commits. How many more doublings does it take to pass 3,000?"
       ],
       "sourceIds": [
         "progit-debugging",
@@ -12375,22 +12395,56 @@
       "skill": "compute-bisect-steps",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 12,
-        "unit": "",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "2^11 is 2,048, which is too few, and 2^12 is 4,096, which is enough. So 12 tests are the most bisect needs."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 12, two more than for 1,000 commits"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 12, two more than for 1,000 commits"
       },
-      "onCorrect": "Twelve tests cover thousands of commits, because each test halves the range.",
+      "onCorrect": "Tripling the history adds only about two tests, since 3,000 lies between 2^11 and 2^12, so twelve tests are the most bisect needs. Each test halves the range, so even large histories need few.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 1,500, half of the 3,000 commits"
+        },
+        {
+          "id": "b",
+          "label": "About 30, three times as many as for 1,000"
+        },
+        {
+          "id": "c",
+          "label": "About 10, the same as for 1,000 commits"
+        },
+        {
+          "id": "d",
+          "label": "About 12, two more than for 1,000 commits"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              11
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "Eleven tests can separate 2,048 commits, which is fewer than 3,000."
+          "feedback": "That is one halving of the 3,000 commits. A test halves the range again and again until one commit is left, so the count is far smaller."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That treats the tests as growing with the commits. Bisect needs one more test only when the history doubles, so tripling it adds about two."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Ten tests cover about 1,000 commits, and 3,000 is nearly three times that. After ten tests about three commits would still be left to separate, which takes two more."
         }
       ]
     },
@@ -13562,21 +13616,14 @@
         "steps",
         "pickaxe"
       ],
-      "front": "How many tests, at most, does bisect need for a history of 1,000,000 commits?",
-      "back": "2^20 is 1,048,576, so twenty halvings are enough.",
+      "front": "Roughly how many tests does bisect need for a history of a million commits, and why so few?",
+      "back": "About twenty. Each test halves the range, and 2^20 is a little over a million, so a thousand times as many commits as 1,000 adds only ten tests.",
       "sourceIds": [
         "progit-debugging",
         "git-bisect-doc",
         "git-log-doc"
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 20,
-        "unit": "",
-        "absoluteTolerance": 1e-09,
-        "relativeTolerance": 0,
-        "workedAnswer": "2^20 is 1,048,576, so twenty halvings are enough."
-      }
+      "recall": "self"
     },
     {
       "id": "gitvc-finding-what-broke-card-2",
