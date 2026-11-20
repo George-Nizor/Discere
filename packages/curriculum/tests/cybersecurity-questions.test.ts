@@ -15,8 +15,10 @@ import { describe, expect, it } from "vitest";
  * a query and the fix that closes it, a leaked table and what an attacker can do with it, a threat
  * and the control that answers it. Facts were checked against the NIST SP 800-63B and SP 800-61
  * Revision 2 texts, the OWASP cheat sheets (SQL injection, XSS, CSRF, SSRF, passwords, sessions,
- * logging), RFC 8446, RFC 9116 and the CVSS 3.1 specification. Numeric questions stay only where
- * the number carries a decision (an ALE, a search time, a key space, a dwell time, a backup gap).
+ * logging), RFC 8446, RFC 9116 and the CVSS 3.1 specification. The course asks no numeric
+ * questions. The figures that carry a decision (an ALE, a search time, a key space, a dwell time, a
+ * backup gap) are in the prompts, and the learner judges which way they move or roughly how large
+ * they come out. The worked examples still show the sums.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/cybersecurity/bundle.json", import.meta.url), "utf8"),
@@ -34,11 +36,6 @@ const get = (id: string): Question => {
   const question = questions.get(`cyb-${id}`);
   if (!question) throw new Error(`no question ${id}`);
   return question;
-};
-const numericValue = (id: string): number => {
-  const authority = get(id).answerAuthority;
-  if (authority.kind !== "numeric") throw new Error(`${id} is not numeric`);
-  return authority.value;
 };
 const rightLabel = (id: string): string => {
   const question = get(id);
@@ -73,62 +70,76 @@ describe("questions in Cybersecurity", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, of at least two types unless a sum became a choice", () => {
+    // These two lessons used to end on one sum and two choices. The sum is now a choice as well, so
+    // each of them ends on three choices.
+    const threeChoices = new Set(["passwords-and-authentication", "logging-and-detection"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (threeChoices.has(lesson.id))
+        expect(types, lesson.id).toEqual(["choice", "choice", "choice"]);
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
-  it("keeps numeric questions to places where the number carries a decision", () => {
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(12);
-    for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
+  it("asks no numeric questions, since each figure is judged and not computed", () => {
+    expect(bundle.questions.filter((question) => kind(question) === "numeric")).toEqual([]);
   });
 
-  it("recomputes every numeric answer", () => {
+  it("holds the figures that the judgement questions rest on", () => {
     // Annualised loss expectancy: cost of one loss times the yearly rate.
-    expect(120000 * 0.2 - 120000 * 0.15 - 2000).toBe(
-      numericValue("risk-and-the-cia-triad-cheap-control"),
-    );
-    expect(30000 * 0.4 - 30000 * 0.1 - 6000).toBe(
-      numericValue("risk-and-the-cia-triad-practice-3"),
-    );
+    expect(120000 * 0.2).toBe(24000);
+    expect(120000 * 0.05).toBe(6000);
+    expect(120000 * 0.2 - 120000 * 0.15 - 2000).toBe(4000);
+    expect(120000 * 0.2 - 120000 * 0.05 - 9000).toBe(9000);
+    expect(get("risk-and-the-cia-triad-cheap-control").onCorrect).toContain("$4,000");
+    expect(rightLabel("risk-and-the-cia-triad-cheap-control")).toContain("nets less");
+    expect(30000 * 0.4).toBe(12000);
+    expect(30000 * 0.1).toBe(3000);
+    expect((12000 - 3000) / 6000).toBe(1.5);
+    expect(rightLabel("risk-and-the-cia-triad-practice-3")).toContain("1.5 times");
     // Layers multiply their pass fractions.
-    expect(+(0.006 * 0.5 * 100).toFixed(3)).toBe(
-      numericValue("attackers-and-defence-in-depth-four-layers"),
-    );
-    expect(+(0.1 * 0.2 * 100).toFixed(3)).toBe(
-      numericValue("attackers-and-defence-in-depth-lose-host"),
-    );
+    expect(+(0.006 * 0.5 * 100).toFixed(3)).toBe(0.3);
+    expect(rightLabel("attackers-and-defence-in-depth-four-layers")).toContain("0.3%");
+    expect(+(0.1 * 0.2 * 100).toFixed(3)).toBe(2);
+    expect((0.1 * 0.2 * 100) / (0.1 * 0.3 * 0.2 * 100)).toBeGreaterThan(3);
+    expect(rightLabel("attackers-and-defence-in-depth-lose-host")).toContain("about 2%");
     // Search spaces and times.
     const space = (k: number, n: number) => Number(BigInt(k) ** BigInt(n));
-    expect(+(space(36, 10) / 1e10 / 3600).toFixed(2)).toBe(
-      numericValue("passwords-and-authentication-tenth-character"),
-    );
-    expect(+(space(62, 7) / 1e10 / 60).toFixed(1)).toBe(
-      numericValue("passwords-and-authentication-seven-minutes"),
-    );
-    expect(+(2 ** 40 / 1e9 / 60).toFixed(1)).toBe(
-      numericValue("cryptography-basics-forty-bit-minutes"),
-    );
+    expect(+(space(36, 9) / 1e10 / 3600).toFixed(1)).toBe(2.8);
+    expect(get("passwords-and-authentication-tenth-character").prompt).toContain("2.8 hours");
+    expect(space(36, 10) / space(36, 9)).toBe(36);
+    expect(Math.round(2.8 * 36)).toBe(101);
+    expect(+(space(36, 10) / 1e10 / 3600 / 24).toFixed(1)).toBeGreaterThan(4);
+    expect(+(space(62, 7) / 1e12).toFixed(1)).toBe(3.5);
+    expect(get("passwords-and-authentication-seven-minutes").prompt).toContain("3.5 trillion");
+    expect(+(space(62, 7) / 1e10 / 60).toFixed(1)).toBe(5.9);
+    expect(+(space(62, 8) / 1e10 / 3600).toFixed(0)).toBe(6);
+    expect(+(2 ** 40 / 1e12).toFixed(1)).toBe(1.1);
+    expect(get("cryptography-basics-forty-bit-minutes").prompt).toContain("1.1 trillion");
+    expect(2 ** 40 / 1e9).toBeLessThan(1800);
+    expect(+(2 ** 40 / 1e9 / 60).toFixed(1)).toBe(18.3);
     // Dates and clock times.
     const days = (from: string, to: string) =>
       Math.round((Date.parse(to) - Date.parse(from)) / 86400000);
-    expect(days("2026-04-20", "2026-05-30")).toBe(numericValue("tls-and-certificates-days-left"));
+    expect(days("2026-04-20", "2026-05-30")).toBe(40);
+    expect(days("2026-04-20", "2026-05-30") - 30).toBe(10);
+    expect(get("tls-and-certificates-days-left").onCorrect).toContain("ten days");
     const minutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
-    expect(minutes("13:35") - minutes("08:50")).toBe(
-      numericValue("logging-and-detection-practice-1"),
-    );
-    expect(1440 - minutes("22:40") + minutes("03:10")).toBe(
-      numericValue("logging-and-detection-overnight-dwell"),
-    );
-    expect(minutes("14:20") - minutes("12:00")).toBe(numericValue("incident-response-backup-loss"));
+    expect(minutes("14:20") - minutes("09:05")).toBe(315);
+    expect(minutes("13:35") - minutes("08:50")).toBe(285);
+    expect(315 - 285).toBe(30);
+    expect(get("logging-and-detection-practice-1").prompt).toContain("5 hours 15 minutes");
+    expect(1440 - minutes("22:40") + minutes("03:10")).toBe(270);
+    expect(get("logging-and-detection-overnight-dwell").onCorrect).toContain("4 hours 30 minutes");
+    expect(minutes("14:20") - minutes("12:00")).toBe(140);
+    expect(minutes("14:20") - minutes("06:00")).toBe(500);
     // The lesson's priority rule: score times weight, plus 10 if attacks have been seen.
-    expect(+(6.4 * 3 + 10).toFixed(1)).toBe(
-      numericValue("vulnerabilities-and-secure-development-score-six"),
-    );
+    const f = +(6.4 * 3 + 10).toFixed(1);
+    expect(f).toBe(29.2);
+    expect(f < 32.5 && f > 16.2).toBe(true);
+    expect(rightLabel("vulnerabilities-and-secure-development-score-six")).toContain("Second");
   });
 
   it("holds the figures that the prompts quote", () => {
