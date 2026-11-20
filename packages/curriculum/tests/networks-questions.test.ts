@@ -360,7 +360,11 @@ describe("questions in How Computers and Networks Work", () => {
         "15,",
       ),
     ).toBe(true);
-    expect(numericValue(q("the-processor-and-its-instructions", "cycles-in-100ns"))).toBe(3 * 100);
+    // A 3 GHz clock ticks 3 times a nanosecond, so a 100 ns wait holds about 300 cycles.
+    expect(3 * 100).toBe(300);
+    expect(rightChoice(q("the-processor-and-its-instructions", "cycles-in-100ns"))[0]?.label).toBe(
+      "About 300 cycles",
+    );
     expect(numericValue(q("the-processor-and-its-instructions", "end-34-bit"))).toBe(
       2 ** 34 / 2 ** 30,
     );
@@ -370,10 +374,14 @@ describe("questions in How Computers and Networks Work", () => {
     ).toContain("4 GiB");
     expect(Math.ceil(15000 / 4096)).toBe(4);
     expect(15000 - 3 * 4096).toBe(2712);
-    expect(numericValue(q("memory-and-storage", "bytes-reserved"))).toBe(
-      Math.ceil(20000 / 4096) * 4096,
-    );
-    expect(numericValue(q("memory-and-storage", "end-small-files"))).toBe(1000 * 4096);
+    // Five blocks reserve 20,480 bytes, which leaves 480 bytes of the last block empty.
+    expect(Math.ceil(20000 / 4096) * 4096 - 20000).toBe(480);
+    expect(
+      rightChoice(q("memory-and-storage", "bytes-reserved"))[0]?.label.startsWith("A few hundred"),
+    ).toBe(true);
+    // 1,000 files of 100 bytes reserve 1,000 blocks, so about 2% of the reservation holds data.
+    expect(Math.round(((1000 * 100) / (1000 * 4096)) * 100)).toBe(2);
+    expect(rightChoice(q("memory-and-storage", "end-small-files"))[0]?.label).toContain("2%");
     expect(1000 * 10e-3).toBe(10);
     expect(36 / 3).toBe(12);
     const split = (address: number) => ({ page: address >> 12, offset: address & 0xfff });
@@ -389,8 +397,10 @@ describe("questions in How Computers and Networks Work", () => {
   });
 
   it("recomputes the packet and address answers, and the routing decisions from the tables shown", () => {
-    expect(numericValue(q("layers-and-packets", "segments-of-a-million"))).toBe(
-      Math.ceil(1_000_000 / 1460),
+    expect(Math.ceil(1_000_000 / 1460)).toBe(685);
+    expect(Math.round(Math.ceil(1_000_000 / 1460) / 100) * 100).toBe(700);
+    expect(rightChoice(q("layers-and-packets", "segments-of-a-million"))[0]?.label).toBe(
+      "About 700 segments",
     );
     expect(1500 - 20 - 32).toBe(1448);
     expect(1_000_000 - 684 * 1460).toBe(1360);
@@ -467,7 +477,15 @@ describe("questions in How Computers and Networks Work", () => {
   });
 
   it("recomputes the DNS and TCP answers", () => {
-    expect(numericValue(q("names-and-dns", "expiry-time"))).toBe(1000 + 120);
+    // Cached at 1,000 s with a TTL of 120 s, the copy lasts until 1,120 s: the request at 1,100 s is
+    // answered from the cache and the one at 1,200 s is not.
+    const expires = 1000 + 120;
+    expect(expires).toBe(1120);
+    expect(1100 < expires).toBe(true);
+    expect(1200 >= expires).toBe(true);
+    expect(
+      rightChoice(q("names-and-dns", "expiry-time"))[0]?.label.startsWith("Only the second"),
+    ).toBe(true);
     expect(600 - 450).toBe(150);
     expect(450 < 600).toBe(true);
     const dig = codeLines(q("names-and-dns", "end-nxdomain")).map(unwrap);
@@ -484,12 +502,24 @@ describe("questions in How Computers and Networks Work", () => {
       rightChoice(q("tcp-reliable-delivery", "ack-after-gap"))[0]?.label.startsWith(`${expected},`),
     ).toBe(true);
     expect(1000 + 500).toBe(1500);
-    expect(numericValue(q("tcp-reliable-delivery", "bytes-per-second"))).toBe(32_768 / 0.04);
-    expect(numericValue(q("tcp-reliable-delivery", "second-throughput"))).toBe(
-      (131_072 / 0.05) * 8,
+    expect(32_768 / 0.04).toBe(819_200);
+    expect(rightChoice(q("tcp-reliable-delivery", "bytes-per-second"))[0]?.label).toBe(
+      "About 800,000 bytes per second",
+    );
+    // Twice the window over half the round trip is four times the rate of 5.2 Mbit/s: about 21 Mbit/s.
+    const lessonRate = ((65_536 / 0.1) * 8) / 1e6;
+    expect(lessonRate).toBeCloseTo(5.2, 1);
+    expect(((131_072 / 0.05) * 8) / 1e6 / lessonRate).toBe(4);
+    expect(((131_072 / 0.05) * 8) / 1e6).toBeCloseTo(21, 0);
+    expect(rightChoice(q("tcp-reliable-delivery", "second-throughput"))[0]?.label).toBe(
+      "About 21 Mbit/s",
     );
     expect((65_536 * 8) / 0.16).toBe(3_276_800);
-    expect(numericValue(q("tcp-reliable-delivery", "practice-3-v2"))).toBe(5 * 80);
+    // Five handshakes of one round trip each, one after another.
+    expect(5 * 80).toBe(400);
+    expect(
+      rightChoice(q("tcp-reliable-delivery", "practice-3-v2"))[0]?.label.startsWith("About 400 ms"),
+    ).toBe(true);
   });
 
   it("recomputes every Content-Length and the TLS round-trip answers", () => {
@@ -520,8 +550,19 @@ describe("questions in How Computers and Networks Work", () => {
         .some((line) => /^< HTTP\/1\.1 404 /u.test(line)),
     ).toBe(true);
 
-    expect(numericValue(q("tls-trust-and-encryption", "tls13-round-trips-v2"))).toBe(2 * 45);
-    expect(numericValue(q("tls-trust-and-encryption", "tcp-plus-tls"))).toBe((1 + 1) * 50);
+    // TLS 1.2 needs two round trips and TLS 1.3 one, so the older version takes one more, 45 ms here.
+    expect(2 * 45 - 1 * 45).toBe(45);
+    expect(
+      rightChoice(q("tls-trust-and-encryption", "tls13-round-trips-v2"))[0]?.label.startsWith(
+        "About 45 ms longer",
+      ),
+    ).toBe(true);
+    expect((1 + 1) * 50).toBe(100);
+    expect(
+      rightChoice(q("tls-trust-and-encryption", "tcp-plus-tls"))[0]?.label.startsWith(
+        "About 100 ms",
+      ),
+    ).toBe(true);
     expect(
       rightChoice(q("tls-trust-and-encryption", "tls12-time"))[0]?.label.startsWith(
         `${(1 + 2) * 60} ms`,
@@ -545,11 +586,15 @@ describe("questions in How Computers and Networks Work", () => {
   });
 
   it("recomputes the latency, bandwidth and page-load answers", () => {
-    expect(numericValue(q("latency-bandwidth-and-distance", "round-trip-5600"))).toBe(
-      ((5600 * 2) / 200_000) * 1000,
+    expect(((5600 * 2) / 200_000) * 1000).toBe(56);
+    expect(rightChoice(q("latency-bandwidth-and-distance", "round-trip-5600"))[0]?.label).toBe(
+      "About 60 ms",
     );
     expect(numericValue(q("latency-bandwidth-and-distance", "megabits-in-50-mb"))).toBe(50 * 8);
-    expect(numericValue(q("latency-bandwidth-and-distance", "twenty-mb"))).toBe((20 * 8) / 80);
+    expect((20 * 8) / 80).toBe(2);
+    expect(rightChoice(q("latency-bandwidth-and-distance", "twenty-mb"))[0]?.label).toBe(
+      "About 2 seconds",
+    );
     const flight = (1e9 * 0.02) / 8;
     expect(flight).toBe(2_500_000);
     expect(65_536 / flight).toBeGreaterThan(0.025);
@@ -574,8 +619,13 @@ describe("questions in How Computers and Networks Work", () => {
     expect(
       rightChoice(q("one-page-load-end-to-end", "tls-share-v2"))[0]?.label.startsWith("70 ms"),
     ).toBe(true);
-    expect(numericValue(q("one-page-load-end-to-end", "second-trace"))).toBe(
-      30 + 100 + 100 + (100 + 40),
+    // Lookup 30, TCP 100, TLS 100, request 100 + 40. Halving each input saves the amount shown.
+    expect(30 + 100 + 100 + (100 + 40)).toBe(370);
+    const savedByHalving = { resolver: 30 / 2, serverWork: 40 / 2, serverDistance: (3 * 100) / 2 };
+    expect(savedByHalving.serverDistance).toBeGreaterThan(savedByHalving.serverWork);
+    expect(savedByHalving.serverWork).toBeGreaterThan(savedByHalving.resolver);
+    expect(rightChoice(q("one-page-load-end-to-end", "second-trace"))[0]?.label).toBe(
+      "Halving the distance to the server",
     );
     expect(120 + 25).toBe(145);
     expect(145 + 120).toBe(265);
@@ -583,7 +633,14 @@ describe("questions in How Computers and Networks Work", () => {
     expect(
       rightChoice(q("one-page-load-end-to-end", "repeat-request"))[0]?.label.startsWith("145 ms"),
     ).toBe(true);
-    expect(numericValue(q("one-page-load-end-to-end", "http3-total"))).toBe(10 + 70 + (70 + 40));
+    // HTTP/3 takes 10 + 70 + (70 + 40) = 190 ms against 260 ms over TCP and TLS 1.3, one round trip less.
+    expect(10 + 70 + (70 + 40)).toBe(190);
+    expect(10 + 70 + 70 + (70 + 40) - (10 + 70 + (70 + 40))).toBe(70);
+    expect(
+      rightChoice(q("one-page-load-end-to-end", "http3-total"))[0]?.label.startsWith(
+        "About 70 ms shorter",
+      ),
+    ).toBe(true);
     // The curl timings are cumulative: each step is the difference from the one before it.
     const timing = Object.fromEntries(
       codeLines(q("one-page-load-end-to-end", "farther-trace"))
