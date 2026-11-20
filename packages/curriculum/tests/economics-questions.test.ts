@@ -311,6 +311,16 @@ const checkKey = (id: string): number => {
   throw new Error(`no numeric check ${id}`);
 };
 const near = (id: string, expected: number) => expect(key(id)).toBeCloseTo(expected, 9);
+/** The label of the one option an answer key marks right, for a question asked as a choice. */
+const rightLabel = (id: string): string => {
+  const question = questions.get(id) as Question;
+  const authority = question.answerAuthority;
+  if (authority.kind !== "text") throw new Error(`${id} is not a choice`);
+  return (question.choices ?? [])
+    .filter((choice) => assessTextAnswer(choice.label, authority).correct)
+    .map((choice) => choice.label)
+    .join(" | ");
+};
 /** Number of pure Nash equilibria in a two-player payoff grid [row][col] = [rowPay, colPay]. */
 const nash = (grid: number[][][]) => {
   const cells: Array<[number, number]> = [];
@@ -331,39 +341,80 @@ const choiceHas = (id: string, text: string) => {
 describe("numbers in Economics, recomputed from the situations", () => {
   it("recomputes every numeric answer in the lessons", () => {
     const frontier = [[40, 70], [60, 40]] as const;
-    near("econ-opportunity-cost-and-the-frontier-3", frontier[0][1] - frontier[1][1]);
-    near("econ-opportunity-cost-and-the-frontier-unit-cost", (frontier[0][1] - frontier[1][1]) / (frontier[1][0] - frontier[0][0]));
-    near("econ-comparative-advantage-received", 2 * 1.75);
-    near("econ-comparative-advantage-3", 2 * 1.75 - 3);
+    // The third step gives up 30 machines, three times the first step's 10, at 1.5 a unit of food.
+    expect((frontier[0][1] - frontier[1][1]) / (100 - 90)).toBe(3);
+    expect((frontier[0][1] - frontier[1][1]) / (frontier[1][0] - frontier[0][0])).toBe(1.5);
+    expect(rightLabel("econ-opportunity-cost-and-the-frontier-3")).toBe("Three times as many machines");
+    expect(rightLabel("econ-opportunity-cost-and-the-frontier-unit-cost")).toBe("Higher, at about 1.5 machines");
+    expect(2 * 1.75 > 2 * 1.5).toBe(true);
+    expect(2 * 1.75 - 3).toBe(0.5);
+    expect(rightLabel("econ-comparative-advantage-received")).toBe("More, since 1.75 is above his cost of 1.5 a cake");
+    expect(rightLabel("econ-comparative-advantage-3")).toBe("A little better off, by about half a loaf");
     const benefits = [90, 70, 55, 40, 30];
     const costs = [30, 35, 45, 50, 60];
     near("econ-thinking-at-the-margin-1", benefits.filter((b, i) => b >= costs[i]!).length);
-    near("econ-thinking-at-the-margin-hour-2-net", 70 - 35);
-    near("econ-thinking-at-the-margin-2", [0, 1, 2].reduce((s, i) => s + benefits[i]! - costs[i]!, 0));
+    expect((70 - 35) / 70).toBe(0.5);
+    expect(rightLabel("econ-thinking-at-the-margin-hour-2-net")).toBe("About half of it");
+    const hourNets = [0, 1, 2].map((i) => benefits[i]! - costs[i]!);
+    expect(hourNets).toEqual([60, 35, 10]);
+    expect(hourNets.reduce((s, n) => s + n, 0)).toBe(105);
+    expect(hourNets.every((n, i) => n > 0 && (i === 0 || n < hourNets[i - 1]!))).toBe(true);
+    expect(rightLabel("econ-thinking-at-the-margin-2")).toBe("It rises each time, by less each time");
     near("econ-demand-and-supply-2", equilibrium(100, 2, -20, 4).price);
-    near("econ-demand-and-supply-3", equilibrium(100, 2, -20, 4).quantity);
-    near("econ-shifts-and-movements-2", equilibrium(130, 2, -20, 4).price);
-    near("econ-shifts-and-movements-new-quantity", equilibrium(130, 2, -20, 4).quantity);
-    near("econ-price-elasticity-1", elasticity(35, 65, 11, 9));
-    near("econ-price-elasticity-3", elasticity(95, 105, 6, 4));
-    near("econ-price-elasticity-quantity-percent", ((105 - 95) / ((95 + 105) / 2)) * 100);
+    expect(equilibrium(100, 2, -20, 4).quantity).toBe(60);
+    expect(rightLabel("econ-demand-and-supply-3")).toBe("About 60 tickets");
+    expect(equilibrium(130, 2, -20, 4).price - equilibrium(100, 2, -20, 4).price).toBe(5);
+    expect(equilibrium(130, 2, -20, 4).quantity - equilibrium(100, 2, -20, 4).quantity).toBe(20);
+    expect(rightLabel("econ-shifts-and-movements-2")).toBe("By about £5");
+    expect(rightLabel("econ-shifts-and-movements-new-quantity")).toBe("Up by about 20 kg, less than 30");
+    expect(elasticity(35, 65, 11, 9)).toBeCloseTo(3, 9);
+    expect(elasticity(95, 105, 6, 4)).toBeCloseTo(0.25, 9);
+    expect(((105 - 95) / ((95 + 105) / 2)) * 100).toBeCloseTo(10, 9);
+    expect(rightLabel("econ-price-elasticity-1")).toBe("About three times as large");
+    expect(rightLabel("econ-price-elasticity-3")).toBe("Inelastic, since sales rose by the smaller percentage");
+    expect(rightLabel("econ-price-elasticity-quantity-percent")).toBe("About a tenth of the average");
     const gig = equilibrium(100, 2, -20, 4);
-    near("econ-consumer-and-producer-surplus-2", tri(gig.quantity, 100 / 2 - gig.price));
-    near("econ-consumer-and-producer-surplus-3", tri(gig.quantity, gig.price - 20 / 4));
-    near("econ-consumer-and-producer-surplus-check-3", tri(50 - 40, 12 - 8));
+    expect(tri(gig.quantity, 100 / 2 - gig.price)).toBe(900);
+    expect(tri(gig.quantity, gig.price - 20 / 4)).toBe(450);
+    expect(tri(gig.quantity, gig.price - 20 / 4) / tri(gig.quantity, 100 / 2 - gig.price)).toBe(0.5);
+    expect(rightLabel("econ-consumer-and-producer-surplus-2")).toBe("Half of 60 tickets times £30");
+    expect(rightLabel("econ-consumer-and-producer-surplus-3")).toBe("Half as large");
+    expect(tri(50 - 40, 12 - 8)).toBe(20);
+    expect(tri(50 - 40, 12 - 8) / ((50 - 40) * (12 - 8))).toBe(0.5);
+    expect(rightLabel("econ-consumer-and-producer-surplus-check-3")).toBe("About half as much");
     const taxed = equilibrium(100, 2, -20, 4, 6);
-    near("econ-taxes-and-deadweight-loss-2", 6 * Math.round(taxed.quantity));
-    near("econ-taxes-and-deadweight-loss-3", tri(gig.quantity - Math.round(taxed.quantity), 6));
-    near("econ-taxes-and-deadweight-loss-4", equilibrium(120, 4, -30, 2, 6).price - equilibrium(120, 4, -30, 2).price);
-    near("econ-controls-and-externalities-1", 100 - 2 * 12 - (4 * 12 - 20));
-    near("econ-controls-and-externalities-offered-at-floor", 4 * 30 - 20);
-    near("econ-controls-and-externalities-2", 4 * 30 - 20 - (100 - 2 * 30));
-    near("econ-costs-and-profit-2", Math.sqrt(100));
-    near("econ-costs-and-profit-atc-low", 100 / 10 + 10);
+    const revenue = 6 * Math.round(taxed.quantity);
+    const loss = tri(gig.quantity - Math.round(taxed.quantity), 6);
+    expect([revenue, loss]).toEqual([312, 24]);
+    expect(revenue).toBeLessThan(6 * gig.quantity);
+    expect(loss / revenue).toBeLessThan(0.1);
+    expect(rightLabel("econ-taxes-and-deadweight-loss-2")).toBe("A little less, since 8 tickets drop out");
+    expect(rightLabel("econ-taxes-and-deadweight-loss-3")).toBe("Under a tenth of it");
+    const gymRise = equilibrium(120, 4, -30, 2, 6).price - equilibrium(120, 4, -30, 2).price;
+    expect(gymRise / 6).toBeCloseTo(1 / 3, 12);
+    expect(rightLabel("econ-taxes-and-deadweight-loss-4")).toBe("About a third of it");
+    const shortage = 100 - 2 * 12 - (4 * 12 - 20);
+    expect([shortage, 4 * 12 - 20]).toEqual([48, 28]);
+    expect(shortage / (4 * 12 - 20)).toBeGreaterThan(1.5);
+    expect(shortage / (4 * 12 - 20)).toBeLessThan(2);
+    expect(rightLabel("econ-controls-and-externalities-1")).toBe("Nearly twice as many");
+    expect(4 * 30 - 20).toBe(100);
+    expect((4 * 30 - 20) / (100 - 2 * 30)).toBe(2.5);
+    expect(rightLabel("econ-controls-and-externalities-offered-at-floor")).toBe("More than twice as many, about 100");
+    expect((4 * 30 - 20 - (100 - 2 * 30)) / (4 * 30 - 20)).toBe(0.6);
+    expect(rightLabel("econ-controls-and-externalities-2")).toBe("About three fifths of them");
+    expect(Math.sqrt(100)).toBe(10);
+    expect(Math.sqrt(100) / Math.sqrt(36)).toBeLessThan(100 / 36);
+    expect(rightLabel("econ-costs-and-profit-2")).toBe("At more than 6 units, but rising less than the rent");
+    expect(100 / 10 + 10).toBe(20);
+    expect(100 / 10 + 10).toBeGreaterThan(36 / 6 + 6);
+    expect(rightLabel("econ-costs-and-profit-atc-low")).toBe("Higher, since the larger rent adds to each unit's cost");
     near("econ-costs-and-profit-3", 30 / 2);
     near("econ-monopoly-output-mr-mc", (100 - 20) / 2);
-    near("econ-monopoly-2", 100 - (100 - 20) / 2);
-    near("econ-monopoly-4", tri(80 - 40, 60 - 20));
+    expect((100 - (100 - 20) / 2) / 20).toBe(3);
+    expect(rightLabel("econ-monopoly-2")).toBe("About three times as high");
+    expect(tri(80 - 40, 60 - 20) / ((60 - 20) * 40)).toBe(0.5);
+    expect(rightLabel("econ-monopoly-4")).toBe("About half of it");
     near("econ-monopoly-check-2", (90 - (90 - 30) / 2 - 30) * ((90 - 30) / 2));
     const plug = [[[6, 6], [0, 0]], [[0, 0], [4, 4]]];
     near("econ-game-theory-5", nash(plug).length);
