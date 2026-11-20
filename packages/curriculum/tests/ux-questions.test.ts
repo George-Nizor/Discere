@@ -12,8 +12,9 @@ import { describe, expect, it } from "vitest";
  * UX and HCI follows the way Psychology asks questions (docs/question-writing-guide.md), adapted to
  * design judgement: most questions describe a screen, a flow or a finding in words and ask what a
  * designer should conclude. Two questions quote a success criterion of WCAG 2.2 (W3C Document
- * License, short quotations with attribution). Numeric questions stay only where the number is the
- * point, such as an index of difficulty, a margin of error or a contrast ratio.
+ * License, short quotations with attribution). No question asks for a computed number: where a
+ * figure matters, such as an index of difficulty, a margin of error or a contrast ratio, the
+ * question asks which option is larger, roughly how much, or what the figure shows.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/ux-and-hci/bundle.json", import.meta.url), "utf8"),
@@ -64,17 +65,49 @@ describe("questions in UX and Human-Computer Interaction", () => {
   });
 
   it("ends each lesson with three questions of at least two types", () => {
+    // Distance and choice had one calculation and two judgements. The calculation is now a
+    // judgement too, so all three of its closing questions are multiple choice.
+    const allMultipleChoice = new Set(["distance-and-choice"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(
+        allMultipleChoice.has(lesson.id) ? 1 : 2,
+      );
     }
   });
 
-  it("keeps numeric questions to the places where the number is the point", () => {
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(15);
-    for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
+  it("asks no numeric question, since a figure is judged and not computed", () => {
+    expect(bundle.questions.filter((question) => kind(question) === "numeric")).toEqual([]);
+  });
+
+  it("asks the fifteen former calculations as multiple-choice judgements", () => {
+    const converted = [
+      "uxh-what-memory-can-hold-fewer-to-hold",
+      "uxh-distance-and-choice-widen-target",
+      "uxh-distance-and-choice-fitts-gain",
+      "uxh-asking-people-n-400",
+      "uxh-asking-people-halve-the-margin",
+      "uxh-sorting-and-finding-success-rate",
+      "uxh-watching-people-use-it-three-users",
+      "uxh-watching-people-use-it-hard-to-find",
+      "uxh-watching-people-use-it-neutral-sus",
+      "uxh-experiments-and-analytics-z-example",
+      "uxh-experiments-and-analytics-larger-test",
+      "uxh-inspection-and-severity-four-evaluators",
+      "uxh-contrast-and-wcag-three-point-four",
+      "uxh-contrast-and-wcag-button-border",
+      "uxh-how-the-eye-groups-a-screen-pixels-nearer-v2",
+    ];
+    for (const id of converted) {
+      const question = questions.get(id) as Question;
+      expect(kind(question), id).toBe("choice");
+      expect(question.calculator, id).toBe("off");
+      expect(question.hints, id).toHaveLength(2);
+      expect(question.answerAuthority.kind, id).toBe("text");
+      expect(rightOption(question), id).toHaveLength(1);
+      expect(question.prompt, id).not.toMatch(/calculator|decimal place|nearest/iu);
+    }
   });
 
   it("asks no fill-in-the-blank question for a term", () => {
