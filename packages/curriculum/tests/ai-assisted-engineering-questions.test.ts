@@ -14,7 +14,9 @@ import { describe, expect, it } from "vitest";
  * questions show a short diff, a function, a log or a search result and ask what a reviewer should
  * catch or what makes a workflow safe. The code in the questions was run, and this file reruns the
  * same logic in TypeScript so that each shown result and each numeric answer is recomputed from the
- * code or the numbers in the prompt. The course's own sources are Anthropic's best-practice guide for
+ * code or the numbers in the prompt. The questions about rates, shares and counts ask for a judgement,
+ * such as how far an acceptance rate sits below what reached the codebase, and the figures behind each
+ * of those answers are recomputed from the scenario. The course's own sources are Anthropic's best-practice guide for
  * Claude Code, the AGENTS.md convention, Google's code review guide, the OWASP Top 10 and cheat
  * sheets, NIST SSDF, Pro Git, DORA, the METR trial, Pearce et al. and NIST AI RMF.
  */
@@ -38,9 +40,13 @@ const get = (suffix: string): Question => {
   if (!question) throw new Error(`missing question ${suffix}`);
   return question;
 };
-const flat = (text: string): string => text.replace(/(\d),(\d{3})/gu, "$1$2");
-const numbers = (text: string): number[] =>
-  (flat(text).match(/-?\d+(?:\.\d+)?/gu) ?? []).map(Number);
+const rightLabel = (suffix: string): string | undefined => {
+  const question = get(suffix);
+  const authority = question.answerAuthority;
+  if (authority.kind !== "text") throw new Error(suffix);
+  return question.choices?.find((choice) => assessTextAnswer(choice.label, authority).correct)
+    ?.label;
+};
 const near = (a: number, b: number, digits = 6) => expect(a).toBeCloseTo(b, digits);
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
 
@@ -139,24 +145,6 @@ describe("questions in AI-Assisted Engineering and Code Review", () => {
 
   it("recomputes every numeric answer from the numbers or the code in its prompt", () => {
     const checks: Record<string, (text: string) => number> = {
-      // 96 of 150 lines kept unchanged.
-      "what-an-assistant-does-faded-acceptance": () => (96 / 150) * 100,
-      // 150 kept unchanged, 60 edited and kept, 30 deleted, out of 240.
-      "what-an-assistant-does-check-rate": () => ((150 + 60) / 240) * 100 - (150 / 240) * 100,
-      // 60,000 lines at 10 tokens a line against a 200,000-token window.
-      "context-and-instructions-worked-fit": () => (200000 / (60000 * 10)) * 100,
-      "context-and-instructions-transfer-left": (t) => {
-        const [window, instructions, chat, commands] = numbers(t) as number[];
-        return (
-          (window as number) - (instructions as number) - (chat as number) - (commands as number)
-        );
-      },
-      // Three of the five mutants of the leap-year function are killed by the two tests.
-      "tests-as-the-contract-worked-score": () =>
-        (mutants.filter(([, f]) => killed(f)).length / mutants.length) * 100,
-      // 80% of 20 mutants must be killed and 15 already are.
-      "tests-as-the-contract-check-score": () => 0.8 * 20 - 15,
-      "small-steps-and-version-control-worked-split": () => Math.ceil(700 / 250),
       // Matches per module: config.py 2, billing.py 3, mail.py 1. The claim allows config.py.
       "recovering-an-unfamiliar-codebase-faded-violators-v2": () =>
         Object.entries({ "config.py": 2, "billing.py": 3, "mail.py": 1 }).filter(
@@ -165,11 +153,6 @@ describe("questions in AI-Assisted Engineering and Code Review", () => {
       "defects-machines-make-check-first": () => page(range(100), 3, 20)[0] as number,
       // 4 failed + 6 skipped + 2 errors do not show the code works.
       "verifying-behaviour-try-notpass": () => 4 + 6 + 2,
-      "ownership-licensing-and-privacy-worked-share": () => (12 / 120) * 100,
-      "working-rules-and-measurement-worked-failed": () => 140 * 0.05,
-      "working-rules-and-measurement-try-rate": () => (6 / 30) * 100,
-      // 50 merges at 4% before, 100 at 8% after.
-      "working-rules-and-measurement-transfer-times": () => (100 * 0.08) / (50 * 0.04),
     };
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
     expect(numeric.map((question) => question.id.replace("aiae-", "")).sort()).toEqual(
@@ -184,6 +167,81 @@ describe("questions in AI-Assisted Engineering and Code Review", () => {
         Math.max(authority.absoluteTolerance, 1e-6),
       );
     }
+  });
+
+  it("recomputes the figures behind each judgement answer", () => {
+    // 96 of 150 lines kept unchanged is 64%, a little under two thirds. Half of 150 is 75 and the
+    // share not kept unchanged is 54 of 150.
+    expect(96 / 150).toBeGreaterThan(0.6);
+    expect(96 / 150).toBeLessThan(2 / 3);
+    expect(96).toBeGreaterThan(150 / 2);
+    expect(150 - 96).toBe(54);
+    expect(rightLabel("what-an-assistant-does-faded-acceptance")).toBe(
+      "About two thirds of the lines suggested",
+    );
+    // 150 kept unchanged and 60 edited and kept, out of 240: the 60 edited lines are a quarter of the
+    // suggestion, the 30 deleted lines an eighth, and 90 lines short of the whole is 37.5%.
+    near((150 + 60) / 240 - 150 / 240, 0.25, 12);
+    near(30 / 240, 0.125, 12);
+    expect((240 - 150) / 240).toBeGreaterThan(0.35);
+    expect(150 + 60 + 30).toBe(240);
+    expect(rightLabel("what-an-assistant-does-check-rate")).toBe(
+      "Lower by about a quarter of the suggestion",
+    );
+    // 60,000 lines at 10 tokens a line need 600,000 tokens, and a 200,000-token window holds a third.
+    expect(200000 / (60000 * 10)).toBeGreaterThan(0.3);
+    expect(200000 / (60000 * 10)).toBeLessThan(0.4);
+    expect(200000 / (40000 * 10)).toBe(0.5);
+    expect(rightLabel("context-and-instructions-worked-fit")).toBe("About a third of the codebase");
+    // 3,000 + 90,000 + 60,000 = 153,000 tokens used, so 47,000 of 200,000 are left, about a quarter.
+    const left = 200000 - 3000 - 90000 - 60000;
+    expect(left).toBe(47000);
+    expect(left / 200000).toBeGreaterThan(0.2);
+    expect(left / 200000).toBeLessThan(0.3);
+    expect(200000 - 3000 - 90000).toBeGreaterThan(200000 / 2);
+    expect(rightLabel("context-and-instructions-transfer-left")).toBe(
+      "About a quarter of it is free",
+    );
+    // Three of the five mutants are killed and two survive, and the two tests run every line.
+    expect(mutants.filter(([, f]) => killed(f))).toHaveLength(3);
+    expect(mutants.filter(([, f]) => !killed(f))).toHaveLength(2);
+    expect(rightLabel("tests-as-the-contract-worked-score")).toBe(
+      "About three in five faults are caught, and two could still pass",
+    );
+    // 80% of 20 mutants is 16 kills, 15 is 75%, and the gap is one mutant.
+    expect(0.8 * 20).toBe(16);
+    expect(15 / 20).toBeLessThan(0.8);
+    expect(0.8 * 20 - 15).toBe(1);
+    expect(20 - 15).toBe(5);
+    expect(rightLabel("tests-as-the-contract-check-score")).toBe(
+      "It is one mutant short of the requirement",
+    );
+    // Two steps of 250 lines hold 500 and three hold 750, so 700 lines need three.
+    expect(2 * 250).toBeLessThan(700);
+    expect(3 * 250).toBeGreaterThanOrEqual(700);
+    expect(Math.ceil(700 / 250)).toBe(3);
+    expect(rightLabel("small-steps-and-version-control-worked-split")).toBe("3 steps");
+    // 12 of 120 lines is a tenth of the file.
+    near(12 / 120, 0.1, 12);
+    expect(rightLabel("ownership-licensing-and-privacy-worked-share")).toBe(
+      "Check the block's licence, since size is not the test",
+    );
+    // 5% of 140 merges is 7 failed and 133 good.
+    near(140 * 0.05, 7, 12);
+    expect(140 - 7).toBe(133);
+    expect(rightLabel("working-rules-and-measurement-worked-failed")).toBe("About 7");
+    // 6 of 30 merges is 20%, and 24 of 30 is 80%.
+    near(6 / 30, 0.2, 12);
+    expect(30 / 6).toBe(5);
+    expect(30 - 6).toBe(24);
+    expect(rightLabel("working-rules-and-measurement-try-rate")).toBe("About 20%");
+    // 50 merges at 4% fail 2 times, 100 merges at 8% fail 8 times: four times as many.
+    expect(50 * 0.04).toBe(2);
+    expect(100 * 0.08).toBe(8);
+    expect((100 * 0.08) / (50 * 0.04)).toBe(4);
+    expect(rightLabel("working-rules-and-measurement-transfer-times")).toBe(
+      "About four times as many",
+    );
   });
 
   it("recomputes the results that the code in the judgement questions shows", () => {

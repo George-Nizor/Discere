@@ -56,8 +56,10 @@ describe("marking against every bundle", { timeout: 60_000 }, () => {
       }
     }
     // A floor against a vacuous run, not a target. The question rewrites replace numeric filler,
-    // so the count falls course by course; keep this well below the library's total.
-    expect(checked).toBeGreaterThan(4000);
+    // so the count falls course by course; keep this well below the library's total. The
+    // judgement pass of November 2026 turned about 720 calculation questions in conceptual
+    // courses into multiple choice, which took the count to about 3,300.
+    expect(checked).toBeGreaterThan(2500);
     expect(failures).toEqual([]);
   });
 
@@ -83,8 +85,9 @@ describe("marking against every bundle", { timeout: 60_000 }, () => {
                 failures.push(`${course}/${question.id}: ${input}`);
           }
       }
-    // A floor against a vacuous run; it falls as rewrites remove numeric questions.
-    expect(checked).toBeGreaterThan(6000);
+    // A floor against a vacuous run; it falls as rewrites remove numeric questions (about 4,600
+    // after the judgement pass of November 2026).
+    expect(checked).toBeGreaterThan(3500);
     expect(failures).toEqual([]);
   });
 
