@@ -1383,7 +1383,7 @@
             "initialCaseId": "full"
           }
         },
-        "promise": "By the end you'll be able to simulate a doubling array, total its copies, and explain why appending costs a constant amount on average.",
+        "promise": "By the end you'll be able to simulate a doubling array, judge how large the total of its copies is, and explain why appending costs a constant amount on average.",
         "estimatedMinutes": 14,
         "whyItMatters": "Python lists, C++ vectors and Java ArrayLists all rely on this argument for their append."
       },
@@ -1397,7 +1397,7 @@
         ],
         "nextHook": "The next lesson drops the idea of consecutive memory and links items together with pointers, which changes what insertion costs."
       },
-      "orientation": "Simulate a doubling dynamic array, total its copies, and explain why the average cost of an append is constant.",
+      "orientation": "Simulate a doubling dynamic array, judge how large the total of its copies is, and explain why the average cost of an append is constant.",
       "nextAction": "Build a chain of nodes joined by pointers, traverse it and reverse it, and say which operations it makes cheaper than an array.",
       "calculator": "off",
       "steps": [
@@ -7425,21 +7425,20 @@
         "datsa-doubling",
         "amortised"
       ],
-      "prompt": "A dynamic array starts with capacity 1 and doubles when full. Counting every element copy made during a resize, how many copies happen across 9 appends?",
-      "responseType": "numeric",
+      "prompt": "A dynamic array starts with capacity 1 and doubles when full. Counting every element copy made during a resize, roughly how many copies happen across 9 appends?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "A resize happens when an append finds size equal to capacity, and it copies size elements.",
-        "The capacities go 1, 2, 4, 8 and so on, so the array is full at those sizes.",
-        "Find which of the 9 appends meet a full array, and add the copies they make."
+        "Which appends find the array full, and how many elements does each of those copy?",
+        "Would you expect resizes to stay frequent, or to get rarer as the array grows?"
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 15,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The array is full when it holds 1, 2, 4 and 8 items, so those resizes copy 1 + 2 + 4 + 8 = 15 elements."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 15, a little under twice the appends"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 15, a little under twice the appends"
       },
       "sourceIds": [
         "ods-2-1-arraystack",
@@ -7447,23 +7446,49 @@
         "py-timecomplexity",
         "cpython-listobject"
       ],
-      "onCorrect": "Appends 2, 3, 5 and 9 each find the array full, and they copy 1, 2, 4 and 8 elements.",
+      "onCorrect": "Appends 2, 3, 5 and 9 each find the array full and copy 1, 2, 4 and 8 elements, 15 in all, which is less than twice the 9 appends. Resizes get rarer as the array grows, so the total stays small.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 8, the copies of the last resize alone"
+        },
+        {
+          "id": "b",
+          "label": "About 9, one copy for each append"
+        },
+        {
+          "id": "c",
+          "label": "About 15, a little under twice the appends"
+        },
+        {
+          "id": "d",
+          "label": "About 36, every append copying the whole array"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              8
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is only the last resize, at the ninth append. The earlier resizes copied elements too."
+          "feedback": "That counts only the last resize, at the ninth append. The earlier resizes copied elements too, so the total is larger."
         },
         {
           "match": {
-            "numeric": [
-              16
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the capacity after the last resize. The question asks how many elements were copied."
+          "feedback": "That gives each append a single copy. Most appends copy nothing and the resizes copy several elements at once, so the total comes to more than the number of appends."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That has every append copy the whole array. Only an append that finds the array full copies anything, and after a resize the next appends cost nothing until it fills again."
         }
       ],
       "skill": "total-copies",
@@ -7540,21 +7565,20 @@
         "datsa-doubling",
         "amortised"
       ],
-      "prompt": "An array starts at capacity 1 and doubles when full. How many element copies happen in total across 6 appends?",
-      "responseType": "numeric",
+      "prompt": "Finish the worked example: an array starts at capacity 1 and doubles when full, and appends 2, 3 and 5 are the ones that meet a full array. How does the total number of element copies across the 6 appends compare with the number of appends?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Find the appends that meet a full array.",
-        "They happen at sizes 1, 2 and 4.",
-        "Add the copies made at those sizes."
+        "How many elements does each of those three resizes copy?",
+        "Do those copies add up to far more than 6, or to a little more?"
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 7,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "1 + 2 + 4 = 7 copies."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Slightly more copies than appends"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Slightly more copies than appends"
       },
       "sourceIds": [
         "ods-2-1-arraystack",
@@ -7562,23 +7586,49 @@
         "py-timecomplexity",
         "cpython-listobject"
       ],
-      "onCorrect": "Three resizes copy 1, 2 and 4 elements, and the capacity then reaches 8, which is room for the 6 items.",
+      "onCorrect": "The three resizes copy 1, 2 and 4 elements, 7 in all, a little more than the 6 appends and well under twice as many. The capacity then reaches 8, which is room for the 6 items.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Fewer copies than appends"
+        },
+        {
+          "id": "b",
+          "label": "Slightly more copies than appends"
+        },
+        {
+          "id": "c",
+          "label": "About twice as many copies as appends"
+        },
+        {
+          "id": "d",
+          "label": "Many times as many copies as appends"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              4
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the copies at the last resize only. The earlier resizes copied 1 and 2 elements too."
+          "feedback": "Appends 2, 3 and 5 each copy the stored elements across, so those three resizes add up to 7 copies, which is more than the 6 appends."
         },
         {
           "match": {
-            "numeric": [
-              8
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the capacity after the resizes, not a count of copies."
+          "feedback": "Twice the appends would be 12, and that is a bound the total stays under. Here the three resizes copy 1, 2 and 4, so the total falls well short of it."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That has every append copy the whole array. Only the appends that find the array full copy anything, and here that is three of the six."
         }
       ],
       "skill": "simulate-growth",

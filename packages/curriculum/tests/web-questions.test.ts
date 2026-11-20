@@ -91,14 +91,6 @@ describe("questions in The Web: HTML, CSS and JavaScript", () => {
   });
 
   it("recomputes every numeric answer", () => {
-    const contrast = (hex: string): number => {
-      const channel = (index: number): number => {
-        const value = Number.parseInt(hex.slice(index, index + 2), 16) / 255;
-        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-      };
-      const luminance = 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
-      return (1 + 0.05) / (luminance + 0.05);
-    };
     const expected: Record<string, number> = {
       // content 160, padding 12 each side, border 3 each side, margin 20 each side
       "the-box-and-the-flow-margin-box-width": 160 + 2 * 12 + 2 * 3 + 2 * 20,
@@ -108,17 +100,11 @@ describe("questions in The Web: HTML, CSS and JavaScript", () => {
       // 720px, bases 100 each, grow 1, 2, 3: 420px free in 6 shares
       "layout-with-flexbox-and-grid-third-item": 100 + (3 * (720 - 300)) / 6,
       "layout-with-flexbox-and-grid-grid-two-fr": ((900 - 2 * 20 - 140) / 3) * 2,
-      // 240px row, bases 200 and 100, 60px overflow shared by shrink times basis
-      "layout-with-flexbox-and-grid-weighted-shrink": 200 - (60 * 200) / (200 + 100),
       "layout-with-flexbox-and-grid-check-fr": ((900 - 3 * 30 - 150) / 4) * 2,
-      "responsive-design-em-chain": 12 * 1.5 * 2,
-      "responsive-design-percent-of-container": 480 * 0.75,
       // an ol with three li, indented: 3 elements and 4 text nodes
       "the-dom-and-events-worked-seven": 3 + 4,
       // four li each on its own line with no indentation: 5 line breaks around and between
       "the-dom-and-events-four-items": 4 + 5,
-      "accessible-and-fast-worked-seven": Math.round(contrast("#595959") * 10) / 10,
-      "accessible-and-fast-shift-score": 0.75 * 0.25,
     };
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
     expect(numeric.map((question) => question.id.replace("webhcj-", "")).sort()).toEqual(
