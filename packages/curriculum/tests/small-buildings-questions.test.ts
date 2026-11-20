@@ -210,7 +210,7 @@ const judged: Record<
   "programme-and-areas-gross-34-v2": {
     right: "About 13,000 short",
     holds: () => 40 * 2200 === 88000 && Math.abs(34 * 2200 - 74800) < 1 && (40 - 34) * 2200 === 13200,
-    mistakes: () => 6 !== 13200,
+    mistakes: () => 40 - 34 === 6 && (40 - 34) * 2200 > 6 * 1000,
     uses: [34, 40, 2200, 75000],
   },
   "heat-flow-and-u-values-leave-out-pir": {
