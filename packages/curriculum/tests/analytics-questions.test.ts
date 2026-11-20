@@ -578,14 +578,6 @@ const scalar = (id: string, index = 0) => Number(FIXTURES[id]?.queries[index]?.r
  * the example's text, so its inputs come from that text and not from the prompt.
  */
 const recompute: Record<string, { value: () => number; uses?: number[] }> = {
-  "from-questions-to-grain-faded-sum": {
-    value: () => 50 * 2 + 70 * 4 + 90 * 1,
-    uses: [50, 70, 90, 2, 4, 1],
-  },
-  "facts-and-dimensions-avg-price": {
-    value: () => (300 + 100) / (10 + 5),
-    uses: [10, 300, 5, 100],
-  },
   "history-in-dimensions-east-total": {
     value: () => {
       const db = new DatabaseSync(":memory:");
@@ -616,10 +608,6 @@ const recompute: Record<string, { value: () => number; uses?: number[] }> = {
     uses: [1, 2, 3, 4, 5, 6, 2],
   },
   "incremental-builds-check-rows": { value: () => scalar("incremental-builds-check-rows", 0) },
-  "semantic-layers-and-metrics-check-aov": {
-    value: () => (100 + 900) / (10 + 30),
-    uses: [100, 10, 900, 30],
-  },
   "lineage-count-ads-down": {
     value: () =>
       downstream(
@@ -657,13 +645,6 @@ const recompute: Record<string, { value: () => number; uses?: number[] }> = {
       ).size,
     uses: [],
   },
-  "measuring-quality-z-faded": {
-    value: () => (380 - mean([300, 340, 300, 340])) / sd([300, 340, 300, 340]),
-    uses: [300, 340, 380],
-  },
-  "measuring-quality-breach-hours": { value: () => breach("02:15", "09:00", 4), uses: [4] },
-  "measuring-quality-check-breach": { value: () => breach("22:40", "06:10", 6), uses: [6] },
-  "contracts-ownership-and-slos-budget-98": { value: () => 720 * (1 - 0.98), uses: [98, 720] },
   "classifying-and-protecting-data-k-wider": {
     value: () => {
       const rows = ["20-39 N1", "20-39 N1", "20-39 N1", "20-39 N2", "20-39 N2", "20-39 N2"];
@@ -679,7 +660,6 @@ const recompute: Record<string, { value: () => number; uses?: number[] }> = {
   "classifying-and-protecting-data-check-k": {
     value: () => scalar("classifying-and-protecting-data-check-k", 0),
   },
-  "privacy-law-in-practice-vacuum-day": { value: () => 2 + 14, uses: [2, 14] },
 };
 const mentions = (prompt: string, value: number) => {
   const text = prompt.replace(/,/gu, "");
@@ -729,7 +709,7 @@ describe("questions in Analytics Engineering and Data Governance", () => {
 
   it("keeps numeric questions to the few where the number is the point", () => {
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(17);
+    expect(numeric.length).toBeLessThanOrEqual(9);
     for (const question of numeric) {
       expect(question.hints.length, question.id).toBe(3);
       const authority = question.answerAuthority;
@@ -763,6 +743,40 @@ describe("questions in Analytics Engineering and Data Governance", () => {
       for (const number of entry.uses ?? [])
         expect(mentions(question.prompt, number), `${question.id} mentions ${number}`).toBe(true);
     }
+  });
+
+  it("recomputes the figures behind the judgement questions that replaced sums", () => {
+    // The line table repeats each order total once per line: 470 against 210, a little over twice.
+    const lineSum = 50 * 2 + 70 * 4 + 90 * 1;
+    expect(lineSum).toBe(470);
+    expect(lineSum / (50 + 70 + 90)).toBeGreaterThan(2);
+    expect(lineSum / (50 + 70 + 90)).toBeLessThan(2.5);
+    expect(2 + 4 + 1).toBe(7);
+    // The pooled unit price lies above the plain average of the two line prices, below the higher.
+    const pooled = (300 + 100) / (10 + 5);
+    expect(pooled).toBeCloseTo(26.67, 2);
+    expect(pooled).toBeGreaterThan((300 / 10 + 100 / 5) / 2);
+    expect(pooled).toBeLessThan(300 / 10);
+    // Average order value over two regions is a ratio of totals, nearer the region with more orders.
+    const aov = (100 + 900) / (10 + 30);
+    expect(aov).toBe(25);
+    expect(aov).toBeGreaterThan((100 / 10 + 900 / 30) / 2);
+    expect(Math.abs(aov - 900 / 30)).toBeLessThan(Math.abs(aov - 100 / 10));
+    // A count of 380 against 300, 340, 300 and 340 sits exactly at a z-score of 3.
+    expect((380 - mean([300, 340, 300, 340])) / sd([300, 340, 300, 340])).toBe(3);
+    // Freshness breaches, including the one that runs across midnight.
+    expect(breach("02:15", "09:00", 4)).toBeCloseTo(2.75);
+    expect(breach("22:40", "06:10", 6)).toBeCloseTo(1.5);
+    expect(minutes("06:10") - minutes("22:40")).toBeLessThan(0);
+    expect((minutes("22:40") - minutes("06:10")) / 60 - 6).toBeCloseTo(10.5);
+    // The error budget of a 98% objective over 720 hours is a little over half a day.
+    expect(720 * (1 - 0.98)).toBeCloseTo(14.4);
+    expect((720 * (1 - 0.98)) / 24).toBeGreaterThan(0.5);
+    expect((720 * (1 - 0.98)) / 24).toBeLessThan(1);
+    expect(720 * 0.002).toBeCloseTo(1.44);
+    expect((720 * 0.1) / 24).toBe(3);
+    // A vacuum waits for the retention to pass after the commit on day 2.
+    expect(2 + 14).toBe(16);
   });
 
   it("reruns every SQL fixture and finds the rows and results that the questions quote", () => {

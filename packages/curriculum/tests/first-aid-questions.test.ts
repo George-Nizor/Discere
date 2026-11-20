@@ -15,8 +15,9 @@ import { describe, expect, it } from "vitest";
  * cover the sequences the sources give (the primary survey, the recovery position, the AED, choking,
  * bleeding) and sort questions cover the judgements (partial or complete choking, what to do and not
  * to do for a burn or a snakebite, warning signs after a head injury, heart attack or stroke, heat
- * exhaustion or heatstroke). Numeric questions stay only where the number is the point. Every fact
- * rests on a source record of the course, and the course quotes none of them.
+ * exhaustion or heatstroke). The course asks no numeric questions: a figure such as the time to
+ * cool a burn is picked from options whose wrong answers are real mistakes. Every fact rests on a
+ * source record of the course, and the course quotes none of them.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/first-aid/bundle.json", import.meta.url), "utf8"),
@@ -71,18 +72,37 @@ describe("questions in First Aid", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, of at least two types unless a figure became a choice", () => {
+    // These three lessons used to end on a figure to recall and two choices. The figure is now a
+    // choice as well, so each of them ends on three choices.
+    const threeChoices = new Set([
+      "adult-cpr",
+      "children-and-infants",
+      "allergic-reactions-and-poisoning",
+    ]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (threeChoices.has(lesson.id))
+        expect(types, lesson.id).toEqual(["choice", "choice", "choice"]);
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
-  it("keeps numeric questions to the places where the number is the point", () => {
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.length).toBeLessThanOrEqual(12);
-    for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
+  it("asks no numeric questions, since each figure is picked from options and not recalled or computed", () => {
+    expect(bundle.questions.filter((question) => kind(question) === "numeric")).toEqual([]);
+  });
+
+  it("gives the figures that the choice questions turn on", () => {
+    // 30 compressions at 120 a minute, and at 100 a minute.
+    expect((30 / 120) * 60).toBe(15);
+    expect((30 / 100) * 60).toBe(18);
+    // One compression a second is 60 a minute, and 30 in 8 seconds is about 225 a minute.
+    expect((30 / 30) * 60).toBe(60);
+    expect((30 / 8) * 60).toBe(225);
+    // The most that a returning allergic reaction can take is 78 hours, which is over three days.
+    expect(78 / 24).toBeGreaterThan(3);
+    expect(78 / 24).toBeLessThan(4);
   });
 
   it("uses order and sort questions for sequences and for judgements, between eight and twelve", () => {
@@ -109,7 +129,8 @@ describe("questions in First Aid", () => {
   });
 
   it("quotes nothing from a source whose licence does not allow it", () => {
-    for (const question of bundle.questions) expect(question.extracts ?? [], question.id).toEqual([]);
+    for (const question of bundle.questions)
+      expect(question.extracts ?? [], question.id).toEqual([]);
     for (const question of bundle.questions)
       expect(question.prompt, question.id).not.toContain("\n> ");
   });

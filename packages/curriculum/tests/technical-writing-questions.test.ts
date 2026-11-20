@@ -14,8 +14,9 @@ import { describe, expect, it } from "vitest";
  * a sentence, a step list, a table row or a code sample, and ask which revision serves a stated
  * reader, what the reader cannot do with it, or which kind of page it belongs on. The pieces are
  * labelled as invented for the exercise, except four word-for-word quotations from the Google
- * developer documentation style guide (CC BY 4.0) and RFC 9110. Numbers are kept where the lesson
- * teaches a calculation: the Flesch score, the share of a draft cut, a success rate.
+ * developer documentation style guide (CC BY 4.0) and RFC 9110. The course asks for one number only,
+ * what a code sample prints. The Flesch score, the share of a draft cut and a success rate are judged
+ * from options, and the worked examples show the sums.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/technical-writing/bundle.json", import.meta.url), "utf8"),
@@ -75,45 +76,55 @@ describe("questions in Technical Writing", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, of at least two types unless a sum became a choice", () => {
+    // This lesson used to end on one sum and two choices. The sum is now a choice as well, so it
+    // ends on three choices.
+    const threeChoices = new Set(["sentences-and-paragraphs"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(get(id)));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (threeChoices.has(lesson.id))
+        expect(types, lesson.id).toEqual(["choice", "choice", "choice"]);
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
-  it("keeps numeric questions to eight, each with three hints, where the number is the lesson", () => {
+  it("keeps one numeric question, a code sample run by hand, with three hints", () => {
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
     expect(numeric.map((question) => question.id).sort()).toEqual([
-      "tecw-editing-a-draft-percent-50",
-      "tecw-editing-a-draft-percent-60",
       "tecw-examples-and-code-samples-prints",
-      "tecw-sentences-and-paragraphs-after-split",
-      "tecw-sentences-and-paragraphs-flesch-10",
-      "tecw-sentences-and-paragraphs-halving-sentences",
-      "tecw-testing-docs-with-readers-nine-of-fifteen",
-      "tecw-testing-docs-with-readers-tickets-drop",
     ]);
     for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
   });
 
-  it("recomputes every number the numeric questions and their feedback state", () => {
+  it("recomputes every number that the judgement questions and their feedback state", () => {
     const rounded = (value: number) => Math.round(value);
-    expect(numericValue("tecw-sentences-and-paragraphs-flesch-10")).toBe(rounded(flesch(10, 1.5)));
-    expect(numericValue("tecw-sentences-and-paragraphs-after-split")).toBe(
-      rounded(flesch(52 / 4, 1.6)),
-    );
+    // The Flesch score at 10 words per sentence and 1.5 syllables per word.
+    expect(1.015 * 10).toBeCloseTo(10.15, 9);
+    expect(84.6 * 1.5).toBeCloseTo(126.9, 9);
+    expect(rounded(flesch(10, 1.5))).toBe(70);
+    expect(rounded(206.835 - 84.6 * 1.5)).toBe(80);
+    expect(rounded(206.835 - 1.015 * 10)).toBe(197);
+    // One sentence of 52 words split into four: about 19 becomes about 58, a rise of 39.
+    expect(rounded(flesch(52, 1.6))).toBe(19);
+    expect(rounded(flesch(52 / 4, 1.6))).toBe(58);
     expect(rounded(flesch(52 / 4, 1.6)) - rounded(flesch(52, 1.6))).toBe(39);
-    expect(numericValue("tecw-sentences-and-paragraphs-halving-sentences")).toBe(
-      rounded(flesch(11, 1.6) - flesch(22, 1.6)),
-    );
+    expect(52 - 52 / 4).toBe(39);
+    // Halving sentences of 22 words lifts the score by about 11, a tenth of a syllable by about 8.
+    expect(rounded(flesch(11, 1.6) - flesch(22, 1.6))).toBe(11);
     expect(flesch(11, 1.6) - flesch(22, 1.6)).toBeCloseTo(11.165, 3);
     expect(84.6 * 0.1).toBeCloseTo(8.46, 2);
-    expect(numericValue("tecw-editing-a-draft-percent-60")).toBe(((60 - 45) / 60) * 100);
-    expect(numericValue("tecw-editing-a-draft-percent-50")).toBe((9 / 50) * 100);
-    expect(numericValue("tecw-testing-docs-with-readers-nine-of-fifteen")).toBe((9 / 15) * 100);
-    expect(numericValue("tecw-testing-docs-with-readers-tickets-drop")).toBe(((30 - 6) / 30) * 100);
+    // The share of a paragraph cut, measured against the original length.
+    expect((60 - 45) / 60).toBe(0.25);
+    expect((60 - 45) / 45).toBeCloseTo(1 / 3, 9);
+    expect(45 / 60).toBe(0.75);
+    expect(9 / 50).toBeCloseTo(0.18, 9);
+    expect((9 + 5) / 50).toBeCloseTo(0.28, 9);
+    // The task success rate and the fall in tickets.
+    expect(9 / 15).toBeCloseTo(0.6, 9);
+    expect(6 / 15).toBeCloseTo(0.4, 9);
+    expect((30 - 6) / 30).toBeCloseTo(0.8, 9);
+    expect(6 / 30).toBeCloseTo(0.2, 9);
     // The sample in the faded example, run by hand: the dictionary holds b = 2.
     const data = JSON.parse('{"a": 1, "b": 2}') as Record<string, number>;
     expect(numericValue("tecw-examples-and-code-samples-prints")).toBe(data["b"]);

@@ -12,7 +12,8 @@ import { describe, expect, it } from "vitest";
  * Speaking, Argument and Debate follows the way History and Philosophy ask questions
  * (docs/question-writing-guide.md): short speeches, rebuttals and questions from the floor put in
  * front of the learner, famous speeches in the public domain quoted word for word, numbers only
- * where the number is the point, options of similar length with a reason given for each wrong one,
+ * where the number is the point (the course asks none now: each figure is judged, not computed),
+ * options of similar length with a reason given for each wrong one,
  * and order and sort questions where the sequence or the kinds are the point.
  */
 const bundle = JSON.parse(
@@ -69,61 +70,51 @@ describe("questions in Speaking, Argument and Debate", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, of at least two types unless a sum became a choice", () => {
+    // These two lessons used to end on one sum and two choices. The sum is now a choice as well, so
+    // each of them ends on three choices.
+    const threeChoices = new Set(["numbers-in-argument", "structure-of-a-spoken-answer"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (threeChoices.has(lesson.id))
+        expect(types, lesson.id).toEqual(["choice", "choice", "choice"]);
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
-  it("keeps eight numbers at most, each where the number is the point", () => {
+  it("asks no numeric question, since the course teaches judgement and not sums", () => {
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id).sort()).toEqual(
-      [
-        "spead-framing-and-ethical-persuasion-expected-deaths-d",
-        "spead-numbers-in-argument-final-points",
-        "spead-numbers-in-argument-poll-share",
-        "spead-numbers-in-argument-risk-halved",
-        "spead-structure-of-a-spoken-answer-final-words",
-        "spead-structure-of-a-spoken-answer-seconds-per-point",
-        "spead-voice-pace-and-nerves-final-pace",
-        "spead-case-building-and-weighing-final-compare",
-      ].sort(),
-    );
-    expect(numeric.length).toBeLessThanOrEqual(8);
+    expect(numeric.map((question) => question.id)).toEqual([]);
   });
 
-  it("recomputes every numeric answer from the figures in its prompt", () => {
-    const value = (id: string): number => {
-      const authority = (questions.get(id) as Question).answerAuthority;
-      if (authority.kind !== "numeric") throw new Error(id);
-      return authority.value;
-    };
-    // expected deaths: a two-in-three chance that all 600 die
-    expect(value("spead-framing-and-ethical-persuasion-expected-deaths-d")).toBeCloseTo(
-      (2 / 3) * 600,
-    );
-    // 5 in 1,000 falls to 3 in 1,000, in percentage points
-    expect(value("spead-numbers-in-argument-final-points")).toBeCloseTo(
-      (5 / 1000 - 3 / 1000) * 100,
-    );
-    // 50 votes from 400 staff
-    expect(value("spead-numbers-in-argument-poll-share")).toBeCloseTo((50 / 400) * 100);
-    // 10 in 1,000 falls to 7 in 1,000, relative to the start
-    expect(value("spead-numbers-in-argument-risk-halved")).toBeCloseTo(((10 - 7) / 10) * 100);
-    // 2 minutes 30 seconds at 150 words a minute
-    expect(value("spead-structure-of-a-spoken-answer-final-words")).toBeCloseTo(2.5 * 150);
-    // 2 minutes less two 15-second ends, shared by three points
-    expect(value("spead-structure-of-a-spoken-answer-seconds-per-point")).toBeCloseTo(
-      (120 - 30) / 3,
-    );
-    // 520 words in 4 minutes
-    expect(value("spead-voice-pace-and-nerves-final-pace")).toBeCloseTo(520 / 4);
+  it("recomputes the figures behind the judgement questions that replaced the sums", () => {
+    // expected deaths: a two-in-three chance that all 600 die matches 400 for certain
+    expect((2 / 3) * 600).toBeCloseTo(400);
+    // 5 in 1,000 falls to 3 in 1,000: 0.2 percentage points, and 2 of the starting 5
+    expect((5 / 1000 - 3 / 1000) * 100).toBeCloseTo(0.2);
+    expect((5 - 3) / 5).toBeCloseTo(0.4);
+    // 50 votes from 400 staff, one in eight, and 40 of the 50 voters said yes
+    expect(50 / 400).toBeCloseTo(1 / 8);
+    expect(40 / 50).toBeCloseTo(0.8);
+    // 10 in 1,000 falls to 7 in 1,000: 3 of the starting 10, 0.3 percent of everyone
+    expect((10 - 7) / 10).toBeCloseTo(0.3);
+    expect(((10 - 7) / 1000) * 100).toBeCloseTo(0.3);
+    // 2 minutes less two 15-second ends, shared by three points: a quarter of the time each
+    expect((120 - 30) / 3 / 120).toBeCloseTo(1 / 4);
+    expect(120 / 3).toBeCloseTo(40);
+    expect(120 / 5).toBeCloseTo(24);
+    // 30 extra seconds at 150 words a minute, and the whole 2 minutes 30 seconds
+    expect((30 / 60) * 150).toBeCloseTo(75);
+    expect(2.5 * 150).toBeCloseTo(375);
+    expect(150 / 60).toBeCloseTo(2.5);
+    // 520 words in 4 minutes, inside the guide of 120 to 160, nearer the slow end
+    expect(520 / 4).toBeCloseTo(130);
+    expect(130 - 120).toBeLessThan(160 - 130);
     // 50,000 x 0.002 against 80 x 0.9
-    expect(value("spead-case-building-and-weighing-final-compare")).toBeCloseTo(
-      50000 * 0.002 - 80 * 0.9,
-    );
+    expect(50000 * 0.002).toBeCloseTo(100);
+    expect(80 * 0.9).toBeCloseTo(72);
+    expect(50000 * 0.002).toBeGreaterThan(80 * 0.9);
   });
 
   it("recomputes the figures that the multiple-choice questions quote", () => {
