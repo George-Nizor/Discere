@@ -84,49 +84,8 @@ describe("questions in AI Agents", () => {
 
   it("recomputes every numeric answer from the numbers in its prompt or its worked example", () => {
     const checks: Record<string, (text: string) => number> = {
-      // A refund workflow of three calls at $0.01, for 1,000 requests.
-      "workflows-and-agents-month-cost": () => 1000 * 3 * 0.01,
-      // 6% of 2,000 requests go to the agent at $0.12; the rest take the workflow at $0.03.
-      "workflows-and-agents-daily-cost": () => 120 * 0.12 + 1880 * 0.03,
-      "the-agent-loop-twenty-steps-result": () => 0.98 ** 20,
-      // Step 1 reads 1,000 tokens, each later step 400 more, for 8 steps.
-      "the-agent-loop-budget-ceiling": () =>
-        Array.from({ length: 8 }, (_, i) => 1000 + 400 * i).reduce((s, x) => s + x, 0),
       // Keys a, a, b, a, b.
       "tools-and-schemas-count-refunds": () => new Set(["a", "a", "b", "a", "b"]).size,
-      "memory-and-context-room-left": (t) => {
-        const [window, share, used] = numbers(t) as [number, number, number];
-        return (window * share) / 100 - used;
-      },
-      "memory-and-context-another-over-v2": () => 90000 + 8000,
-      // Two steps of an eight-step plan use the model: 1 plan + 2, then 1 new plan + 2, and 2 more.
-      "planning-patterns-calls-with-replan": () => 1 + 2 + 1 + 2,
-      "composed-workflows-majority-70": () => 3 * 0.7 ** 2 * 0.3 + 0.7 ** 3,
-      "composed-workflows-majority-60-v2": () => 3 * 0.6 ** 2 * 0.4,
-      "multi-agent-systems-cost-ratio": (t) => {
-        const [multi, single] = numbers(t) as [number, number];
-        return multi / single;
-      },
-      // The figure caps small refunds at $20 and 50 a day; the faded example at $15 and 30.
-      "permissions-and-governed-actions-exposure": () => 20 * 50,
-      "permissions-and-governed-actions-exposure-2": () => 30 * 15,
-      "prompt-injection-and-agents-one-gets-through": () => 1 - 0.99 ** 100,
-      "observability-and-traces-p95-twenty": (t) => {
-        const values = numbers(t.split(/ are /u).pop()?.split("What")[0] ?? "");
-        return values[Math.ceil(0.95 * values.length) - 1] as number;
-      },
-      "observability-and-traces-small-p95": () =>
-        [1.0, 1.1, 1.2, 1.4, 1.5, 1.7, 2.2, 6.0][Math.ceil(0.95 * 8) - 1] as number,
-      "observability-and-traces-cost-success": (t) => {
-        const [, total, successes] = numbers(t) as [number, number, number];
-        return total / successes;
-      },
-      "evaluating-agents-pass-hat-4": () => 0.6 ** 4,
-      "evaluating-agents-gate-cost": () => 30 * 5 * 0.12,
-      "evaluating-agents-pass-at-3-seventy-v2": () => 0.3 ** 3,
-      // 1% of 1,200 reads, 4% of 250 small writes and all 50 costly writes.
-      "human-oversight-and-rollout-daily-reviews": () => 0.01 * 1200 + 0.04 * 250 + 50,
-      "human-oversight-and-rollout-daily-reviews-2-v2": () => 0.05 * 180,
     };
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
     expect(numeric.map((question) => question.id.replace("aia-", "")).sort()).toEqual(
@@ -141,6 +100,77 @@ describe("questions in AI Agents", () => {
         Math.max(authority.absoluteTolerance, 1e-6),
       );
     }
+  });
+
+  it("recomputes the figures behind the questions that ask for a judgement and not a number", () => {
+    // A refund workflow of three calls at $0.01, for 1,000 requests: $30 a month.
+    near(1000 * 3 * 0.01, 30, 10);
+    // 6% of 2,000 requests go to the agent at $0.12; the rest take the workflow at $0.03.
+    const mixed = 120 * 0.12 + 1880 * 0.03;
+    near(mixed, 70.8, 10);
+    near(mixed / (2000 * 0.03), 1.18, 2);
+    // Twenty steps at 98%.
+    near(0.98 ** 20, 0.668, 3);
+    near(0.98 ** 10, 0.817, 3);
+    // Eight steps from 1,000 tokens, 400 more each: 19,200 against a flat 8,000.
+    const inputs = Array.from({ length: 8 }, (_, i) => 1000 + 400 * i);
+    expect(inputs.reduce((s, x) => s + x, 0)).toBe(19200);
+    expect(inputs[7]).toBe(3800);
+    near(19200 / 8000, 2.4, 10);
+    // Compaction at 75% of 200,000 with 120,000 in use leaves 30,000; at 75% of 128,000 the
+    // trigger is 96,000 and 90,000 plus 8,000 is past it.
+    expect(200000 * 0.75 - 120000).toBe(30000);
+    expect(120000 + 45000).toBeGreaterThan(150000);
+    expect(120000 + 20000).toBeLessThan(150000);
+    expect(128000 * 0.75).toBe(96000);
+    expect(90000 + 8000).toBeGreaterThan(96000);
+    // Two steps of an eight-step plan use the model: 1 plan + 2, then 1 new plan + 2 more.
+    expect(1 + 2 + 1 + 2).toBe(6);
+    expect(8 - 3).toBe(5);
+    expect(8 - 6).toBe(2);
+    // A majority of three voters at 70% and at 60%.
+    near(3 * 0.7 ** 2 * 0.3 + 0.7 ** 3, 0.784, 10);
+    near(3 * 0.6 ** 2 * 0.4, 0.432, 10);
+    near(0.6 ** 3, 0.216, 10);
+    near((3 * 0.6 ** 2 * 0.4) / 0.6 ** 3, 2, 10);
+    // The multi-agent run against a single agent.
+    near(100 / 35, 2.857, 3);
+    // Small refunds capped at $20 and 50 a day, then at $15 and 30.
+    expect(20 * 50).toBe(1000);
+    expect(30 * 15).toBe(450);
+    near((30 * 15) / (20 * 50), 0.45, 10);
+    // One hundred attempts against a filter that catches 99%.
+    near(1 - 0.99 ** 100, 0.634, 3);
+    // Nearest-rank p95 of twenty and of eight runs.
+    const twenty = [
+      1.1, 1.2, 1.2, 1.3, 1.4, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.4, 2.6, 2.9, 3.4, 4.8,
+      9.5,
+    ];
+    expect(twenty[Math.ceil(0.95 * twenty.length) - 1]).toBe(4.8);
+    const mean = twenty.reduce((s, x) => s + x, 0) / twenty.length;
+    expect(mean).toBeGreaterThan(2.3);
+    expect(mean).toBeLessThan(2.45);
+    const eight = [1.0, 1.1, 1.2, 1.4, 1.5, 1.7, 2.2, 6.0];
+    expect(eight[Math.ceil(0.95 * eight.length) - 1]).toBe(6.0);
+    expect(eight[Math.ceil(0.5 * eight.length) - 1]).toBe(1.4);
+    near(eight.reduce((s, x) => s + x, 0) / eight.length, 2.0, 1);
+    // 150 runs cost $27 and 90 succeed: $0.18 a run, $0.30 a success, two thirds more.
+    near(27 / 150, 0.18, 10);
+    near(27 / 90, 0.3, 10);
+    near(150 / 90, 1.667, 3);
+    near(27 / 60, 0.45, 10);
+    // pass^4 and pass@4 at 0.6, all three failing at 0.7, and the gate's bill.
+    near(0.6 ** 4, 0.1296, 10);
+    near(0.6 ** 2, 0.36, 10);
+    near(1 - 0.4 ** 4, 0.9744, 10);
+    near(0.3 ** 3, 0.027, 10);
+    near(0.7 ** 3, 0.343, 10);
+    near(30 * 5 * 0.12, 18, 10);
+    near(60 * 10 * 0.12, 72, 10);
+    // Daily reviews: 1% of 1,200, 4% of 250 and 50 approved; then 2% of 800, 5% of 180 and 20.
+    near(0.01 * 1200 + 0.04 * 250 + 50, 72, 10);
+    near(0.02 * 800 + 0.05 * 180 + 20, 45, 10);
+    near(0.05 * 180, 9, 10);
   });
 
   it("recomputes the figures that the judgement questions quote", () => {
