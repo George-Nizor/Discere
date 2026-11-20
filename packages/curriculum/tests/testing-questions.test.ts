@@ -14,7 +14,9 @@ import { describe, expect, it } from "vitest";
  * report, a flaky run, a mock that hides the code under test, a level chosen for a stated risk.
  * Every snippet and report quoted in a question was run with Python 3.12, pytest 9, coverage.py 7 and
  * Hypothesis 6, and the numbers below are recomputed here. Numeric questions stay only where the
- * number is the point (the worked examples and a few measures).
+ * number is the point (the worked examples and a few measures). The questions about the time to test
+ * every input, a mutation score, a flaky run, a percentile and a risk ranking ask for a judgement from
+ * options, and the figure behind each right answer is recomputed below.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -216,16 +218,28 @@ describe("questions in Software Testing and Quality", () => {
       if (authority.kind !== "numeric") throw new Error(`${id} is not numeric`);
       return authority.value;
     };
+    const rightLabel = (id: string) => {
+      const question = questions.get(id) as Question;
+      const authority = question.answerAuthority;
+      if (authority.kind !== "text") throw new Error(`${id} is not a text question`);
+      return authority.exampleAnswer;
+    };
     const times = [
       12, 13, 13, 14, 15, 15, 16, 17, 18, 19, 21, 22, 24, 26, 29, 33, 41, 58, 120, 450,
     ];
     const nearestRank = (values: number[], p: number) =>
       [...values].sort((a, b) => a - b)[Math.ceil(p * values.length) - 1] as number;
     const mean = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
-    expect(answer("softq-performance-and-non-functional-p90")).toBe(nearestRank(times, 0.8));
-    expect(answer("softq-performance-and-non-functional-p90-ten")).toBe(
-      nearestRank([100, 110, 120, 130, 140, 150, 160, 170, 180, 900], 0.9),
-    );
+    // the 80th percentile of the twenty times is the 16th value, 33 ms, below the mean of 48.8 ms
+    expect(nearestRank(times, 0.8)).toBe(33);
+    expect(nearestRank(times, 0.8)).toBeLessThan(mean(times));
+    expect(rightLabel("softq-performance-and-non-functional-p90")).toMatch(/^Below the mean/u);
+    // the 90th percentile of ten times is the ninth value, 180 ms, and the 900 sits at rank 10
+    const ten = [100, 110, 120, 130, 140, 150, 160, 170, 180, 900];
+    expect(nearestRank(ten, 0.9)).toBe(180);
+    expect(nearestRank(ten, 0.91)).toBe(900);
+    expect(mean(ten)).toBe(216);
+    expect(rightLabel("softq-performance-and-non-functional-p90-ten")).toMatch(/^No, /u);
     // the mean rises by 200 ms when the slowest request takes 4,450 ms, and the median stays put
     const slower = [...times.slice(0, -1), 4450];
     expect(mean(slower) - mean(times)).toBeCloseTo(200, 9);
@@ -245,13 +259,26 @@ describe("questions in Software Testing and Quality", () => {
     expect(120 * 0.5).toBe(60);
     // flaky runs
     const red = (n: number, p: number) => 100 * (1 - (1 - p) ** n);
-    expect(red(40, 0.01)).toBeCloseTo(answer("softq-levels-and-the-pyramid-flake-50"), 1);
+    // 40 tests at 1% each: a third of runs fail falsely, two thirds pass, and adding gives 40%
+    expect(red(40, 0.01)).toBeCloseTo(33.1, 1);
+    expect(100 - red(40, 0.01)).toBeCloseTo(66.9, 1);
+    expect(red(50, 0.01)).toBeCloseTo(39.5, 1);
+    expect(rightLabel("softq-levels-and-the-pyramid-flake-50")).toBe("About one run in three");
     expect(red(200, 0.005)).toBeCloseTo(63.3, 1);
     expect((1 - 0.005) ** 200).toBeCloseTo(0.367, 3);
     // input pairs and the time to try them all
-    expect(answer("softq-what-a-test-shows-years")).toBe(
-      Math.round(2 ** 64 / 1e9 / (365.25 * 86400)),
-    );
+    const years = 2 ** 64 / 1e9 / (365.25 * 86400);
+    expect(Math.round(years)).toBe(585);
+    expect(rightLabel("softq-what-a-test-shows-years")).toBe("Several centuries");
+    // one argument's 2^32 values take about four seconds, and a day holds about 10^14 tests
+    expect(2 ** 32 / 1e9).toBeCloseTo(4.29, 2);
+    expect((1e9 * 86400) / 1e14).toBeCloseTo(0.864, 3);
+    expect(2 ** 64 / (1e9 * 86400)).toBeGreaterThan(200000);
+    // each ranked area of the risk question: likelihood times impact
+    const scores = { payments: 2 * 5, login: 3 * 4, search: 4 * 2, theme: 4 * 1 };
+    expect(Object.entries(scores).sort((x, y) => y[1] - x[1])[0]?.[0]).toBe("login");
+    expect(scores).toEqual({ payments: 10, login: 12, search: 8, theme: 4 });
+    expect(rightLabel("softq-quality-measures-and-process-risk-top")).toMatch(/^Login, /u);
     // defect detection and change failure
     expect((45 / 50) * 100).toBe(90);
     expect((30 / 50) * 100).toBe(60);
@@ -261,7 +288,10 @@ describe("questions in Software Testing and Quality", () => {
     // the shipping bands, the delivery edge and the 37.5 that the specification would give
     expect(10 * 3 * 1.25).toBe(37.5);
     expect(answer("softq-choosing-inputs-three-value-ages")).toBe(6);
-    expect(answer("softq-coverage-and-mutation-mutation-score")).toBe(75);
+    // six of eight mutants killed: a score of 75%, and a quarter of the planted faults survive
+    expect((6 / 8) * 100).toBe(75);
+    expect(2 / 8).toBe(0.25);
+    expect(rightLabel("softq-coverage-and-mutation-mutation-score")).toMatch(/^About a quarter/u);
     expect(answer("softq-tdd-and-refactoring-buggy-total")).toBe(
       Math.floor((Math.floor((200 * 50) / 100) * 50) / 100),
     );
