@@ -70,10 +70,11 @@ describe("questions in History", () => {
     );
   });
 
-  it("ends each lesson with three questions, of at least two types unless a sum became a choice", () => {
-    // This lesson used to end on one sum and two choices. The sum is now a choice as well, so the
-    // lesson ends on three choices.
-    const threeChoices = new Set(["counting-the-past"]);
+  it("ends each lesson with three questions, of at least two types unless a typed question became a choice", () => {
+    // Two lessons end on three choices. In counting-the-past a sum became a choice. In
+    // what-it-meant-then-and-since a question that asked for the lesson's own word "afterlife" became a
+    // choice about how to treat a later reading of the charter.
+    const threeChoices = new Set(["counting-the-past", "what-it-meant-then-and-since"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
