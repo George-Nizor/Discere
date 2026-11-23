@@ -62,6 +62,8 @@ function firstDiagnosticLine(diagnostics: string | undefined): string | undefine
  * to a status the interface can explain to the learner.
  */
 export function tutorProviderHttpError(error: TutorProviderError): HttpError {
+  // A withheld reply names the rules it broke, so the log says why without a rerun.
+  const broken = [...new Set(error.violations.map((violation) => violation.ruleId))].join(", ");
   const detail = firstDiagnosticLine(error.diagnostics);
   const options = (code: string) => ({ code, ...(detail === undefined ? {} : { detail }) });
   switch (error.code) {
@@ -70,8 +72,22 @@ export function tutorProviderHttpError(error: TutorProviderError): HttpError {
     case "PROVIDER_SPAWN_FAILED":
     case "PROVIDER_UNAVAILABLE":
       return new HttpError(503, error.message, options("TUTOR_PROVIDER_UNAVAILABLE"));
+    // Not 502: behind Cloudflare a 502 from the engine is replaced by Cloudflare's own error page,
+    // and the interface then reads it as the engine being down. A reply the engine withheld, or
+    // a provider that failed, is the engine working and reporting, so it uses a status that
+    // passes through untouched.
     case "PROVIDER_WRITING_GATE":
-      return new HttpError(502, error.message, options("TUTOR_WRITING_GATE"));
+      // The answer check is the commonest gate with a small model, which tends to solve the
+      // question it was asked to hint at. The learner gets a plain reason; the rule goes to the log.
+      if (error.violations.some((violation) => violation.ruleId.startsWith("ANS")))
+        return new HttpError(422, "The tutor's reply gave the answer away, so it was held back.", {
+          code: "TUTOR_ANSWER_WITHHELD",
+          ...(broken ? { logDetail: `Broke: ${broken}` } : {}),
+        });
+      return new HttpError(422, error.message, {
+        code: "TUTOR_WRITING_GATE",
+        ...(broken ? { logDetail: `Broke: ${broken}` } : {}),
+      });
     case "PROVIDER_ABORTED":
       return new HttpError(499, error.message, options("TUTOR_PROVIDER_ABORTED"));
     // A bad session identifier is a fault in the request, not in the provider.
@@ -81,6 +97,6 @@ export function tutorProviderHttpError(error: TutorProviderError): HttpError {
     case "PROVIDER_BUSY":
       return new HttpError(429, error.message, options("TUTOR_PROVIDER_BUSY"));
     default:
-      return new HttpError(502, error.message, options("TUTOR_PROVIDER_FAILED"));
+      return new HttpError(500, error.message, options("TUTOR_PROVIDER_FAILED"));
   }
 }

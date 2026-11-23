@@ -169,7 +169,9 @@ export function runMigrations(database: Database.Database): string[] {
     `CREATE TABLE IF NOT EXISTS ${LEDGER_TABLE} (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL);`,
   );
   if (!ledgerRecordsRollbackSafety(database)) {
-    database.exec(`ALTER TABLE ${LEDGER_TABLE} ADD COLUMN rollback_safe INTEGER NOT NULL DEFAULT 0;`);
+    database.exec(
+      `ALTER TABLE ${LEDGER_TABLE} ADD COLUMN rollback_safe INTEGER NOT NULL DEFAULT 0;`,
+    );
   }
   const record = database.prepare(
     `INSERT INTO ${LEDGER_TABLE} (name, applied_at, rollback_safe) VALUES (?, ?, ?)`,

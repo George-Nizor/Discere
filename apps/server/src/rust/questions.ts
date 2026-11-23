@@ -8,11 +8,7 @@ import type { PythonRuntime } from "../python-projects/runtime.js";
 import { type GradedTask, mark, present, runCases } from "./grading.js";
 import { runSqlExample, sqlReady, sqlTask } from "../sql-projects/questions.js";
 import type { SqlRuntime } from "../sql-projects/runtime.js";
-import {
-  runTypeScriptExample,
-  typescriptReady,
-  typescriptTask,
-} from "../typescript/questions.js";
+import { runTypeScriptExample, typescriptReady, typescriptTask } from "../typescript/questions.js";
 import type { TypeScriptRuntime } from "../typescript/runtime.js";
 import type { RustRuntime } from "./runtime.js";
 
@@ -93,7 +89,10 @@ export async function registerCodeQuestionRoutes(
   app.get("/api/typescript-runtime", async () => ({ ready: await typescriptReady(typescript) }));
   app.post("/api/questions/:questionId/run", async (request) => {
     const { questionId } = z.object({ questionId: z.string().min(1) }).parse(request.params);
-    const { code } = z.object({ code: z.string().min(1).max(16000) }).strict().parse(request.body);
+    const { code } = z
+      .object({ code: z.string().min(1).max(16000) })
+      .strict()
+      .parse(request.body);
     const question = content.getQuestion(questionId);
     const written = question ? pythonTask(question) : undefined;
     if (written) {
@@ -118,7 +117,11 @@ export async function registerCodeQuestionRoutes(
     }
     const task = question ? codeTask(question) : undefined;
     if (!task)
-      throw new HttpError(404, "This question is not answered with code.", "CODE_QUESTION_NOT_FOUND");
+      throw new HttpError(
+        404,
+        "This question is not answered with code.",
+        "CODE_QUESTION_NOT_FOUND",
+      );
     const [visible] = await runCases(runtime, task, code, 1);
     return present(task, visible!);
   });

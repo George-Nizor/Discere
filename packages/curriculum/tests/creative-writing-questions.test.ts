@@ -14,9 +14,9 @@ import { describe, expect, it } from "vitest";
  * dialogue or ink script in front of the learner and ask which revision serves it, what is wrong
  * with a count, or which kind of beat it is. The drafts are labelled as invented, except two word
  * for word quotations from public-domain books, Forster's Aspects of the Novel (1927) and
- * Butcher's translation of Aristotle's Poetics. Numbers are kept where the budget forces a
- * decision: how many decisions a tree can hold, how many flags a tester can check, the longest
- * label that survives translation.
+ * Butcher's translation of Aristotle's Poetics. The budget questions (how many decisions a tree can
+ * hold, how many flags a tester can check, the longest label that survives translation) ask for a
+ * rough size or a count from options, and this file recomputes the figure behind each right answer.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -40,11 +40,6 @@ const kind = (question: Question): "numeric" | "choice" | "typed" | "order" | "s
         : "typed";
 const extractsOf = (question: Question | undefined): string[] =>
   (question?.extracts ?? []).map((extract) => extract.text);
-const numericValue = (id: string): number => {
-  const authority = get(id).answerAuthority;
-  if (authority.kind !== "numeric") throw new Error(`${id} is not numeric`);
-  return authority.value;
-};
 const rightChoice = (question: Question) => {
   if (question.answerAuthority.kind !== "text") return undefined;
   const authority = question.answerAuthority;
@@ -167,58 +162,89 @@ describe("questions in Creative and Game Writing", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, of at least two types unless a sum became a choice", () => {
+    // These three lessons used to end on one sum and two choices. The sum is now a choice as well,
+    // so each of them ends on three choices.
+    const threeChoices = new Set([
+      "state-and-conditions",
+      "writing-game-text",
+      "choice-consequence-and-pacing",
+    ]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(get(id)));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (threeChoices.has(lesson.id))
+        expect(types, lesson.id).toEqual(["choice", "choice", "choice"]);
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
-  it("keeps seven numeric questions, each with three hints, where a budget forces the number", () => {
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id).sort()).toEqual([
-      "cregw-branching-structures-bottleneck-13",
+  it("asks for a judgement and not a calculation: no question wants a typed number", () => {
+    expect(bundle.questions.filter((question) => kind(question) === "numeric")).toEqual([]);
+    for (const id of [
       "cregw-branching-structures-most-decisions",
+      "cregw-branching-structures-bottleneck-13",
+      "cregw-writing-game-text-shortest-gap",
+      "cregw-writing-game-text-final-longest-label",
       "cregw-choice-consequence-and-pacing-branch-length",
       "cregw-choice-consequence-and-pacing-final-branches",
       "cregw-state-and-conditions-final-flag-limit",
-      "cregw-writing-game-text-final-longest-label",
-      "cregw-writing-game-text-shortest-gap",
-    ]);
-    expect(numeric.length).toBeLessThanOrEqual(8);
-    for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
+    ]) {
+      const question = get(id);
+      expect(kind(question), id).toBe("choice");
+      expect(question.hints, id).toHaveLength(2);
+      expect(question.choices?.length, id).toBeGreaterThanOrEqual(3);
+    }
   });
 
-  it("recomputes every number the numeric questions state", () => {
-    // 20 endings, two options per decision, no rejoining
-    expect(numericValue("cregw-branching-structures-most-decisions")).toBe(mostDoublings(20));
+  it("recomputes the figure behind each judgement answer", () => {
+    const label = (id: string) => rightChoice(get(id))?.label;
+    // 20 endings, two options per decision, no rejoining: four decisions give 16, a fifth gives 32.
+    expect(mostDoublings(20)).toBe(4);
     expect(2 ** 4).toBe(16);
     expect(2 ** 5).toBe(32);
-    // an opening, four decisions of three options and one rejoining passage each
-    expect(numericValue("cregw-branching-structures-bottleneck-13")).toBe(1 + 4 * (3 + 1));
-    // 40 combinations a day, every flag true or false
-    expect(numericValue("cregw-state-and-conditions-final-flag-limit")).toBe(mostDoublings(40));
-    expect(2 ** 6).toBe(64);
-    // 25 lines, 600 seconds, no repeats
-    expect(numericValue("cregw-writing-game-text-shortest-gap")).toBe((10 * 60) / 25);
+    expect(2 ** 10).toBeGreaterThan(1000);
+    expect(label("cregw-branching-structures-most-decisions")).toBe("Four");
+    // an opening, four decisions of three options and one rejoining passage each, against the tree
+    expect(1 + 4 * (3 + 1)).toBe(17);
+    expect(1 + 3 + 9 + 27 + 81).toBe(121);
+    expect(1 + 3 + 9 + 27).toBe(40);
+    expect(Math.abs(17 - 20)).toBeLessThan(Math.abs(17 - 40));
+    expect(label("cregw-branching-structures-bottleneck-13")).toBe("About 20");
+    // 25 lines, 600 seconds, no repeats: 24 seconds apart, so about 25. A 10-second gap plays 60
+    // times and a 2.5-second gap 240 times.
+    expect((10 * 60) / 25).toBe(24);
+    expect((10 * 60) / 10).toBe(60);
+    expect((10 * 60) / 2.5).toBe(240);
+    expect(label("cregw-writing-game-text-shortest-gap")).toBe("About 25 seconds");
     // a 40-character button and translations 35 percent longer
-    const longest = numericValue("cregw-writing-game-text-final-longest-label");
-    expect(longest).toBe(Math.floor(40 / 1.35));
-    expect(longest * 1.35).toBeLessThanOrEqual(40);
-    expect((longest + 1) * 1.35).toBeGreaterThan(40);
+    const longest = Math.floor(40 / 1.35);
+    expect(longest).toBe(29);
     expect(longest * 1.35).toBeCloseTo(39.15, 9);
     expect(30 * 1.35).toBeCloseTo(40.5, 9);
+    expect(40 * 1.35).toBeCloseTo(54, 9);
     expect(40 - 0.35 * 40).toBe(26);
+    expect(26 * 1.35).toBeCloseTo(35.1, 9);
+    expect(label("cregw-writing-game-text-final-longest-label")).toBe("About 30 characters");
     // a vignette of 800 words with a 200-word opening and three branches
-    expect(numericValue("cregw-choice-consequence-and-pacing-branch-length")).toBe((800 - 200) / 3);
+    expect((800 - 200) / 3).toBe(200);
     expect(800 / 3).toBeCloseTo(266.67, 2);
+    expect(label("cregw-choice-consequence-and-pacing-branch-length")).toBe("About 200 words");
     // a 900-word budget, a 300-word opening, a 100-word rejoin and 150-word branches
-    const branches = numericValue("cregw-choice-consequence-and-pacing-final-branches");
-    expect(branches).toBe(Math.floor((900 - 300 - 100) / 150));
+    const branches = Math.floor((900 - 300 - 100) / 150);
+    expect(branches).toBe(3);
     expect(300 + 100 + branches * 150).toBe(850);
     expect(300 + 100 + (branches + 1) * 150).toBe(1000);
     expect(900 / 150).toBe(6);
+    expect((300 + 100) / 900).toBeGreaterThan(0.4);
+    expect(label("cregw-choice-consequence-and-pacing-final-branches")).toBe("Three branches");
+    // 40 combinations a day, every flag true or false
+    expect(mostDoublings(40)).toBe(5);
+    expect(2 ** 6).toBe(64);
+    expect(2 ** 10).toBe(1024);
+    expect(2 ** 20).toBeGreaterThan(1_000_000);
+    expect(2 ** 40).toBeGreaterThan(1e12);
+    expect(label("cregw-state-and-conditions-final-flag-limit")).toBe("About 5");
   });
 
   it("recomputes the figures that the multiple-choice questions and their feedback quote", () => {

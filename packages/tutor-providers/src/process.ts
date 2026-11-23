@@ -89,17 +89,23 @@ export function runProcess(input: ProcessRunInput): Promise<ProcessRunResult> {
       settled = true;
       cleanup();
       reject(
-        new TutorProviderError("PROVIDER_SPAWN_FAILED", `Discere could not start '${input.binary}'. ${input.missingHint}`, {
-          provider: input.provider,
-          cause: error,
-        }),
+        new TutorProviderError(
+          "PROVIDER_SPAWN_FAILED",
+          `Discere could not start '${input.binary}'. ${input.missingHint}`,
+          {
+            provider: input.provider,
+            cause: error,
+          },
+        ),
       );
     });
     child.on("close", (code, signal) => {
       if (settled) return;
       settled = true;
       cleanup();
-      const diagnostics = `${stderrTail}\n${stdout.slice(-MAX_DIAGNOSTIC_CHARS)}`.trim().slice(-MAX_DIAGNOSTIC_CHARS);
+      const diagnostics = `${stderrTail}\n${stdout.slice(-MAX_DIAGNOSTIC_CHARS)}`
+        .trim()
+        .slice(-MAX_DIAGNOSTIC_CHARS);
       if (aborted)
         return reject(
           new TutorProviderError("PROVIDER_ABORTED", "The generation was cancelled.", {
@@ -117,10 +123,14 @@ export function runProcess(input: ProcessRunInput): Promise<ProcessRunResult> {
         );
       if (code !== 0)
         return reject(
-          new TutorProviderError("PROVIDER_EXITED", `The model exited with ${signal ?? `code ${code ?? "unknown"}`}.`, {
-            provider: input.provider,
-            diagnostics,
-          }),
+          new TutorProviderError(
+            "PROVIDER_EXITED",
+            `The model exited with ${signal ?? `code ${code ?? "unknown"}`}.`,
+            {
+              provider: input.provider,
+              diagnostics,
+            },
+          ),
         );
       resolve({ stdout, diagnostics });
     });

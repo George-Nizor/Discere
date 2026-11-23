@@ -45,3 +45,4 @@ export * from "./linear-algebra-diagram.js";
 export * from "./inference-diagram.js";
 export * from "./code-runtimes.js";
 export * from "./svg-figure.js";
+export * from "./speech.js";

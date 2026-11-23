@@ -713,7 +713,7 @@
           "visualStateId": "",
           "checkQuestionId": "",
           "activityId": "",
-          "headline": "Find the Content-Length for the body {\"name\":\"Zoë\",\"qty\":2}.",
+          "headline": "Judge how the Content-Length of the body {\"name\":\"Zoë\",\"qty\":2} compares with its character count.",
           "workedSteps": [
             {
               "text": "Count the characters: the body has 22.",
@@ -863,7 +863,7 @@
             "initialCaseId": "request"
           }
         },
-        "promise": "By the end you'll be able to read a raw HTTP request and response, split a request line into its parts, and work out the Content-Length of a body.",
+        "promise": "By the end you'll be able to read a raw HTTP request and response, split a request line into its parts, and say what the Content-Length of a body counts.",
         "estimatedMinutes": 13,
         "whyItMatters": "Every later idea in the course is a rule about some part of these two messages."
       },
@@ -1917,7 +1917,7 @@
         "blocks": [
           {
             "kind": "paragraph",
-            "text": "You calculated freshness as the lifetime minus the age, counted the contacts with the origin for a series of requests, and saw that a 304 renews a stale copy without resending the body. no-cache stores and revalidates, whereas no-store forbids keeping the response."
+            "text": "You estimated the freshness left as the lifetime minus the age, counted the contacts with the origin for a series of requests, and saw that a 304 renews a stale copy without resending the body. no-cache stores and revalidates, whereas no-store forbids keeping the response."
           }
         ],
         "nextHook": "The next lesson turns from what the protocol does to what an API exposes, and asks how to choose the things that URLs name."
@@ -3468,7 +3468,7 @@
               "text": "The third request carries p again, and the fourth carries r."
             },
             {
-              "text": "The total charged is the sum of what the server acted on.",
+              "text": "Judge which request the server leaves uncharged.",
               "blank": {
                 "questionId": "bacad-errors-and-idempotency-blank-total"
               }
@@ -4889,7 +4889,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to trace a token bucket, say what a server sends when it is empty, and work out retry delays with exponential backoff.",
+        "promise": "By the end you'll be able to trace a token bucket, say what a server sends when it is empty, and judge how exponential backoff stretches retry delays.",
         "estimatedMinutes": 14,
         "whyItMatters": "Shared capacity needs a fair rule, and a failing request needs a polite retry."
       },
@@ -5396,21 +5396,20 @@
         "response",
         "header"
       ],
-      "prompt": "What `Content-Length`, in bytes, does the body `{\"name\":\"Zoë\",\"qty\":2}` need?",
-      "responseType": "numeric",
+      "prompt": "The body `{\"name\":\"Zoë\",\"qty\":2}` has 22 characters, and the ë is the only one that is not plain ASCII. How does the `Content-Length` this body needs compare with its character count?",
+      "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "Count the characters first.",
-        "Find the characters that need more than one byte.",
-        "Add one for each such character."
+        "Does `Content-Length` count characters or bytes?",
+        "How many bytes does a plain ASCII character take in UTF-8, and how many does the ë take?"
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 23,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "There are 22 characters. Only ë takes two bytes, so the body is 22 + 1 = 23 bytes."
+        "kind": "text",
+        "acceptedIdeas": [
+          "23, one more than the character count, since only the ë takes two bytes"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "23, one more than the character count, since only the ë takes two bytes"
       },
       "sourceIds": [
         "rfc9110",
@@ -5418,15 +5417,37 @@
         "mdn-http",
         "py-stdlib"
       ],
-      "onCorrect": "The body has 22 characters, and ë takes two bytes, so the length is 23.",
+      "onCorrect": "The ë takes two bytes and the other 21 characters take one each, so the body is 23 bytes. A receiver told 22 would stop a byte short.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "23, one more than the character count, since only the ë takes two bytes"
+        },
+        {
+          "id": "b",
+          "label": "22, the same as the character count, since the header counts characters"
+        },
+        {
+          "id": "c",
+          "label": "44, double the character count, since every character takes two bytes"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              22
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the character count. ë takes two bytes in UTF-8, so the byte count is higher."
+          "feedback": "`Content-Length` counts bytes, and a letter outside ASCII takes more than one. The ë takes two, so the byte count runs above the character count."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "Only characters outside ASCII take more than one byte in UTF-8. Here that is the ë alone, so the byte count is a little above the character count and nowhere near double it."
         }
       ],
       "skill": "compute-content-length",
@@ -5759,35 +5780,56 @@
         "idempotent-method",
         "retry-rule"
       ],
-      "prompt": "The counter held 10, and both copies of the `POST` that adds 3 arrived. What does the counter hold afterwards?",
-      "responseType": "numeric",
+      "prompt": "The counter held 10. A client sent a `POST` that adds 3, got no reply, and sent it again, and both copies arrived. How does the counter compare with what a single copy would have left?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Each POST adds 3.",
-        "The first arrival takes the counter to 13.",
-        "The second arrival adds 3 to that."
+        "Does the request say what the counter should end at, or what to do to it?",
+        "What would the server need in order to tell the second copy from a new request?"
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 16,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "10 + 3 + 3 = 16."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Higher, since the server carries out both copies and each one adds 3"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Higher, since the server carries out both copies and each one adds 3"
       },
       "sourceIds": [
         "rfc9110",
         "mdn-http"
       ],
-      "onCorrect": "Both requests were processed, so the counter holds 16, where a single request gives 13.",
+      "onCorrect": "Both copies are carried out and each adds 3, so the counter ends at 16 where one copy would leave 13. A `POST` is not idempotent.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The same, since the server ignores a copy it has already seen"
+        },
+        {
+          "id": "b",
+          "label": "The same, since the second copy sets the value the first one set"
+        },
+        {
+          "id": "c",
+          "label": "Higher, since the server carries out both copies and each one adds 3"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              13
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the result if only one request arrived. Here both did, and each added 3."
+          "feedback": "A plain `POST` carries nothing that lets the server recognise a repeat, so the server carries out every copy that arrives."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "That describes `PUT`, which names the value the counter should end at. This `POST` says to add 3, so a second copy adds 3 again."
         }
       ],
       "skill": "decide-retry",
@@ -7014,44 +7056,57 @@
         "validator",
         "revalidation"
       ],
-      "prompt": "A response with `Cache-Control: max-age=90` was fetched at t = 0 seconds. A request arrives at t = 25 seconds. How many seconds of freshness remain?",
-      "responseType": "numeric",
+      "prompt": "A response with `Cache-Control: max-age=90` was fetched at t = 0 seconds. A request for it arrives at t = 25 seconds. Roughly how much longer will the cached copy stay fresh?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Work out the age of the copy at the time of the request.",
-        "Freshness lasts for the lifetime from the fetch.",
-        "Subtract the age from the lifetime."
+        "How old is the copy at t = 25 seconds?",
+        "The copy stays fresh until its age reaches the lifetime. How far is 25 seconds from that?"
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 65,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "90 - 25 = 65 seconds."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About a minute"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About a minute"
       },
       "sourceIds": [
         "rfc9111",
         "rfc9110",
         "mdn-http"
       ],
-      "onCorrect": "Remaining freshness is the lifetime minus the age.",
+      "onCorrect": "The copy stays fresh until its age reaches 90 seconds. It is 25 seconds old now, so about 65 seconds remain, which is roughly a minute.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 25 seconds"
+        },
+        {
+          "id": "b",
+          "label": "About a minute"
+        },
+        {
+          "id": "c",
+          "label": "About two minutes"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              25
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the age of the copy. The remaining freshness is what is left of the 90 seconds."
+          "feedback": "That is how old the copy is, which is the part of its lifetime already used. What remains is the lifetime less that age."
         },
         {
           "match": {
-            "numeric": [
-              115
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The age is subtracted from the lifetime, and not added to it."
+          "feedback": "That adds the age to the lifetime. The copy has already used 25 of its 90 seconds, so less than the full 90 seconds remain."
         }
       ],
       "skill": "compute-freshness",
@@ -8274,44 +8329,57 @@
         "keyset-paging",
         "cursor"
       ],
-      "prompt": "A collection holds 90 orders and a client asks for 25 at a time. How many pages are there?",
-      "responseType": "numeric",
+      "prompt": "A collection holds 90 orders and a client asks for 25 at a time. How many pages of orders are there?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Divide the number of orders by the page size.",
-        "The division does not come out even.",
-        "A partly filled last page still counts as a page."
+        "How many full pages of 25 can you make from 90 orders, and what becomes of the rest?",
+        "Think about the request that fetches the orders left after the full pages."
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 4,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "90 / 25 = 3.6, which rounds up to 4 pages, the last holding 15."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Four, since a partly filled last page is still a page"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Four, since a partly filled last page is still a page"
       },
       "sourceIds": [
         "rfc9110",
         "owasp-api",
         "mdn-http"
       ],
-      "onCorrect": "The page count is the number of items divided by the page size, rounded up, since a partial page is still a page.",
+      "onCorrect": "Three full pages hold 75 orders, and the last 15 still need a page of their own. The page count is the item count divided by the page size, rounded up.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Four, since a partly filled last page is still a page"
+        },
+        {
+          "id": "b",
+          "label": "Three, since 25 goes into 90 three times"
+        },
+        {
+          "id": "c",
+          "label": "Five, since the client reads on until a page comes back empty"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              3
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "3 pages of 25 hold only 75 orders. The last 15 need a page of their own."
+          "feedback": "That drops the last 15 orders. Three full pages hold 75, and the orders left over still have to be served on a page of their own."
         },
         {
           "match": {
-            "numeric": [
-              3.6
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A page cannot be partly served, so the quotient is rounded up."
+          "feedback": "That counts the request that finds nothing. Orders fill only the first four pages, so a fifth request returns an empty list and is not a page of orders."
         }
       ],
       "skill": "compute-pages",
@@ -8937,44 +9005,69 @@
         "bacad-idempotency-key",
         "exactly-once-effect"
       ],
-      "prompt": "The server receives (p, 25), (q, 5), (p, 25), (r, 10) in order, and charges only the first sight of a key. How much is charged in total?",
-      "responseType": "numeric",
+      "prompt": "A server receives these requests in order, each written as (key, amount): `(p, 25)`, `(q, 5)`, `(p, 25)`, `(r, 10)`. It charges the amount only the first time it sees a key. Which request is not charged?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "p is seen first, and its repeat is ignored.",
-        "q and r are new keys.",
-        "Add 25, 5 and 10."
+        "Which key appears more than once, and which of its two requests does the server see first?",
+        "What does the server do when it meets a key it has already stored a result for?"
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 40,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "p 25, q 5 and r 10: 25 + 5 + 10 = 40."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Only the second `(p, 25)`, since its key has already been seen"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Only the second `(p, 25)`, since its key has already been seen"
       },
       "sourceIds": [
         "rfc9457",
         "rfc9110",
         "mdn-http"
       ],
-      "onCorrect": "Each key is charged once, however often it arrives.",
+      "onCorrect": "The second `(p, 25)` repeats a key already seen, so it is skipped. The charges are 25, 5 and 10, a total of 40 where adding all four requests would give 65.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Both copies of `(p, 25)`, since a repeated key is refused"
+        },
+        {
+          "id": "b",
+          "label": "The `(r, 10)`, since it follows a repeated request"
+        },
+        {
+          "id": "c",
+          "label": "None of them, since every request carries an amount to charge"
+        },
+        {
+          "id": "d",
+          "label": "Only the second `(p, 25)`, since its key has already been seen"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              65
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That counts the repeat of p as well. A repeat of a key is ignored."
+          "feedback": "A repeated key does not cancel the first request. The first sight of the key acts and is charged, and only the later copies are skipped."
         },
         {
           "match": {
-            "numeric": [
-              30
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "The request for r is charged too."
+          "feedback": "Each new key acts the first time it arrives, whatever came before it, so `r` is charged."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "c"
+            ]
+          },
+          "feedback": "The server charges once for each distinct key, so the repeat of `p` is skipped even though it carries an amount."
         }
       ],
       "skill": "dedupe-with-a-key",
@@ -10583,44 +10676,69 @@
         "retry-after",
         "backoff"
       ],
-      "prompt": "A client waits 150 ms before the first retry, and doubles the wait each time, with no cap. How many milliseconds does it wait before the fifth retry?",
-      "responseType": "numeric",
+      "prompt": "A client waits 150 ms before the first retry, and doubles the wait each time, with no cap. About how long does it wait before the fifth retry?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The waits are 150, then doubled each time.",
-        "The fifth wait has been doubled four times.",
-        "150 times 2 to the fourth."
+        "Does the wait grow by the same amount each time, or by the same factor?",
+        "How many times has the wait doubled by the fifth retry, if the first retry uses the base wait?"
       ],
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 2400,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "150, 300, 600, 1200, 2400: the fifth wait is 2400 ms."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 2.4 seconds"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 2.4 seconds"
       },
       "sourceIds": [
         "rfc6585",
         "rfc9110",
         "owasp-api"
       ],
-      "onCorrect": "The nth wait is the base multiplied by 2 to the power n - 1.",
+      "onCorrect": "The waits run 150, 300, 600, 1,200 and 2,400 ms, so the fifth is about 2.4 seconds. Doubling soon outruns adding the same step each time.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 0.75 seconds"
+        },
+        {
+          "id": "b",
+          "label": "About 1.2 seconds"
+        },
+        {
+          "id": "c",
+          "label": "About 2.4 seconds"
+        },
+        {
+          "id": "d",
+          "label": "About 4.8 seconds"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1200
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the fourth wait. The fifth is double it."
+          "feedback": "That adds 150 ms with each retry, which grows in equal steps. The wait doubles instead, so each step is bigger than the one before."
         },
         {
           "match": {
-            "numeric": [
-              4800
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the sixth wait. Count five waits from 150."
+          "feedback": "That is the wait before the fourth retry, after three doublings. The fifth retry follows one more doubling."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That is the wait before the sixth retry. The first retry uses the base wait itself, so the fifth has doubled only four times."
         }
       ],
       "skill": "compute-backoff",
@@ -13926,13 +14044,12 @@
         "retry-after",
         "backoff"
       ],
-      "prompt": "A client retries six times. The first wait is 300 ms, and each wait doubles the one before it, but no wait is longer than 4000 ms. What is the total waiting time in milliseconds?",
-      "responseType": "numeric",
+      "prompt": "A client retries six times. The first wait is 300 ms, each wait doubles the one before it, and no wait is longer than 4000 ms. Which waits make up most of the total waiting time?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Write out the waits one by one, doubling each time.",
-        "A wait that would pass 4000 is held at 4000.",
-        "Add the six waits."
+        "Which waits would doubling push past 4000 ms, and what does the cap make of them?",
+        "Compare the waits below the cap with the ones at it. Which group adds up to more?"
       ],
       "sourceIds": [
         "rfc6585",
@@ -13942,38 +14059,56 @@
       "skill": "compute-backoff",
       "calculator": "off",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 12500,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The waits are 300, 600, 1200, 2400, 4000 and 4000 ms, because doubling would give 4800 and 9600 for the last two and the cap holds each at 4000. They add up to 12500 ms."
+        "kind": "text",
+        "acceptedIdeas": [
+          "The fifth and sixth, since the cap holds each at 4000 ms"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The fifth and sixth, since the cap holds each at 4000 ms"
       },
-      "onCorrect": "The cap limits the fifth and sixth waits to 4000 ms, so the total is smaller than with doubling alone.",
+      "onCorrect": "The waits are 300, 600, 1,200, 2,400, 4,000 and 4,000 ms. The first four add up to 4,500 ms and the two at the cap to 8,000, which is about two thirds of the total.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The first four, since each of them doubles the one before"
+        },
+        {
+          "id": "b",
+          "label": "The fifth and sixth, since the cap holds each at 4000 ms"
+        },
+        {
+          "id": "c",
+          "label": "All six about equally, since the cap evens the waits out"
+        },
+        {
+          "id": "d",
+          "label": "The sixth alone, since each wait is longer than the one before"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              18900
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That uses 4800 and 9600 for the last two waits. The cap holds each at 4000."
+          "feedback": "The first four waits are 300, 600, 1,200 and 2,400 ms, which add up to less than the 8,000 ms of the two waits at the cap."
         },
         {
           "match": {
-            "numeric": [
-              8500
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "That is the total of the first five waits. The sixth adds another 4000."
+          "feedback": "The cap changes only the waits that doubling would push past 4,000 ms. The first four stay short, so the six waits are far from equal."
         },
         {
           "match": {
-            "numeric": [
-              4500
+            "choiceIds": [
+              "d"
             ]
           },
-          "feedback": "That adds only the four waits that stay below the cap. There are two more."
+          "feedback": "The cap holds the sixth wait at 4,000 ms, the same as the fifth, so on its own it is only about a third of the total."
         }
       ]
     },
@@ -14945,21 +15080,14 @@
         "retry-after",
         "backoff"
       ],
-      "front": "Delays start at 100 ms and double. What is the fourth delay in milliseconds?",
-      "back": "800 ms: 100, 200, 400, 800.",
+      "front": "Retry delays start at 100 ms and double each time. Roughly how much longer is the fourth delay than the first, and why?",
+      "back": "About eight times as long, 800 ms, because it has doubled three times: 100, 200, 400, 800. Doubling soon outruns adding the same step each time.",
       "sourceIds": [
         "rfc6585",
         "rfc9110",
         "owasp-api"
       ],
-      "answerAuthority": {
-        "kind": "numeric",
-        "value": 800,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "800 ms: 100, 200, 400, 800."
-      }
+      "recall": "self"
     },
     {
       "id": "bacad-rate-limits-and-retries-card-3",

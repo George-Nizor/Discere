@@ -9,11 +9,13 @@ import {
 import { describe, expect, it } from "vitest";
 
 /**
- * Materials and Manufacturing keeps its calculations where calculating is the skill (Faraday's
- * law, the lever rule, Cpk, the rule of mixtures, the bend allowance) and asks the rest as
- * material to read and decisions to make: which material or process for a stated part, what a
- * fracture surface or a micrograph shows, why a moulded part sticks, which coating protects a
- * scratch. Every figure used in a prompt, an option or a feedback line is recomputed below.
+ * Materials and Manufacturing keeps its calculations where calculating is the skill (the lever
+ * rule, the cutting speed of a bar) and asks the rest as material to read and decisions to make:
+ * which material or process for a stated part, what a fracture surface or a micrograph shows,
+ * why a moulded part sticks, which coating protects a scratch, and, where a formula does apply,
+ * roughly how a result compares (how much stiffer along the fibres, how many times the break-even
+ * volume, which change halves the roughness). Every figure used in a prompt, an option or a
+ * feedback line is recomputed below.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -96,10 +98,20 @@ describe("questions in Materials and Manufacturing", () => {
   });
 
   it("ends each lesson with three questions of at least two types", () => {
+    // These lessons ended with one calculated question, which is now a judgement question like
+    // the other two, so their three checks are all multiple choice.
+    const oneType = new Set([
+      "fracture-and-toughness",
+      "corrosion-and-protection",
+      "forming-and-deformation",
+      "moulding-additive-and-cost",
+      "process-capability",
+      "selecting-material-and-process",
+    ]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(oneType.has(lesson.id) ? 1 : 2);
     }
   });
 
@@ -129,36 +141,6 @@ describe("questions in Materials and Manufacturing", () => {
   });
 
   it("recomputes every numeric answer", () => {
-    // lesson 1
-    expect(numericValue(`${P}properties-from-the-tensile-test-strain-at-105`)).toBeCloseTo(
-      (105 / 210000) * 100,
-      6,
-    );
-    expect(numericValue(`${P}properties-from-the-tensile-test-true-stress-neck`)).toBeCloseTo(
-      28000 / 60,
-      0,
-    );
-    const a0 = (pi * 10 ** 2) / 4;
-    const af = (pi * 8 ** 2) / 4;
-    expect(a0).toBeCloseTo(78.54, 2);
-    expect(af).toBeCloseTo(50.27, 2);
-    expect(numericValue(`${P}properties-from-the-tensile-test-area-blank`)).toBeCloseTo(
-      ((a0 - af) / a0) * 100,
-      6,
-    );
-    // lesson 2
-    expect(numericValue(`${P}bonds-and-material-families-ti-blank`)).toBeCloseTo(116 / 4.5, 1);
-    // lesson 3: s0 = 50 MPa, k = 20 MPa mm^0.5
-    const hp = (d: number) => 50 + 20 / Math.sqrt(d);
-    expect(numericValue(`${P}grains-dislocations-strengthening-hp-try`)).toBeCloseTo(hp(0.04), 6);
-    expect(numericValue(`${P}grains-dislocations-strengthening-hp-blank`)).toBeCloseTo(
-      hp(0.0025),
-      6,
-    );
-    expect(numericValue(`${P}grains-dislocations-strengthening-hp-inverse`)).toBeCloseTo(
-      (20 / (350 - 50)) ** 2,
-      4,
-    );
     // lesson 4
     const pearlite = (c: number) => (c - 0.022) / (0.76 - 0.022);
     expect(numericValue(`${P}steel-and-heat-treatment-lever-blank`)).toBeCloseTo(pearlite(0.6), 3);
@@ -167,106 +149,223 @@ describe("questions in Materials and Manufacturing", () => {
       0.022 + 0.5 * (0.76 - 0.022),
       2,
     );
-    // lesson 5
-    const along = (vf: number, ef: number, em: number) => vf * ef + (1 - vf) * em;
-    const across = (vf: number, ef: number, em: number) => 1 / (vf / ef + (1 - vf) / em);
-    expect(numericValue(`${P}polymers-ceramics-composites-along-try`)).toBeCloseTo(
-      along(0.5, 70, 3),
-      6,
-    );
-    expect(numericValue(`${P}polymers-ceramics-composites-across-transfer`)).toBeCloseTo(
-      across(0.5, 70, 3),
-      2,
-    );
-    expect(numericValue(`${P}polymers-ceramics-composites-across-blank`)).toBeCloseTo(
-      across(0.6, 230, 3),
-      2,
-    );
-    // lesson 6
-    const kk = (stress: number, a: number) => stress * Math.sqrt(pi * a);
-    const crit = (kic: number, stress: number) => (kic / stress) ** 2 / pi;
-    expect(numericValue(`${P}fracture-and-toughness-k-try`)).toBeCloseTo(kk(100, 0.001), 1);
-    expect(numericValue(`${P}fracture-and-toughness-crit-crack-blank`)).toBeCloseTo(
-      crit(50, 200) * 1000,
-      1,
-    );
-    expect(numericValue(`${P}fracture-and-toughness-hs-transfer`)).toBeCloseTo(
-      crit(30, 600) * 1000,
-      1,
-    );
-    expect(numericValue(`${P}fracture-and-toughness-final-stress`)).toBeCloseTo(
-      60 / Math.sqrt(pi * 0.001),
-      -1,
-    );
-    // lesson 7
-    const grams = (current: number, seconds: number, molar: number, n: number) =>
-      (current * seconds * molar) / (n * G);
-    const year = 3.156e7;
-    expect(numericValue(`${P}corrosion-and-protection-zinc-blank`)).toBeCloseTo(
-      grams(0.02, year, 65.38, 2),
-      0,
-    );
-    expect(numericValue(`${P}corrosion-and-protection-time-transfer`)).toBeCloseTo(
-      (10 * 2 * G) / (0.01 * 55.85) / 86400,
-      0,
-    );
-    expect(numericValue(`${P}corrosion-and-protection-anode-life`)).toBeCloseTo(
-      (2000 * 2 * G) / (65.38 * 0.05) / year,
-      1,
-    );
-    // lesson 8
-    const freeze = (side: number) => 2 * (side / 6) ** 2;
-    expect(numericValue(`${P}casting-and-solidification-cast-blank`)).toBeCloseTo(freeze(5), 2);
-    expect(numericValue(`${P}casting-and-solidification-pattern-try`)).toBeCloseTo(490 / 0.98, 6);
-    // lesson 9
-    expect(numericValue(`${P}forming-and-deformation-volume-try`)).toBeCloseTo((50 * 2000) / 20, 6);
-    expect(numericValue(`${P}forming-and-deformation-strain-blank`)).toBeCloseTo(ln(25 / 18), 3);
-    expect(numericValue(`${P}forming-and-deformation-bend-try`)).toBeCloseTo(
-      bend(90, 2, 0.4, 1.5),
-      2,
-    );
-    expect(numericValue(`${P}forming-and-deformation-bend-transfer`)).toBeCloseTo(
-      bend(60, 5, 0.33, 3),
-      2,
-    );
-    expect(numericValue(`${P}forming-and-deformation-schedule`)).toBeCloseTo(ln(20 / 12.8), 3);
-    expect(ln(20 / 16) + ln(16 / 12.8)).toBeCloseTo(ln(20 / 12.8), 12);
     // lesson 10
     const speed = (d: number, n: number) => (pi * d * n) / 1000;
     expect(numericValue(`${P}machining-speed-try`)).toBeCloseTo(speed(30, 1200), 1);
-    expect(numericValue(`${P}machining-power-blank`)).toBeCloseTo(
-      (2.5 * (60000 * 0.1 * 1)) / 60,
-      6,
-    );
-    expect(numericValue(`${P}machining-taylor-try`)).toBeCloseTo(60 * 1.1 ** -4, 0);
-    expect(numericValue(`${P}machining-parts-per-tool`)).toBeCloseTo(0.8 ** -4 / (1 / 0.8), 2);
-    expect(numericValue(`${P}machining-ra-try`)).toBeCloseTo(((0.2 * 0.2) / (32 * 0.8)) * 1000, 2);
     expect(numericValue(`${P}machining-spindle-speed`)).toBeCloseTo((1000 * 120) / (pi * 80), 0);
-    // lesson 11
-    expect(numericValue(`${P}moulding-additive-and-cost-breakeven-blank`)).toBeCloseTo(
-      45000 / (5.8 - 0.8),
-      6,
-    );
-    expect(numericValue(`${P}moulding-additive-and-cost-tooling-transfer`)).toBeCloseTo(
-      40000 / (12 - 1.5),
-      -1,
-    );
-    expect(numericValue(`${P}moulding-additive-and-cost-quote`)).toBe(
-      Math.round(24000 / (8 - 1.2)),
-    );
-    // lesson 12
-    expect(numericValue(`${P}process-capability-cp-try`)).toBeCloseTo(0.06 / (6 * 0.01), 6);
-    expect(numericValue(`${P}process-capability-cpk-blank`)).toBeCloseTo(0.035 / 0.03, 2);
-    expect(numericValue(`${P}process-capability-final-cpk`)).toBeCloseTo(0.02 / 0.03, 2);
-    // lesson 13
-    const index = (e: number, rho: number) => Math.sqrt(e) / rho;
-    expect(numericValue(`${P}selecting-material-and-process-cfrp-blank`)).toBeCloseTo(
-      index(45, 1.74),
-      2,
-    );
-    expect(numericValue(`${P}selecting-material-and-process-titanium-saving`)).toBe(
-      Math.round((1 - index(210, 7.85) / index(116, 4.5)) * 100),
-    );
+    // every other calculation became a judgement, and its figures are recomputed below
+    expect(
+      bundle.questions
+        .filter((question) => kind(question) === "numeric")
+        .map((question) => question.id.replace(P, ""))
+        .sort(),
+    ).toEqual([
+      "machining-speed-try",
+      "machining-spindle-speed",
+      "steel-and-heat-treatment-carbon-for-half",
+      "steel-and-heat-treatment-final-lever",
+      "steel-and-heat-treatment-lever-blank",
+    ]);
+  });
+
+  it("recomputes the figures behind the questions that ask for a judgement and not a number", () => {
+    const near = (a: number, b: number, digits = 6) => expect(a).toBeCloseTo(b, digits);
+    const prompt = (id: string) => (questions.get(`${P}${id}`) as Question).prompt;
+    // lesson 1: a steel bar at 105 MPa strains 0.0005, which is half a millimetre in each metre
+    near((105 / 210000) * 1000, 0.5, 10);
+    near(105 / 210, 0.5, 10);
+    // the 10 mm bar and its 8 mm neck lose a little over a third of the area
+    const a0 = (pi * 10 ** 2) / 4;
+    const af = (pi * 8 ** 2) / 4;
+    expect(a0.toFixed(1)).toBe("78.5");
+    expect(af.toFixed(1)).toBe("50.3");
+    near((a0 - af) / a0, 0.36, 2);
+    near(af / a0, 0.64, 2);
+    expect(prompt("properties-from-the-tensile-test-area-blank")).toContain("50.3 mm2");
+    expect(prompt("properties-from-the-tensile-test-area-blank")).toContain("78.5 mm2");
+    // 28 kN on 80 mm2 and on a 60 mm2 neck: a third more stress
+    near(28000 / 80, 350, 10);
+    near(28000 / 60, 466.7, 1);
+    near(80 / 60, 4 / 3, 10);
+    // lesson 2: titanium sits level with steel and aluminium on E over density
+    near(210 / 7.85, 26.75, 2);
+    near(70 / 2.7, 25.93, 2);
+    near(116 / 4.5, 25.78, 2);
+    near(116 / 210, 0.55, 2);
+    near(4.5 / 7.85, 0.57, 2);
+    expect(prompt("bonds-and-material-families-ti-blank")).toContain("about 27");
+    expect(prompt("bonds-and-material-families-ti-blank")).toContain("about 26");
+    // lesson 3: the grain term at 0.04 mm is twice the constant, and it equals it at 0.16 mm
+    const hp = (d: number) => 50 + 20 / Math.sqrt(d);
+    near(20 / Math.sqrt(0.04), 100, 10);
+    near(hp(0.04), 150, 10);
+    near(20 / Math.sqrt(0.16), 50, 10);
+    near(20 / 0.04, 500, 10);
+    // four times finer grains double the grain term, and 250 MPa becomes 450 MPa
+    near(20 / Math.sqrt(0.0025), 2 * (20 / Math.sqrt(0.01)), 10);
+    near(hp(0.0025), 450, 10);
+    near(hp(0.01), 250, 10);
+    // 350 MPa needs the term to rise from 200 to 300, so d falls by 1.5 squared
+    const dFor350 = (20 / 300) ** 2;
+    near(dFor350, 0.0044, 4);
+    near(0.01 / dFor350, 2.25, 10);
+    near(dFor350 / 0.01, 0.44, 2);
+    near(20 / Math.sqrt(0.001), 632, 0);
+    // lesson 5: along and across the carbon-fibre composite, and the glass one
+    const along = (vf: number, ef: number, em: number) => vf * ef + (1 - vf) * em;
+    const across = (vf: number, ef: number, em: number) => 1 / (vf / ef + (1 - vf) / em);
+    near(along(0.6, 230, 3), 139.2, 6);
+    near(across(0.6, 230, 3), 7.36, 2);
+    near(across(0.6, 230, 3) / 3, 2.45, 2);
+    near(along(0.6, 230, 3) / across(0.6, 230, 3), 18.9, 1);
+    near((230 + 3) / 2, 116.5, 6);
+    near(0.4 / 3, 0.1333, 3);
+    near(along(0.5, 70, 3), 36.5, 6);
+    near((0.5 * 70) / along(0.5, 70, 3), 0.96, 2);
+    near(70 / 3, 23.3, 1);
+    near(across(0.5, 70, 3), 5.75, 2);
+    near(across(0.5, 70, 3) / along(0.5, 70, 3), 0.158, 3);
+    near(1 / (0.5 / 3), 6, 10);
+    // lesson 6: K for a 1 mm crack at 100 MPa is about a ninth of 50, and the slips it invites
+    const kk = (stress: number, a: number) => stress * Math.sqrt(pi * a);
+    near(kk(100, 0.001), 5.6, 1);
+    near(kk(100, 0.001) / 50, 0.112, 3);
+    near(kk(100, 1), 177, 0);
+    near(kk(100, 1) / 50, 3.5, 1);
+    near(Math.sqrt(pi * 0.001) / 50, 0.0011, 4);
+    expect(prompt("fracture-and-toughness-k-try")).toContain("about 50");
+    // the critical crack length at 200 MPa is about 20 mm, and 62.5 mm without the division by pi
+    const critMm = (kic: number, stress: number) => ((kic / stress) ** 2 / pi) * 1000;
+    near(critMm(50, 200), 19.9, 1);
+    near(critMm(50, 400), 5.0, 1);
+    near((50 / 200) ** 2 * 1000, 62.5, 6);
+    // the stronger steel tolerates a sixth of the crack, and the stress alone would give 0.44
+    near(critMm(30, 600), 0.8, 1);
+    near(critMm(30, 600) / critMm(50, 400), 0.16, 2);
+    near((400 / 600) ** 2, 0.444, 3);
+    near(30 / 600 / (50 / 400), 0.4, 10);
+    // a 1 mm crack in a steel with K_IC = 60 runs at about 1,070 MPa
+    near(60 / Math.sqrt(pi * 0.001), 1070, -1);
+    near(60 / Math.sqrt(0.001), 1897, 0);
+    near(60 / Math.sqrt(pi * 1), 33.85, 2);
+    near(60 / (pi * 0.001), 19100, -2);
+    // lesson 7: Faraday's law for iron and zinc, then the time and the anode life
+    const grams = (current: number, seconds: number, molar: number, n: number) =>
+      (current * seconds * molar) / (n * G);
+    const year = 3.156e7;
+    near(grams(0.01, year, 55.85, 2), 91.3, 1);
+    near(grams(0.02, year, 65.38, 2), 213.9, 1);
+    near(grams(0.02, year, 65.38, 2) / grams(0.01, year, 55.85, 2), 2.34, 2);
+    near((10 / 91.3) * 365, 40, 0);
+    near(10 / 91.3, 1 / 9.13, 3);
+    near(91.3 / 10, 9.13, 2);
+    near(grams(0.05, year, 65.38, 2), 534.7, 0);
+    near(2000 / grams(0.05, year, 65.38, 2), 3.74, 2);
+    near(2000 / 214, 9.35, 2);
+    near((2000 / 214) * 2.5, 23.4, 1);
+    near(2000 / 214 / 2.5 ** 2, 1.5, 1);
+    expect(prompt("corrosion-and-protection-time-transfer")).toContain("91 g");
+    expect(prompt("corrosion-and-protection-anode-life")).toContain("214 g");
+    // lesson 8: halving the side of a cube quarters the freezing time
+    const freeze = (side: number) => 2 * (side / 6) ** 2;
+    near(freeze(10), 5.56, 2);
+    near(freeze(5), 1.39, 2);
+    near(freeze(5) / freeze(10), 0.25, 10);
+    near(freeze(10) / freeze(5), 4, 10);
+    // the pattern is 10 mm longer than the casting, and 2 percent of the pattern
+    near(490 / 0.98, 500, 6);
+    near(490 / 0.98 - 490, 10, 6);
+    near(0.02 * 500, 10, 10);
+    // lesson 9: the billet, the two passes, the bend and the schedule
+    near((50 * 2000) / 20, 5000, 10);
+    near((50 * 2000) / 20 / 2000, 2.5, 10);
+    near(20 / 50, 0.4, 10);
+    near(ln(30 / 25), 0.182, 3);
+    near(ln(25 / 18), 0.329, 3);
+    near(ln(25 / 18) / ln(30 / 25), 1.8, 1);
+    near(ln(30 / 25) + ln(25 / 18), ln(30 / 18), 12);
+    near(ln(30 / 18), 0.511, 3);
+    near(30 / 25 - 1, 0.2, 10);
+    near(25 / 18 - 1, 0.389, 3);
+    const inner = (pi / 2) * 2;
+    const outer = (pi / 2) * (2 + 1.5);
+    near(inner, 3.14, 2);
+    near(outer, 5.5, 2);
+    near(bend(90, 2, 0.4, 1.5), 4.08, 2);
+    near((bend(90, 2, 0.4, 1.5) - inner) / (outer - inner), 0.4, 2);
+    near(0.4 * 1.5, 0.6, 10);
+    near(bend(90, 5, 0.33, 3), 9.41, 2);
+    near(bend(60, 5, 0.33, 3), 6.27, 2);
+    near(bend(60, 5, 0.33, 3) / bend(90, 5, 0.33, 3), 2 / 3, 10);
+    near(ln(20 / 16), ln(16 / 12.8), 12);
+    near(ln(20 / 16), 0.223, 3);
+    near(ln(20 / 16) + ln(16 / 12.8), 0.446, 3);
+    near(1 - 0.8 * 0.8, 0.36, 10);
+    // lesson 10: the light cut against the worked example, Taylor's rule and the roughness
+    const removalRate = (v: number, f: number, d: number) => (v * 1000 * f * d) / 60;
+    near(removalRate(150, 0.3, 2.5), 1875, 6);
+    near(3 * removalRate(150, 0.3, 2.5), 5625, 6);
+    near(removalRate(60, 0.1, 1), 100, 6);
+    near(2.5 * removalRate(60, 0.1, 1), 250, 6);
+    near((2.5 * removalRate(60, 0.1, 1)) / (3 * removalRate(150, 0.3, 2.5)), 0.044, 3);
+    near(0.4 * (1 / 3) * 0.4, 0.0533, 4);
+    near(0.4 * (1 / 3), 0.133, 3);
+    near(1.1 ** -4, 0.683, 3);
+    near(60 * 1.1 ** -4, 41, 0);
+    near(1.2 ** -4, 0.482, 3);
+    near(0.9 ** -4, 1.524, 3);
+    near(0.8 ** -4, 2.44, 2);
+    near(2.4 / 1.25, 1.92, 2);
+    near(0.8 ** -4 / 1.25, 1.95, 2);
+    near(2.4 - 1.25, 1.15, 2);
+    near(2.4 * 1.25, 3, 6);
+    const ra = (f: number, r: number) => ((f * f) / (32 * r)) * 1000;
+    near(ra(0.2, 0.8), 1.56, 2);
+    near(ra(0.1, 0.8), 0.39, 2);
+    near(ra(0.2, 1.6), 0.78, 2);
+    near(ra(0.05, 0.8), 0.098, 3);
+    near(ra(0.2, 0.8) / ra(0.1, 0.8), 4, 10);
+    // lesson 11: the break-even volumes, and the quick sum that leaves out the moulded cost
+    near(15000 / (9.9 - 2.4), 2000, 6);
+    near(45000 / (5.8 - 0.8), 9000, 6);
+    near(45000 / 15000, 3, 10);
+    near(7.5 / 5, 1.5, 10);
+    near(9000 / 2000, 4.5, 10);
+    near(20000 / (12 - 1.5), 1905, -1);
+    near(40000 / (12 - 1.5), 3810, -1);
+    near(40000 / (12 - 1.5) / (20000 / (12 - 1.5)), 2, 10);
+    near(24000 / (8 - 1.2), 3529, 0);
+    near(24000 / 8, 3000, 6);
+    near(8 - 1.2, 6.8, 10);
+    // lesson 12: Cp, Cpk and the share of the limits
+    near(0.06 / (6 * 0.01), 1, 10);
+    near(6 * 0.01, 0.06, 10);
+    near(0.03 / 0.01, 3, 10);
+    near(0.06 / (12 * 0.01), 0.5, 10);
+    near(0.1 / (6 * 0.01), 1.67, 2);
+    near((24.985 - 24.95) / 0.01, 3.5, 6);
+    near((25.05 - 24.985) / 0.01, 6.5, 6);
+    near((24.985 - 24.95) / (3 * 0.01), 1.17, 2);
+    expect((24.985 - 24.95) / (3 * 0.01)).toBeLessThan(1.33);
+    near(0.08 / (6 * 0.01), 1.33, 2);
+    near((10.04 - 10.02) / 0.01, 2, 6);
+    near((10.04 - 10.02) / (3 * 0.01), 0.67, 2);
+    near((10.04 - 10.02) / (3 * 0.01) / (0.08 / (6 * 0.01)), 0.5, 10);
+    // lesson 13: magnesium against aluminium, and titanium against steel
+    near(Math.sqrt(70) / 2.7, 3.1, 2);
+    near(Math.sqrt(45) / 1.74, 3.86, 2);
+    near(index(45, 1.74) / index(70, 2.7), 1.245, 2);
+    near(Math.sqrt(45 / 70), 0.8, 2);
+    near(45 / 70, 0.643, 3);
+    near(1.74 / 2.7, 0.644, 3);
+    near(2.7 / 1.74, 1.55, 2);
+    near(45 / 1.74, 25.86, 2);
+    near(index(210, 7.85), 1.85, 2);
+    near(index(116, 4.5), 2.39, 2);
+    near(1.85 / 2.39, 0.774, 3);
+    near(index(210, 7.85) / index(116, 4.5), 0.77, 2);
+    near(1 - index(210, 7.85) / index(116, 4.5), 0.23, 2);
+    near(1 - 4.5 / 7.85, 0.427, 3);
   });
 
   it("recomputes the figures that prompts, options and feedback quote", () => {

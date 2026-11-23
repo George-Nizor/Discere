@@ -6,11 +6,14 @@ export interface HttpErrorOptions {
    * stderr is trimmed to its first line before it lands here; the full text stays in the log.
    */
   detail?: string;
+  /** Written to the server log only, for a cause that means nothing to a learner. */
+  logDetail?: string;
 }
 
 export class HttpError extends Error {
   readonly code: string;
   readonly detail: string | undefined;
+  readonly logDetail: string | undefined;
 
   constructor(
     readonly statusCode: number,
@@ -21,5 +24,6 @@ export class HttpError extends Error {
     const resolved = typeof options === "string" ? { code: options } : options;
     this.code = resolved.code ?? "REQUEST_ERROR";
     this.detail = resolved.detail;
+    this.logDetail = resolved.logDetail;
   }
 }

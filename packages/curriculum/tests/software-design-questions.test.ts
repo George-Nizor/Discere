@@ -12,9 +12,10 @@ import { describe, expect, it } from "vitest";
  * Software Design and Architecture follows the way System Design and Backend and API Design ask questions
  * (docs/question-writing-guide.md). The skill is judgement about structure, so most questions put a short piece
  * of code, a module layout or a decision in front of the learner and ask which principle it breaks, what a
- * change forces, which pattern fits, or what a record should say. A number stays only where computing it is the
- * skill or carries the decision: counting links, the cost of an inheritance tree, a chain's availability, a
- * weighted total, the break-even of a repair.
+ * change forces, which pattern fits, or what a record should say. The figures that carry a decision (links
+ * between modules, the cost of an inheritance tree, a chain's availability, a weighted total, the break-even of a
+ * repair) are in the prompts, and the learner judges which way they move or roughly how large they come out. One
+ * question still asks for a number, because the value of a line of code is the point of it.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -54,33 +55,7 @@ const stretchSquare = () => {
   return side * side;
 };
 const recompute: Record<string, { value: () => number; uses?: number[]; example?: string }> = {
-  "what-architecture-decides-faded-allowance": { value: () => 5000 * (1 - 0.99), uses: [5000, 99] },
-  "coupling-and-cohesion-predict-five": {
-    value: () => pairs(5),
-    example: "Five modules, one link for each pair",
-  },
   "principles-as-heuristics-predict-square": { value: stretchSquare, uses: [5, 2] },
-  "composition-over-inheritance-predict-nine": { value: () => 3 * 3, uses: [3] },
-  "composition-over-inheritance-faded-fourth-v2": { value: () => 4, uses: [4, 3] },
-  "designing-for-testability-try-total": {
-    value: () => 200 * 0.01 + 20 * 0.5 + 5 * 20,
-    uses: [200, 0.01, 20, 0.5, 5],
-  },
-  "monolith-modules-and-microservices-try-ten": { value: () => 0.999 ** 10 * 100, uses: [99.9] },
-  "monolith-modules-and-microservices-faded-downtime": {
-    value: () => (1 - 0.995) * 720,
-    uses: [99.5, 720],
-  },
-  "events-and-messages-transfer-duplicate": { value: () => 50 - 20 + 5 + 5, uses: [50, 20, 5] },
-  "trade-offs-and-decision-records-predict-total": {
-    value: () => 0.5 * 8 + 0.3 * 5 + 0.2 * 6,
-    uses: [8, 5, 6],
-  },
-  "evolving-a-system-try-i": { value: () => 4 / (1 + 4), uses: [1, 4] },
-  "evolving-a-system-faded-months": {
-    value: () => 10 / (1 * 4),
-    example: "10 hours, 1 hour a change, 4 changes a month",
-  },
 };
 
 describe("questions in Software Design and Architecture", () => {
@@ -190,6 +165,63 @@ describe("questions in Software Design and Architecture", () => {
     expect(100 - 30 - 45 + 5).toBe(30);
     // Break-even of a shortcut: 4 changes at 1 hour each is less than a 10-hour repair.
     expect(4 * 1).toBeLessThan(10);
+  });
+
+  it("holds the figures that the judgement questions rest on", () => {
+    // A 99% measure is an allowance that scales with the load: 10 slow orders in 1,000 is 50 in 5,000.
+    expect(1000 * (1 - 0.99)).toBeCloseTo(10, 9);
+    expect(5000 * (1 - 0.99)).toBeCloseTo(50, 9);
+    expect(5000 * 0.1).toBe(500);
+    // Five modules in all pairs: 10 links, two for each module.
+    expect(pairs(5)).toBe(10);
+    expect(pairs(5) / 5).toBe(2);
+    // Three transports and three formats: 9 subclasses against 6 parts.
+    expect(3 * 3).toBe(9);
+    expect(3 + 3).toBe(6);
+    // Test suite layers: 2, 10 and 100 seconds, so the five slow tests are about nine tenths of 112.
+    expect(200 * 0.01 + 20 * 0.5 + 5 * 20).toBeCloseTo(112, 9);
+    expect(100 / 112).toBeCloseTo(0.89, 2);
+    // A chain of ten services at 99.9% is about 99.0%, about 1% of downtime and 7 hours in 720.
+    expect(0.999 ** 10 * 100).toBeCloseTo(99.0, 1);
+    expect(100 - 0.999 ** 10 * 100).toBeCloseTo(1, 1);
+    expect(0.01 * 720).toBeCloseTo(7.2, 9);
+    // A chain at 99.5% is down 0.5% of 720 hours, which is 3.6 hours.
+    expect(0.005 * 720).toBeCloseTo(3.6, 9);
+    expect(0.05 * 720).toBeCloseTo(36, 9);
+    // A duplicated deposit of 5 turns the balance of 35 into 40.
+    expect(50 - 20 + 5).toBe(35);
+    expect(50 - 20 + 5 + 5).toBe(40);
+    // A weighted total of 6.7 sits above the plain average of 6.3 and below the best score.
+    expect((8 + 5 + 6) / 3).toBeCloseTo(6.33, 2);
+    expect(0.5 * 8 + 0.3 * 5 + 0.2 * 6).toBeCloseTo(6.7, 9);
+    // Instability of one incoming and four outgoing links.
+    expect(4 / (1 + 4)).toBeCloseTo(0.8, 9);
+    expect(1 / (1 + 4)).toBeCloseTo(0.2, 9);
+    // The repair of 10 hours is paid back in 2.5 months at 4 hours a month.
+    expect(10 / (1 * 4)).toBe(2.5);
+    expect(10 / 1).toBe(10);
+    // A fourth format with 4 transports adds 4 subclasses, from 12 to 16, and one class with composition.
+    expect(4 * 3).toBe(12);
+    expect(4 * 4 - 4 * 3).toBe(4);
+    expect(4 + 4).toBe(8);
+    // Each prompt carries the figures that its question needs.
+    for (const [id, numbers] of [
+      ["what-architecture-decides-faded-allowance", [99, 1000, 5000]],
+      ["designing-for-testability-try-total", [200, 0.01, 20, 0.5, 5]],
+      ["monolith-modules-and-microservices-try-ten", [99.9]],
+      ["monolith-modules-and-microservices-faded-downtime", [99.5, 720]],
+      ["events-and-messages-transfer-duplicate", [50, 20, 5, 35]],
+      ["trade-offs-and-decision-records-predict-total", [8, 5, 6]],
+      ["evolving-a-system-try-i", [1, 4]],
+      ["evolving-a-system-faded-months", [10, 1, 4]],
+      ["composition-over-inheritance-faded-fourth-v2", [4, 3]],
+    ] as const)
+      for (const number of numbers)
+        expect(mentions(get(id).prompt, number), `${id} mentions ${number}`).toBe(true);
+    for (const card of ["coupling-and-cohesion-card-1", "composition-over-inheritance-card-2"])
+      expect(bundle.flashcards.find((entry) => entry.id === `sofda-${card}`)?.recall, card).toBe(
+        "self",
+      );
     // Observer: attached in order, notify(5) appends 10 and then 6.
     const log: number[] = [];
     for (const handler of [(x: number) => log.push(x * 2), (x: number) => log.push(x + 1)])

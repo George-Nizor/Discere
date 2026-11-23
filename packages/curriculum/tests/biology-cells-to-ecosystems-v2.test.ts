@@ -87,28 +87,11 @@ const roomsAfter = (left: number, right: number, minutes: number) => {
   return rows;
 };
 
-// The numeric questions the 14 November 2026 rewrite kept, each recomputed from its arithmetic.
-// The rewrite itself is checked in biology-questions.test.ts.
+// The numeric questions that remain after the rewrites, each recomputed from its arithmetic. The rewrites
+// themselves are checked in biology-questions.test.ts.
 const expected: Record<string, number> = {
-  "diffusion-and-membranes-2": (10 + 6) / 2,
-  "water-across-a-membrane-3": 12 / 2,
-  "water-across-a-membrane-hook": 6 / 4,
-  "water-across-a-membrane-8": 20 / 2,
-  "light-to-sugar-2": 5 * 6,
-  "fuel-to-cell-work-2": 2 * 6,
-  "mitosis-and-growth-8": 2 ** 4,
-  // 6-v2: each of 4 homologous pairs can go either way into a gamete, so 2 × 2 × 2 × 2 combinations.
-  "meiosis-and-gametes-6-v2": [1, 2, 3, 4].reduce((combinations) => combinations * 2, 1),
   "predicting-inheritance-2": percent(1, 4),
   "predicting-inheritance-7": percent(3, 4),
-  "natural-selection-1": percent(10, 10 + 30),
-  "natural-selection-3": percent(30, 50) - percent(15, 50),
-  "energy-between-levels-2": 2000 * 0.1 * 0.1,
-  "energy-between-levels-4": 300 / 0.1,
-  // 5-v2: 1200 kJ of the 8000 kJ reaches the herbivores, as a percentage.
-  "energy-between-levels-5-v2": percent(1200, 8000),
-  "population-limits-hook": [0, 1, 2, 3, 4, 5, 6].find((day) => 2 ** day > 20)!,
-  "population-limits-5": 70 + 16 - 9,
 };
 
 const v2Lessons = bundle.lessons.filter((lesson) => lesson.intro);
@@ -201,12 +184,12 @@ describe("Biology: from cells to ecosystems (v2)", () => {
     expect(choice("enzymes-and-evidence-optimum").item.choices!.map((c) => c.label)).toEqual(
       Object.keys(rates).map((t) => `${t}°C`),
     );
-    // 5-v2's slips: the fraction, the ratio the wrong way round and the energy lost.
-    expect(
-      byId
-        .get("bio-energy-between-levels-5-v2")!
-        .misconceptions!.flatMap((m) => m.match.numeric ?? []),
-    ).toEqual([1200 / 8000, Math.round((8000 / 1200) * 10) / 10, 100 - percent(1200, 8000)]);
+    // 5-v2: 1200 kJ of 8000 kJ is 15%, above the 10% rule of thumb, which would leave 800 kJ.
+    expect(percent(1200, 8000)).toBe(15);
+    expect(8000 * 0.1).toBe(800);
+    expect(choice("energy-between-levels-5-v2").marked.label).toBe(
+      "The herbivores hold more than a tenth, so this lake passes on a larger share than the rule says",
+    );
     // Water goes to the side with the more concentrated solute: left 6 in volume 2 (3 a unit)
     // against right 8 in volume 4 (2 a unit).
     const sides = { left: 6 / 2, right: 8 / 4 };

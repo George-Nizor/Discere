@@ -12,9 +12,10 @@ import { describe, expect, it } from "vitest";
  * AI Engineering follows the way History, Git and Machine Learning ask questions
  * (docs/question-writing-guide.md), adapted to judgement about building on language models: most
  * questions describe a prompt, a pipeline, an evaluation or a bill and ask what to change or what
- * the result shows. Numeric questions stay where the number is the engineering point, and this file
- * recomputes each of them, and the figures the other questions quote, from the numbers in the
- * prompt. Prices in the questions are stated in the prompt and are illustrative. The facts come
+ * the result shows. Every question asks for a judgement and none for an exact figure, since a
+ * calculator or a spreadsheet does that in practice, and this file recomputes the figures behind
+ * each judgement, and the figures the other questions quote, from the numbers in the prompt.
+ * Prices in the questions are stated in the prompt and are illustrative. The facts come
  * from the course's own sources: the providers' documentation (prompt caching, tool use), the
  * OWASP LLM01 page, Zheng et al. on judge bias, Husain on evaluation, Anthropic's guide to
  * building agents, Lewis et al. on retrieval and Liu et al. on position in long contexts.
@@ -36,13 +37,7 @@ const get = (suffix: string): Question => {
   if (!question) throw new Error(`missing question ${suffix}`);
   return question;
 };
-const flat = (text: string): string => text.replace(/(\d),(\d{3})/gu, "$1$2");
-const numbers = (text: string): number[] =>
-  (flat(text).match(/-?\d+(?:\.\d+)?/gu) ?? []).map(Number);
-const tuples = (text: string): number[][] =>
-  [...flat(text).matchAll(/\(([-\d., ]+)\)/gu)].map((match) =>
-    (match[1] ?? "").split(",").map((part) => Number(part.trim())),
-  );
+const near = (a: number, b: number, digits = 6) => expect(a).toBeCloseTo(b, digits);
 const softmax = (logits: number[], temperature = 1): number[] => {
   const e = logits.map((x) => Math.exp(x / temperature));
   const sum = e.reduce((s, x) => s + x, 0);
@@ -105,163 +100,11 @@ describe("questions in AI Engineering", () => {
     for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
   });
 
-  it("recomputes every numeric answer from the numbers in its prompt", () => {
-    const checks: Record<string, (text: string) => number> = {
-      "tokens-and-context-price-small": (t) => {
-        const [pin, pout, input, output] = numbers(t) as [number, number, number, number];
-        return cost(input, output, pin, pout);
-      },
-      "tokens-and-context-monthly-feature-bill": (t) => {
-        const [input, output, requests, pin, pout] = numbers(t) as number[] as [
-          number,
-          number,
-          number,
-          number,
-          number,
-        ];
-        return requests * cost(input, output, pin, pout);
-      },
-      "how-a-model-predicts-worked-check": (t) => {
-        const logits = numbers(t.split("to three")[0] ?? "");
-        return softmax(logits)[0] as number;
-      },
-      "how-a-model-predicts-temp-half": (t) => {
-        const [, , , temperature] = numbers(t) as number[];
-        expect(temperature).toBe(0.5);
-        return softmax([2, 1, 0], 0.5)[0] as number;
-      },
-      "prompts-as-specifications-cost-worked": (t) => {
-        const [each, requests, price] = numbers(t) as [number, number, number];
-        return (5 * each * requests * price) / 1_000_000;
-      },
-      "prompts-as-specifications-examples-monthly": (t) => {
-        const [each, requests, , , price, days] = numbers(t) as number[] as [
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-        ];
-        return ((5 * each * requests * price) / 1_000_000) * days;
-      },
-      "structured-output-and-tools-retry-four": (t) => {
-        const [p] = numbers(t) as [number];
-        return 1 - (1 - p) ** 4;
-      },
-      "structured-output-and-tools-retry-two": (t) => {
-        const [p] = numbers(t) as [number];
-        return 1 - (1 - p) ** 2;
-      },
-      "embeddings-and-similarity-worked-check": (t) => {
-        const [a, b] = tuples(t) as [number[], number[]];
-        return cosine(a, b);
-      },
-      "embeddings-and-similarity-rank-d2": (t) => {
-        const [a, b] = tuples(t) as [number[], number[]];
-        return cosine(a, b);
-      },
-      "retrieval-and-chunking-chunks-3000": (t) => {
-        const [n, size, overlap] = numbers(t) as [number, number, number];
-        return Math.ceil((n - overlap) / (size - overlap));
-      },
-      "retrieval-and-chunking-mrr-three": (t) => {
-        const ranks = numbers(t.split("rank")[1] ?? "");
-        return ranks.reduce((s, r) => s + 1 / r, 0) / ranks.length;
-      },
-      "retrieval-and-chunking-recall-at-5-table": (t) => {
-        const [r1, r2, r3, r4] = numbers(t.split("rank")[1] ?? "") as number[] as [
-          number,
-          number,
-          number,
-          number,
-        ];
-        return [r1, r2, r3, r4].filter((r) => r <= 5).length / 5;
-      },
-      "rag-pipeline-bigger-reserve": (t) => {
-        const [reserve, left, window, chunk] = numbers(t) as [number, number, number, number];
-        expect(window - 500 - 100 - reserve).toBe(left);
-        return Math.floor(left / chunk);
-      },
-      "eval-sets-and-noise-se-27-30": (t) => {
-        const [passes, n] = numbers(t) as [number, number];
-        return Math.sqrt(((passes / n) * (1 - passes / n)) / n);
-      },
-      "eval-sets-and-noise-half-width-200": (t) => {
-        const [passes, n] = numbers(t) as [number, number];
-        return 1.96 * Math.sqrt(((passes / n) * (1 - passes / n)) / n) * 100;
-      },
-      "judges-and-human-labels-worked-kappa": (t) => {
-        const [, both, neither, judgeOnly, humanOnly] = numbers(t) as number[] as [
-          number,
-          number,
-          number,
-          number,
-          number,
-        ];
-        return kappa(both, neither, judgeOnly, humanOnly);
-      },
-      "judges-and-human-labels-chance-agreement": (t) => {
-        const [, both, neither, judgeOnly, humanOnly] = numbers(t) as number[] as [
-          number,
-          number,
-          number,
-          number,
-          number,
-        ];
-        const n = both + neither + judgeOnly + humanOnly;
-        const pj = (both + judgeOnly) / n;
-        const ph = (both + humanOnly) / n;
-        return pj * ph + (1 - pj) * (1 - ph);
-      },
-      "security-for-llm-apps-unbounded": (t) => {
-        const [requests, input, output, pin, pout] = numbers(t) as number[] as [
-          number,
-          number,
-          number,
-          number,
-          number,
-        ];
-        return requests * cost(input, output, pin, pout);
-      },
-      "cost-latency-and-routing-worked-latency": (t) => {
-        const [first, tokens, speed] = numbers(t) as [number, number, number];
-        return first + tokens / speed;
-      },
-      "cost-latency-and-routing-cache-prefix": (t) => {
-        const [requests, input, prefix, price] = numbers(t) as [number, number, number, number];
-        return (requests * ((input - prefix) * price + prefix * price * 0.1)) / 1_000_000;
-      },
-      "prompting-rag-or-fine-tuning-adapter-2048": (t) => {
-        const [d, k, r] = numbers(t) as [number, number, number];
-        return Math.abs(r) * (d + k);
-      },
-      "prompting-rag-or-fine-tuning-adapter-all": (t) => {
-        const [count, d, k, r, perAdapter] = numbers(t) as number[] as [
-          number,
-          number,
-          number,
-          number,
-          number,
-        ];
-        expect(Math.abs(r) * (d + k)).toBe(perAdapter);
-        return count * perAdapter;
-      },
-      "rag-pipeline-worked-chunks-v2": (t) => {
-        const [window, system, question, reserve, chunk] = numbers(t) as number[] as [
-          number,
-          number,
-          number,
-          number,
-          number,
-        ];
-        return Math.floor((window - system - question - reserve) / chunk);
-      },
-      "shipping-behind-a-gate-minimum-passes-v2": (t) => {
-        const [fall, baseline, n] = numbers(t) as [number, number, number];
-        return Math.ceil(((baseline - fall) * n * 1000 - 1e-6) / 1000);
-      },
-    };
+  it("recomputes any numeric answer from the numbers in its prompt", () => {
+    // Every question is asked as a judgement now, so nothing is left to recompute here. The figures
+    // behind each judgement are recomputed in the next test. A numeric question added later needs
+    // an entry in this table.
+    const checks: Record<string, (text: string) => number> = {};
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
     expect(numeric.map((question) => question.id.replace("aie-", "")).sort()).toEqual(
       Object.keys(checks).sort(),
@@ -275,6 +118,130 @@ describe("questions in AI Engineering", () => {
         Math.max(authority.absoluteTolerance, 1e-6),
       );
     }
+  });
+
+  it("recomputes the figures behind the questions that ask for a judgement and not a number", () => {
+    // A request of 3,000 input and 1,000 output tokens: the output costs two thirds more.
+    near(cost(3000, 0, 3, 0), 0.009, 10);
+    near(cost(0, 1000, 0, 15), 0.015, 10);
+    near(cost(0, 1000, 0, 15) / cost(3000, 0, 3, 0), 1.667, 3);
+    // 1,000 input and 400 output tokens, 50,000 requests a month: $450, two thirds of it output.
+    near(50_000 * cost(1000, 400, 3, 15), 450, 8);
+    near(cost(0, 400, 0, 15) / cost(1000, 400, 3, 15), 0.667, 3);
+    near(400 / 1400, 0.286, 3);
+    near(15 / 18, 0.833, 3);
+    // Logits 2, 2 and 0.
+    near(softmax([2, 2, 0])[0] as number, 0.468, 3);
+    near(softmax([2, 2, 0])[2] as number, 0.063, 3);
+    // Temperature 0.5 on 2, 1 and 0: the leader goes from 0.665 to 0.867.
+    near(softmax([2, 1, 0])[0] as number, 0.665, 3);
+    near(softmax([2, 1, 0], 0.5)[0] as number, 0.867, 3);
+    near(Math.exp(4), 54.6, 1);
+    // Five examples of 120 tokens on 20,000 requests a day: 12 million tokens and $36 a day.
+    expect(5 * 120 * 20_000).toBe(12_000_000);
+    near((5 * 120 * 20_000 * 3) / 1_000_000, 36, 8);
+    near(((5 * 120 * 20_000 * 3) / 1_000_000) * 30, 1080, 6);
+    // Three examples on 40,000 requests a day: 1.2 times the cost.
+    near(((3 * 120 * 40_000 * 3) / 1_000_000) * 30, 1296, 6);
+    near((3 * 120 * 40_000) / (5 * 120 * 20_000), 1.2, 8);
+    // Up to four attempts at 0.7, and two at 0.9.
+    near(1 - 0.3 ** 4, 0.9919, 4);
+    near(0.3 ** 4, 0.0081, 4);
+    expect(4 * 0.7).toBeCloseTo(2.8, 10);
+    near(0.1 ** 2, 0.01, 10);
+    near(0.9 + 0.9, 1.8, 10);
+    // (1, 2, 2) and (2, 0, 1): dot product 4, lengths 3 and the square root of 5.
+    expect(1 * 2 + 2 * 0 + 2 * 1).toBe(4);
+    near(Math.sqrt(5), 2.236, 3);
+    near(cosine([1, 2, 2], [2, 0, 1]), 0.596, 3);
+    near(4 / (3 + Math.sqrt(5)), 0.764, 3);
+    near(4 / (9 + 5), 0.286, 3);
+    // The query (1, 1) against d1, d2 and d3, by cosine and by angle.
+    near(cosine([1, 1], [2, 1]), 0.949, 3);
+    near(cosine([1, 1], [1, 3]), 0.894, 3);
+    near(cosine([1, 1], [3, 0]), 0.707, 3);
+    const degrees = (v: [number, number]) => (Math.atan2(v[1], v[0]) * 180) / Math.PI;
+    near(Math.abs(45 - degrees([2, 1])), 18.4, 1);
+    near(Math.abs(45 - degrees([1, 3])), 26.6, 1);
+    near(Math.abs(45 - degrees([3, 0])), 45, 6);
+    expect(Math.hypot(1, 3)).toBeGreaterThan(Math.hypot(3, 0));
+    expect(Math.hypot(3, 0)).toBeGreaterThan(Math.hypot(2, 1));
+    // 3,000 tokens in 600-token chunks with 200 overlap: stride 400 and 7 chunks, against 5.
+    expect(Math.ceil((3000 - 200) / (600 - 200))).toBe(7);
+    expect(3000 / 600).toBe(5);
+    expect(3000 / 200).toBe(15);
+    // Ranks 1, 3 and 2, and the two moves up one place.
+    const mrr = (ranks: number[]) => ranks.reduce((s, r) => s + 1 / r, 0) / ranks.length;
+    near(mrr([1, 3, 2]), 0.611, 3);
+    near(mrr([1, 2, 2]) - mrr([1, 3, 2]), 0.0556, 4);
+    near(mrr([1, 3, 1]) - mrr([1, 3, 2]), 0.1667, 4);
+    near(1 - 1 / 2, 0.5, 10);
+    near(1 / 2 - 1 / 3, 0.1667, 4);
+    // Recall at 5 for ranks 1, 2, 4, 6 and a miss.
+    expect([1, 2, 4, 6].filter((rank) => rank <= 5).length / 5).toBeCloseTo(0.6, 10);
+    // The window of 12,000 tokens, and the 8,000-token window with a reserve of 800 and of 1,500.
+    expect(12000 - 600 - 200 - 1200).toBe(10000);
+    expect(Math.floor(10000 / 750)).toBe(13);
+    expect(13 * 750).toBe(9750);
+    near((12000 - 800) / 750, 14.93, 2);
+    expect(12000 / 750).toBe(16);
+    expect(Math.floor((8000 - 500 - 100 - 800) / 500)).toBe(13);
+    expect(Math.floor((8000 - 500 - 100 - 1500) / 500)).toBe(11);
+    near(700 / 6600, 0.106, 3);
+    // 27 of 30 cases and 140 of 200.
+    const se = (passes: number, n: number) => Math.sqrt(((passes / n) * (1 - passes / n)) / n);
+    near(se(27, 30), 0.0548, 4);
+    near(1.96 * se(27, 30), 0.107, 3);
+    near(1.96 * se(34, 40), 0.111, 3);
+    near(se(140, 200), 0.0324, 4);
+    near(1.96 * se(140, 200), 0.0635, 4);
+    near(2 * 1.96 * se(140, 200), 0.127, 3);
+    near(1.96 * se(28, 40), 0.142, 3);
+    // Kappa for 55 and 25 agreements, and chance agreement for 45, 35, 10 and 10.
+    near(kappa(55, 25, 15, 5), 0.565, 3);
+    near(0.7 * 0.6 + 0.3 * 0.4, 0.54, 10);
+    near((0.8 - 0.54) / (1 - 0.54), 0.565, 3);
+    near(0.8 - 0.54, 0.26, 10);
+    near(0.55 * 0.55 + 0.45 * 0.45, 0.505, 10);
+    near(0.55 * 0.55, 0.3025, 10);
+    near(kappa(45, 35, 10, 10), 0.596, 3);
+    // The attack: 16 million input tokens at $48 and 1 million output tokens at $15.
+    expect(2000 * 8000).toBe(16_000_000);
+    near(cost(2000 * 8000, 0, 3, 0), 48, 8);
+    near(cost(0, 2000 * 500, 0, 15), 15, 8);
+    near((16 * 3) / (1 * 15), 3.2, 8);
+    // 450 tokens at 75 a second after 0.6 s.
+    near(450 / 75, 6, 10);
+    near(450 / 75 / 0.6, 10, 8);
+    near(0.6 + 450 / 75, 6.6, 10);
+    // 1,200 of 1,500 tokens cached at a tenth of the price: $450 falls to $126, a saving of 72%.
+    const uncached = 100_000 * cost(1500, 0, 3, 0);
+    const cached = 100_000 * (cost(300, 0, 3, 0) + cost(1200, 0, 3, 0) * 0.1);
+    near(uncached, 450, 8);
+    near(cached, 126, 8);
+    near(1 - cached / uncached, 0.72, 8);
+    near(cached / uncached, 0.28, 8);
+    near(1200 / 1500, 0.8, 10);
+    // A rank-4 adapter on a 3072 x 3072 matrix, and 32 rank-8 adapters on 4096 x 4096 matrices.
+    expect(4 * (3072 + 3072)).toBe(24576);
+    expect(3072 * 3072).toBe(9_437_184);
+    near(9_437_184 / 24576, 384, 6);
+    expect(3072 * 4).toBe(12288);
+    expect(8 * (4096 + 4096)).toBe(65536);
+    expect(32 * 65536).toBe(2_097_152);
+    expect(32 * 4096 * 4096).toBe(536_870_912);
+    near(2_097_152 / 536_870_912, 0.0039, 4);
+    // The gate on 60 cases: a baseline of 51, one lost case and two lost cases.
+    near(0.85 * 60, 51, 8);
+    near(1 / 60, 0.0167, 4);
+    near(2 / 60, 0.0333, 4);
+    expect(1 / 60).toBeLessThanOrEqual(0.03);
+    expect(2 / 60).toBeGreaterThan(0.03);
+    near(0.03 * 60, 1.8, 10);
+    // The review cards: retries at 0.9, kappa from 0.80 and 0.58, and routing 70% to a tenth.
+    near(0.1 ** 3, 0.001, 10);
+    near((0.8 - 0.58) / (1 - 0.58), 0.524, 3);
+    near(0.7 * 0.1 + 0.3, 0.37, 10);
   });
 
   it("recomputes the figures that the judgement questions quote", () => {

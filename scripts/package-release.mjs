@@ -135,7 +135,8 @@ await build({
   platform: "node",
   format: "esm",
   target: "node22",
-  external: ["better-sqlite3"],
+  // Native addons load their binaries from beside their own package, so they stay outside the bundle.
+  external: ["better-sqlite3", "onnxruntime-node"],
   legalComments: "linked",
   // Fastify and its plugins are CommonJS; an ES module bundle needs require and __dirname back.
   banner: {
@@ -175,6 +176,34 @@ const sqlite = path.dirname(
 const sqliteTarget = path.join(stage, "node_modules/better-sqlite3");
 for (const part of ["package.json", "LICENSE", "lib", "prebuilds/win32-x64.node"])
   cpSync(path.join(sqlite, part), path.join(sqliteTarget, part), { recursive: true });
+
+// Read aloud's voice runs on onnxruntime, another Node-API addon. Only its Windows x64 binaries
+// ship (onnxruntime.dll, the binding, and the DirectML libraries the binding links against); the
+// voice model itself is downloaded on first use. onnxruntime-common is its JavaScript half.
+// Resolved through the package's main file, because onnxruntime-common does not export its
+// package.json, and walked up to the folder named after the package.
+const packageRoot = (name, from) => {
+  const entry = spawnSync(process.execPath, ["-p", `require.resolve('${name}')`], {
+    cwd: from,
+    encoding: "utf8",
+  }).stdout.trim();
+  let folder = path.dirname(entry);
+  while (entry && path.basename(folder) !== name && path.dirname(folder) !== folder)
+    folder = path.dirname(folder);
+  if (!entry || path.basename(folder) !== name)
+    throw new Error(`Could not find the ${name} package from ${from}.`);
+  return folder;
+};
+const onnx = packageRoot("onnxruntime-node", path.join(root, "apps/server"));
+for (const part of ["package.json", "README.md", "dist", "bin/napi-v6/win32/x64"])
+  cpSync(path.join(onnx, part), path.join(stage, "node_modules/onnxruntime-node", part), {
+    recursive: true,
+  });
+const onnxCommon = packageRoot("onnxruntime-common", onnx);
+for (const part of ["package.json", "README.md", "dist"])
+  cpSync(path.join(onnxCommon, part), path.join(stage, "node_modules/onnxruntime-common", part), {
+    recursive: true,
+  });
 
 const nodeDirectory = await nodeExecutable();
 cpSync(path.join(nodeDirectory, "node.exe"), path.join(stage, "runtime/node.exe"));

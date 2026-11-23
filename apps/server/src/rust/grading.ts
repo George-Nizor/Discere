@@ -76,11 +76,22 @@ export function passes(task: GradedTask, result: RustRunResult, expected: string
 }
 
 /** Compiles once and runs the first `count` cases. The checker only ever holds those cases. */
-export async function runCases(runtime: RustRuntime, task: GradedTask, code: string, count: number) {
+export async function runCases(
+  runtime: RustRuntime,
+  task: GradedTask,
+  code: string,
+  count: number,
+) {
   const cases = task.cases.slice(0, count);
   const results = await runtime.run(
     task.kind === "function"
-      ? { code, harness: functionHarness(task.call!.name, cases.map((c) => c.arguments ?? [])) }
+      ? {
+          code,
+          harness: functionHarness(
+            task.call!.name,
+            cases.map((c) => c.arguments ?? []),
+          ),
+        }
       : { code },
     task.kind === "function" ? cases.map((_, i) => String(i)) : cases.map((c) => c.stdin ?? ""),
   );

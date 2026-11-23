@@ -11,11 +11,14 @@ import { describe, expect, it } from "vitest";
 /**
  * Decision Theory follows the way Economics asks questions (docs/question-writing-guide.md). A
  * number stays where the calculation is the decision: the expected value of a gamble or an option,
- * rolling a tree back, a regret, an expected utility or certainty equivalent, a Bayesian update from
- * stated rates, the value of information, a breakeven win. Everything else asks which rule fits an
- * attitude, whether a choice shows a bias, why expected value misleads in a case, or which axiom a
- * pattern breaks. Every numeric answer, and every figure that a choice or its feedback relies on,
- * is recomputed below from the situation, never read back from the bundle.
+ * rolling a tree back, a regret, an expected utility, a Bayesian update from stated rates, the value
+ * of information. Fourteen former calculations (a payoff cell, a weighted prize, a certainty
+ * equivalent, an insurance ceiling, a share of positives, an EVPI, a threshold, a loss term, a
+ * breakeven win, a posterior) are multiple-choice judgements that ask how large, which is larger or
+ * which way. Everything else asks which rule fits an attitude, whether a choice shows a bias, why
+ * expected value misleads in a case, or which axiom a pattern breaks. Every numeric answer, and
+ * every figure that a choice or its feedback relies on, is recomputed below from the situation,
+ * never read back from the bundle.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/decision-theory/bundle.json", import.meta.url), "utf8"),
@@ -57,10 +60,15 @@ describe("questions in Decision Theory", () => {
   });
 
   it("ends each lesson with three questions of at least two types", () => {
+    // Risk attitudes had one calculation and two judgements. The calculation is now a judgement
+    // too, so all three of its closing questions are multiple choice.
+    const allMultipleChoice = new Set(["risk-attitudes"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(
+        allMultipleChoice.has(lesson.id) ? 1 : 2,
+      );
     }
   });
 
@@ -219,8 +227,6 @@ describe("numbers in Decision Theory, recomputed from the situations", () => {
   it("recomputes every numeric answer in the lessons", () => {
     const P = "dect-";
     // Lesson 1 and 2
-    near(`${P}options-states-outcomes-cafe-outdoor-rain`, 50 - 40);
-    near(`${P}expected-value-worked-gamble-last-term`, 0.5 * -10);
     near(`${P}expected-value-ticket-net`, 0.1 * 30 - 4);
     near(
       `${P}expected-value-practice-1`,
@@ -257,14 +263,8 @@ describe("numbers in Decision Theory, recomputed from the situations", () => {
       Math.max(...row.map((x, s) => (bestPqr[s] as number) - x));
     near(`${P}when-probabilities-are-unknown-practice-2`, largestRegret(pqr.Q));
     // Lesson 5 and 6
-    near(`${P}utility-and-st-petersburg-half-of-eight`, 0.5 * Math.sqrt(64));
     near(`${P}utility-and-st-petersburg-practice-1`, 0.5 * Math.sqrt(4) + 0.5 * Math.sqrt(36));
-    near(`${P}risk-attitudes-ce-four-thirty-six`, (0.5 * Math.sqrt(4) + 0.5 * Math.sqrt(36)) ** 2);
-    near(`${P}risk-attitudes-insurance-ceiling`, 100 - (0.5 * 10 + 0.5 * 8) ** 2);
-    near(`${P}risk-attitudes-take-the-bet`, 0.5 * Math.sqrt(120) + 0.5 * Math.sqrt(90), 2);
-    near(`${P}risk-attitudes-practice-1`, (0.5 * Math.sqrt(16) + 0.5 * Math.sqrt(100)) ** 2);
     // Lesson 7
-    near(`${P}bayes-updating-percent-diseased`, (40 / 135) * 100, 1);
     near(`${P}bayes-updating-positives-1000`, 1000 * (0.05 * 0.8 + 0.95 * 0.1));
     near(`${P}bayes-updating-spam-prize`, posterior(0.2, 0.6, 0.03), 2);
     near(`${P}bayes-updating-practice-2`, posterior(0.02, 0.8, 0.1) * 100, 1);
@@ -274,29 +274,6 @@ describe("numbers in Decision Theory, recomputed from the situations", () => {
       [0.75, -20],
     ]);
     near(`${P}value-of-perfect-information-practice-1`, 0.25 * 200 + 0.75 * 0 - Math.max(now, 0));
-    near(
-      `${P}value-of-perfect-information-evpi-second`,
-      0.5 * 60 +
-        0.5 * 0 -
-        Math.max(
-          ev([
-            [0.5, 60],
-            [0.5, -20],
-          ]),
-          0,
-        ),
-    );
-    near(
-      `${P}value-of-perfect-information-mostly-sure`,
-      0.8 * 100 -
-        Math.max(
-          ev([
-            [0.8, 100],
-            [0.2, -30],
-          ]),
-          0,
-        ),
-    );
     // Lesson 9
     near(
       `${P}imperfect-information-invest-after-good`,
@@ -308,7 +285,6 @@ describe("numbers in Decision Theory, recomputed from the situations", () => {
     const pBad = 0.4 * 0.2 + 0.6 * 0.7;
     expect(pBad).toBeCloseTo(0.5, 9);
     near(`${P}imperfect-information-posterior-bad`, (0.4 * 0.2) / 0.5);
-    near(`${P}imperfect-information-prior-matters-v2`, posterior(0.15, 0.8, 0.3), 2);
     const good = 0.3 * 0.9 + 0.7 * 0.2;
     const withTest = good * (((0.3 * 0.9) / good) * 100 - ((0.7 * 0.2) / good) * 20);
     near(
@@ -321,12 +297,102 @@ describe("numbers in Decision Theory, recomputed from the situations", () => {
       1,
     );
     // Lesson 10
-    near(`${P}expected-utility-and-allais-threshold`, 0.11 / 0.1, 9);
     // Lesson 11
-    near(`${P}prospect-theory-and-framing-loss-term`, 0.5 * -2 * 60);
-    near(`${P}prospect-theory-and-framing-break-even-win`, 2 * 70);
     // Lesson 12
     near(`${P}decisions-with-other-players-switch-payoff`, 0);
+  });
+
+  it("recomputes the figures behind the fourteen former calculations, now asked as judgements", () => {
+    const P = "dect-";
+    const converted = [
+      "options-states-outcomes-cafe-outdoor-rain",
+      "expected-value-worked-gamble-last-term",
+      "utility-and-st-petersburg-half-of-eight",
+      "risk-attitudes-ce-four-thirty-six",
+      "risk-attitudes-insurance-ceiling",
+      "risk-attitudes-take-the-bet",
+      "risk-attitudes-practice-1",
+      "bayes-updating-percent-diseased",
+      "value-of-perfect-information-evpi-second",
+      "value-of-perfect-information-mostly-sure",
+      "expected-utility-and-allais-threshold",
+      "prospect-theory-and-framing-loss-term",
+      "prospect-theory-and-framing-break-even-win",
+      "imperfect-information-prior-matters-v2",
+    ];
+    for (const id of converted) {
+      const question = questions.get(`${P}${id}`) as Question;
+      expect(kind(question), id).toBe("choice");
+      expect(question.responseType, id).toBe("short_text");
+      expect(question.calculator, id).toBe("off");
+      expect(question.hints, id).toHaveLength(2);
+      expect(question.answerAuthority.kind, id).toBe("text");
+      expect(question.prompt, id).not.toMatch(/calculator|decimal place|nearest/iu);
+    }
+    const said = (id: string) => (questions.get(`${P}${id}`) as Question).onCorrect ?? "";
+    // Café: outdoors leaves 50 - 40 = 10 in rain against 130 indoors, a gap of 120, and 140 in sun.
+    expect(130 - (50 - 40)).toBe(120);
+    expect(180 - 40).toBe(140);
+    expect(said("options-states-outcomes-cafe-outdoor-rain")).toContain("the gap is 120");
+    // The third prize adds 0.5 x -10 = -5 to a total of 20 + 5.
+    expect(0.5 * -10).toBe(-5);
+    expect(0.25 * 80 + 0.25 * 20 + 0.5 * -10).toBeCloseTo(20, 9);
+    // The larger prize's utility is twice the smaller's, and so is its contribution.
+    expect(Math.sqrt(64) / Math.sqrt(16)).toBe(2);
+    expect(0.5 * Math.sqrt(16) + 0.5 * Math.sqrt(64)).toBeCloseTo(6, 9);
+    // The 4 or 36 gamble: expected utility 4, certainty equivalent 16, below the expected prize of 20.
+    const eu436 = 0.5 * Math.sqrt(4) + 0.5 * Math.sqrt(36);
+    expect(eu436 ** 2).toBeCloseTo(16, 9);
+    expect(0.5 * 4 + 0.5 * 36).toBe(20);
+    expect(said("risk-attitudes-ce-four-thirty-six")).toContain("4² = 16");
+    // Insurance: a sure wealth of 81, so a premium of 19, a little over the expected loss of 18.
+    const eu = 0.5 * Math.sqrt(100) + 0.5 * Math.sqrt(64);
+    expect(100 - eu ** 2).toBeCloseTo(19, 9);
+    expect(0.5 * 36).toBe(18);
+    expect(said("risk-attitudes-insurance-ceiling")).toContain("100 − 81 = 19");
+    // The small bet raises expected utility, 10.22 against 10, so the risk-averse chooser takes it.
+    const bet = 0.5 * Math.sqrt(120) + 0.5 * Math.sqrt(90);
+    expect(bet).toBeGreaterThan(Math.sqrt(100));
+    expect(bet).toBeCloseTo(10.22, 2);
+    // 16 or 100: expected utility 7, certainty equivalent 49, below 58 and far above 16.
+    const eu16 = 0.5 * Math.sqrt(16) + 0.5 * Math.sqrt(100);
+    expect(eu16 ** 2).toBeCloseTo(49, 9);
+    expect(0.5 * 16 + 0.5 * 100).toBe(58);
+    // 40 of 135 positives are true, about 30%, a bit under a third.
+    expect((40 / 135) * 100).toBeCloseTo(29.6, 1);
+    expect(40 / 135).toBeLessThan(1 / 3);
+    // Second project: choosing now 20, with a perfect forecast 30, so the forecast adds 10.
+    const now2 = Math.max(
+      ev([
+        [0.5, 60],
+        [0.5, -20],
+      ]),
+      0,
+    );
+    expect(now2).toBe(20);
+    expect(0.5 * 60 + 0.5 * 0 - now2).toBe(10);
+    // First project: the EVPI is the chance of failure times the 30 lost, 18 at 0.4 and 6 at 0.8.
+    const evpi = (success: number) =>
+      success * 100 -
+      Math.max(
+        ev([
+          [success, 100],
+          [1 - success, -30],
+        ]),
+        0,
+      );
+    expect(evpi(0.4)).toBeCloseTo(18, 9);
+    expect(evpi(0.8)).toBeCloseTo(6, 9);
+    expect(evpi(0.8) / evpi(0.4)).toBeCloseTo(1 / 3, 9);
+    // Allais: 0.11 > 0.10 x u(5M) caps u(5M) at 1.1, a tenth above u(1M) = 1.
+    expect(0.11 / 0.1).toBeCloseTo(1.1, 9);
+    // Loss term 0.5 x (2 x 60) = 60 against a gain term of 50, and a break-even win of 2 x 70.
+    expect(0.5 * 2 * 60).toBe(60);
+    expect(0.5 * 2 * 60).toBeGreaterThan(0.5 * 100);
+    expect(2 * 70).toBe(140);
+    // A prior of 0.15 gives a posterior of 0.32, half of the 0.64 that a prior of 0.4 gives.
+    expect(posterior(0.4, 0.8, 0.3)).toBeCloseTo(0.64, 9);
+    expect(posterior(0.15, 0.8, 0.3)).toBeCloseTo(0.32, 9);
   });
 
   it("recomputes the figures behind the choices and their feedback", () => {

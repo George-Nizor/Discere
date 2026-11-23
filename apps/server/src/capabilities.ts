@@ -173,7 +173,8 @@ export function tutorCapability(
           id: "tutor_generation",
           state: "unavailable",
           reason,
-          fallback: "Set DISCERE_TUTOR_PROVIDER=companion to tutor by pasting into a chat you already have.",
+          fallback:
+            "Set DISCERE_TUTOR_PROVIDER=companion to tutor by pasting into a chat you already have.",
         }
       : { id: "tutor_generation", state: "available", reason: "", fallback: "" };
   }

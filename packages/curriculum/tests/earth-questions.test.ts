@@ -129,10 +129,13 @@ describe("questions in Earth and Environmental Science", () => {
   });
 
   it("ends each lesson with three checks of at least two types", () => {
+    // energy-balance ended with its one calculated question, which is now a judgement question
+    // like the other two, so its three checks are all multiple choice.
+    const oneType = new Set(["energy-balance"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(oneType.has(lesson.id) ? 1 : 2);
     }
   });
 
@@ -141,8 +144,8 @@ describe("questions in Earth and Environmental Science", () => {
     expect(structured.length).toBeGreaterThanOrEqual(8);
     expect(structured.length).toBeLessThanOrEqual(12);
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    // twenty-seven of them are the blanks of worked and faded examples
-    expect(numeric.length).toBeLessThanOrEqual(40);
+    // the course asks for judgement, not sums: every calculated question became multiple choice
+    expect(numeric).toHaveLength(0);
     for (const question of numeric)
       expect(question.hints.length, question.id).toBeGreaterThanOrEqual(3);
     const withData = bundle.questions.filter((question) => (question.extracts ?? []).length > 0);
@@ -417,59 +420,70 @@ describe("questions in Earth and Environmental Science", () => {
     expect(22 + 20).toBe(42);
   });
 
-  it("recomputes every numeric answer", () => {
-    const expected: Record<string, number> = {
-      "inside-the-earth-core-radius": 6371 - 2891,
-      "inside-the-earth-inner-radius": 6371 - 5150,
-      "moving-plates-worked-1800": 60 * 30,
-      "moving-plates-hotspot-speed-v2": 480 / 6 / 10,
-      "moving-plates-san-andreas": 5 * 10 * 10,
-      "rock-cycle-shale-200k": 10000 / 0.05,
-      "rock-cycle-shale-500k": 50000 / 0.1,
-      "reading-deep-time-bone-age": 3 * 5730,
-      "reading-deep-time-rock-age": (2 * 700) / 1000,
-      "reading-deep-time-dinosaur-minutes": Math.round((230 / 4540) * 1440),
-      "reading-deep-time-check-seven": Math.round(((3 * 704) / 1000) * 10) / 10,
-      "layers-of-air-p11": 104 / 4,
-      "layers-of-air-p165": Math.round((99.2 / 8) * 10) / 10,
-      "energy-balance-absorbed-238": Math.round((1361 * 0.7) / 4),
-      "energy-balance-absorbed-170": Math.round((1361 * 0.5) / 4),
-      "energy-balance-balance-255": Math.round((300 / SIGMA) ** 0.25),
-      "energy-balance-check-albedo": Math.round(((1361 * 0.01) / 4) * 10) / 10,
-      "why-the-weather-moves-cb-1500": 12 * 125,
-      "why-the-weather-moves-cb-28-16": 14 * 125,
-      "the-ocean-system-rise-10": 0.00001 * 1_000_000,
-      "the-ocean-system-rise-20": 7220 / 361,
-      "the-ocean-system-ice-to-mm": Math.round(((135 + 264) / 361) * 10) / 10,
-      "carbon-moves-to-co2": Math.round(((10 * 44) / 12) * 10) / 10,
-      "carbon-moves-to-carbon": Math.round(((37.4 * 12) / 44) * 10) / 10,
-      "carbon-moves-budget-ppm": Math.round(((10 * 0.45) / 2.13) * 10) / 10,
-      "carbon-moves-airborne-share": Math.round((100 * 5.9) / (10.1 + 1.0)),
-      "what-has-changed-forcing-doubling": Math.round(5.35 * Math.log(2) * 10) / 10,
-      "what-has-changed-forcing-420": Math.round(5.35 * Math.log(1.5) * 10) / 10,
-      "what-has-changed-warming-420": 3 * Math.log2(1.5),
-      "living-systems-carnivore-kj": 1000 * 0.1,
-      "living-systems-third-level": 50000 * 0.1 ** 3,
-      "living-systems-next-145": 100 + 0.5 * 100 * (1 - 100 / 1000),
-      "living-systems-next-1080": 1200 + 0.5 * 1200 * (1 - 1200 / 1000),
-      "limits-and-choices-aquifer-years": 300 / (10 - 4),
-      "limits-and-choices-growth-years": Math.round(Math.log(1 + (0.05 * 300) / 10) / 0.05),
-      "limits-and-choices-years-1000": Math.round(Math.log(1 + (0.03 * 1000) / 20) / 0.03),
-      "limits-and-choices-wind-mwh": 3 * 8760 * 0.35,
-      "limits-and-choices-capacity-needed": Math.round((1000 * 0.908) / 0.232 / 10) * 10,
+  it("recomputes the figure behind every judgement question and checks the right option against it", () => {
+    // [the exact figure, the figure the right option states or null, the right option]
+    const judged: Record<string, [number, number | null, string]> = {
+      "inside-the-earth-core-radius": [(6371 - 2891) / 6371, 0.5, "A little over half"],
+      "inside-the-earth-inner-radius": [(6371 - 5150) / 6371, 0.2, "About a fifth"],
+      "moving-plates-worked-1800": [60 * 30, 2000, "About 2,000 km"],
+      "moving-plates-hotspot-speed-v2": [480 / 6 / 10, 8, "About 8 cm per year"],
+      "moving-plates-san-andreas": [5 * 10 * 10, 500, "About 500 km"],
+      "rock-cycle-shale-200k": [10000 / 0.05, 200000, "About 200,000 years"],
+      "rock-cycle-shale-500k": [50000 / 0.1, 500000, "Hundreds of thousands of years"],
+      "reading-deep-time-bone-age": [3 * 5730, 17000, "About 17,000 years"],
+      "reading-deep-time-rock-age": [(2 * 700) / 1000, 1.4, "About 1.4 billion years"],
+      "reading-deep-time-dinosaur-minutes": [(230 / 4540) * 1440, 70, "About 70 minutes"],
+      "reading-deep-time-check-seven": [(3 * 704) / 1000, 2, "About 2 billion years"],
+      "layers-of-air-p11": [104 / 4, 26, "About 26 kPa"],
+      "layers-of-air-p165": [1 / 8, 0.125, "About an eighth"],
+      "energy-balance-absorbed-238": [(1361 * 0.7) / 4, 240, "About 240 W/m²"],
+      "energy-balance-absorbed-170": [(1361 * 0.5) / 4, 170, "About 170 W/m²"],
+      "energy-balance-balance-255": [(300 / SIGMA) ** 0.25, 270, "About 270 K"],
+      "energy-balance-check-albedo": [(1361 * 0.01) / 4, 3, "About 3 W/m²"],
+      "why-the-weather-moves-cb-1500": [(12 * 125) / 1000, 1.5, "About 1.5 km"],
+      "why-the-weather-moves-cb-28-16": [14 * 125, null, "Higher, because the gap is wider"],
+      "the-ocean-system-rise-10": [0.00001 * 100_000, 1, "About 1 cm"],
+      "the-ocean-system-rise-20": [(7220 / 361_000_000) * 100_000, 2, "About 2 cm"],
+      "the-ocean-system-ice-to-mm": [(135 + 264) / 361, 1, "About 1 mm a year"],
+      "carbon-moves-to-co2": [(10 * 44) / 12, 37, "About 37 GtCO₂"],
+      "carbon-moves-to-carbon": [(37.4 * 12) / 44, 10.2, "About 10.2 GtC"],
+      "carbon-moves-budget-ppm": [(10 * 0.45) / 2.13, 2, "About 2 ppm"],
+      "carbon-moves-airborne-share": [5.9 / (10.1 + 1.0), 0.5, "A little over half"],
+      "what-has-changed-forcing-doubling": [5.35 * Math.log(2), 3.7, "About 3.7 W/m²"],
+      "what-has-changed-forcing-420": [5.35 * Math.log(1.5), 2, "About 2 W/m²"],
+      "what-has-changed-warming-420": [3 * Math.log2(1.5), 1.75, "About 1.75 °C"],
+      "living-systems-carnivore-kj": [(1000 * 0.1) / 10000, 0.01, "About a hundredth"],
+      "living-systems-third-level": [1 / 0.1 ** 3, 1000, "About 1,000 times smaller"],
+      "living-systems-next-145": [100 + 0.5 * 100 * (1 - 100 / 1000), null, "Slightly below 150"],
+      "living-systems-next-1080": [
+        1200 + 0.5 * 1200 * (1 - 1200 / 1000),
+        null,
+        "It falls part of the way back toward 1,000",
+      ],
+      "limits-and-choices-aquifer-years": [300 / (10 - 4), 50, "About 50 years"],
+      "limits-and-choices-growth-years": [Math.log(1 + (0.05 * 300) / 10) / 0.05, 18, "About 18 years"],
+      "limits-and-choices-years-1000": [
+        1 - Math.log(1 + (0.03 * 1000) / 20) / 0.03 / 50,
+        0.4,
+        "By about two fifths",
+      ],
+      "limits-and-choices-wind-mwh": [3 * 8760 * 0.35, 9000, "About 9,000 MWh"],
+      "limits-and-choices-capacity-needed": [(1000 * 0.908) / 0.232, 3900, "About 3,900 MW"],
     };
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id.replace(/^eares-/u, "")).sort()).toEqual(
-      Object.keys(expected).sort(),
-    );
-    for (const question of numeric) {
-      const authority = question.answerAuthority;
-      if (authority.kind !== "numeric") throw new Error(question.id);
-      const key = question.id.replace(/^eares-/u, "");
-      expect(
-        Math.abs(authority.value - (expected[key] as number)),
-        question.id,
-      ).toBeLessThanOrEqual(Math.max(authority.absoluteTolerance, 1e-9) + 1e-9);
+    for (const [id, [exact, stated, label]] of Object.entries(judged)) {
+      const question = get(id);
+      expect(kind(question), id).toBe("choice");
+      expect(rightOption(question).label, id).toBe(label);
+      if (stated !== null)
+        expect(Math.abs(stated - exact) / exact, id).toBeLessThanOrEqual(0.15);
     }
+    // the three questions whose answer is a direction rather than a size
+    expect(14 * 125).toBeGreaterThan(12 * 125);
+    expect(judged["living-systems-next-145"]?.[0]).toBeLessThan(150);
+    expect(judged["living-systems-next-1080"]?.[0]).toBeLessThan(1200);
+    expect(judged["living-systems-next-1080"]?.[0]).toBeGreaterThan(1000);
+    // the old numeric questions are all multiple choice now
+    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
+    expect(numeric.map((question) => question.id)).toEqual([]);
   });
 });

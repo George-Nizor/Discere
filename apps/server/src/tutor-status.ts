@@ -163,13 +163,18 @@ export function readCodexQuota(): CodexQuota | undefined {
 let claudeAuthCache: { loggedIn: boolean; at: number } | undefined;
 /** `claude auth status` prints JSON; probed at most once a minute. */
 export function claudeSignedIn(now = Date.now()): boolean {
-  if (claudeAuthCache && now - claudeAuthCache.at < BINARY_CACHE_MS) return claudeAuthCache.loggedIn;
+  if (claudeAuthCache && now - claudeAuthCache.at < BINARY_CACHE_MS)
+    return claudeAuthCache.loggedIn;
   let loggedIn = false;
   try {
-    const result = spawnSync(process.env["DISCERE_CLAUDE_BIN"]?.trim() || resolveCliCommand("claude"), ["auth", "status"], {
-      encoding: "utf8",
-      timeout: 8_000,
-    });
+    const result = spawnSync(
+      process.env["DISCERE_CLAUDE_BIN"]?.trim() || resolveCliCommand("claude"),
+      ["auth", "status"],
+      {
+        encoding: "utf8",
+        timeout: 8_000,
+      },
+    );
     loggedIn = result.status === 0 && /"loggedIn"\s*:\s*true/.test(`${result.stdout}`);
   } catch {
     // Unknown counts as signed out; the tutor reports the real error if a call fails.
@@ -195,7 +200,9 @@ function pipelineStatus(runtime: TutorRuntime): TutorStatus {
     reasoningEffort: claude ? env["DISCERE_CLAUDE_EFFORT"]?.trim() || "low" : "",
     binaryFound: claude ? detectDrivers().claude : detectDrivers().api,
     binaryVersion: "",
-    authPresent: claude ? claudeSignedIn() : Boolean(env["DISCERE_AI_API_KEY"]?.trim() || env["DISCERE_AI_BASE_URL"]?.trim()),
+    authPresent: claude
+      ? claudeSignedIn()
+      : Boolean(env["DISCERE_AI_API_KEY"]?.trim() || env["DISCERE_AI_BASE_URL"]?.trim()),
     queueDepth: live.queueDepth,
     lastOutcome: live.lastOutcome,
     lastError: live.lastError,

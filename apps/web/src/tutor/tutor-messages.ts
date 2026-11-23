@@ -6,7 +6,9 @@ const MESSAGES: Record<string, string> = {
   TUTOR_PROVIDER_UNAVAILABLE:
     "The tutor provider is not running on this machine, so no reply was produced.",
   TUTOR_WRITING_GATE:
-    "The reply failed the writing quality gate and was withheld rather than shown to you.",
+    "The tutor's reply didn't meet Discere's writing rules, so it was held back. Try asking again.",
+  TUTOR_ANSWER_WITHHELD:
+    "The tutor's reply gave the answer away, so it was held back. Ask about one step, or about a word you're unsure of.",
   TUTOR_PROVIDER_ABORTED: "The request stopped before the tutor finished.",
   TUTOR_PROVIDER_FAILED: "The tutor provider failed and produced no reply.",
   TUTOR_PROVIDER_BUSY: "The tutor is finishing another task. Try again in a moment.",

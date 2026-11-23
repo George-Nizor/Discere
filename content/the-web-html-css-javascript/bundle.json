@@ -2493,7 +2493,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The larger item gave up more, 40px against 20px, and in both cases the two losses add up to the 60px of overflow."
+              "text": "The larger item gave up more, and in both cases the losses add up to the overflow."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -2820,7 +2820,7 @@
           "activityId": ""
         }
       ],
-      "orientation": "Convert relative units to pixels, and decide which media query rules apply at a given viewport width.",
+      "orientation": "Estimate relative units in pixels, and decide which media query rules apply at a given viewport width.",
       "visualStates": [],
       "visualKind": "none",
       "activityId": "",
@@ -2861,7 +2861,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to convert rem, em, percent and vw lengths to pixels, and say which media query rules apply at a given viewport width.",
+        "promise": "By the end you'll be able to estimate what rem, em, percent and vw lengths come to in pixels, and say which media query rules apply at a given viewport width.",
         "estimatedMinutes": 14,
         "whyItMatters": "One stylesheet that behaves correctly from a phone to a wide monitor depends on these conversions and on the order of the breakpoints."
       },
@@ -5902,7 +5902,7 @@
           "activityId": ""
         }
       ],
-      "orientation": "Compute whether a colour pair meets the contrast minimum, and name what each Core Web Vital measures and its good threshold.",
+      "orientation": "Judge whether a colour pair meets the contrast minimum, and name what each Core Web Vital measures and its good threshold.",
       "visualStates": [],
       "visualKind": "none",
       "activityId": "",
@@ -5945,7 +5945,7 @@
             }
           ]
         },
-        "promise": "By the end you'll be able to compute whether a colour pair meets the contrast minimum, and name what each Core Web Vital measures and its good threshold.",
+        "promise": "By the end you'll be able to judge whether a colour pair meets the contrast minimum, and name what each Core Web Vital measures and its good threshold.",
         "estimatedMinutes": 15,
         "whyItMatters": "Contrast and the vitals are the measurable parts of a good page, and both can be checked while you build it."
       },
@@ -7760,46 +7760,59 @@
         "grid-tracks",
         "one-or-two-dimensions"
       ],
-      "prompt": "A 240px flex row holds two items with `flex-shrink` 1: the first has `flex-basis` 200px and the second has `flex-basis` 100px, with no minimum widths. Shrinking is weighted by shrink times basis. How wide in px is the first item?",
-      "responseType": "numeric",
+      "prompt": "A 240px flex row holds two items with `flex-shrink` 1: the first has `flex-basis` 200px and the second has `flex-basis` 100px, with no minimum widths. Together they are 60px too wide for the row, and shrinking is weighted by shrink times basis. How do the two items share that 60px?",
+      "responseType": "short_text",
       "difficulty": 1.6,
       "hints": [
-        "The overflow is 300 - 240.",
-        "The first item's weight is 200 out of a total of 300.",
-        "It loses two thirds of the overflow."
+        "Do the weights depend on the shrink factor alone, or on the basis as well?",
+        "Which item has the larger weight, and how many times larger is it?"
       ],
       "sourceIds": [
         "mdn-learn",
         "mdn-flexbox"
       ],
-      "onCorrect": "Large items give up more than small ones, so shrinking keeps their proportions.",
+      "onCorrect": "The weights are 200 and 100, so the first item gives up two thirds of the overflow, 40px, and the second one third, 20px. The larger item loses more, which keeps the two in their original proportions.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "The first gives up twice as much, as its basis is double"
+        },
+        {
+          "id": "b",
+          "label": "Each gives up the same, because both shrink factors are 1"
+        },
+        {
+          "id": "c",
+          "label": "Neither shrinks, because each item fits in 240px on its own"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              170
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That shares the overflow equally, 30px each. Shrinking is weighted by basis, so the larger item loses more."
+          "feedback": "Equal shrink factors do not make equal losses. Each loss is weighted by the basis too, so the item with the 200px basis takes the larger share."
         },
         {
           "match": {
-            "numeric": [
-              200
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The items overflow, so the first one shrinks."
+          "feedback": "The items are judged together. Their bases add to 300px in a 240px row, so the overflow has to come out of them whatever each one measures alone."
         }
       ],
       "skill": "distribute-free-space",
       "calculator": "available",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 160,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The bases add to 300px, which overflows by 60px. The weights are 200 and 100, so the first item loses 60 x 200/300 = 40px and ends 160px wide."
+        "kind": "text",
+        "acceptedIdeas": [
+          "The first gives up twice as much, as its basis is double"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "The first gives up twice as much, as its basis is double"
       }
     },
     {
@@ -7923,46 +7936,71 @@
         "mobile-first",
         "viewport-meta"
       ],
-      "prompt": "A parent has `font-size: 12px`. Its child has `font-size: 1.5em` and the grandchild has `font-size: 2em`. What is the grandchild's size in px?",
-      "responseType": "numeric",
+      "prompt": "A parent has `font-size: 12px`. Its child has `font-size: 1.5em` and the grandchild has `font-size: 2em`. How does the grandchild's size compare with the parent's?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "For font-size, em is measured from the parent's size.",
-        "Work out the child first.",
-        "The grandchild is twice the child."
+        "On `font-size`, is an em measured from the parent or from the root?",
+        "The grandchild is measured from the child. What are the two factors, and do they add or multiply?"
       ],
       "sourceIds": [
         "mdn-learn",
         "mdn-box"
       ],
-      "onCorrect": "Because each level multiplies the one above, nested em values compound.",
+      "onCorrect": "The grandchild is measured from the child, which is already 1.5 times the parent, so the factors multiply: 1.5 times 2 is 3, which makes 36px from the parent's 12px. Nested em values compound.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Twice as large as the parent"
+        },
+        {
+          "id": "b",
+          "label": "One and a half times as large"
+        },
+        {
+          "id": "c",
+          "label": "Three times as large as the parent"
+        },
+        {
+          "id": "d",
+          "label": "Three and a half times as large"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              24
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That measures the grandchild from the 12px grandparent. It is measured from its parent, the 18px child."
+          "feedback": "That measures the grandchild's 2em from the parent's size. The grandchild's own parent is the child, which is already 1.5 times as large, so the two factors stack."
         },
         {
           "match": {
-            "numeric": [
-              18
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is the child's size. The grandchild is twice that."
+          "feedback": "That is the child's size. The grandchild is twice the child, so it is larger again."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The factors multiply down the tree and do not add. Adding 1.5 and 2 gives 3.5, where multiplying them gives a smaller figure."
         }
       ],
       "skill": "convert-units",
       "calculator": "available",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 36,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "The child is 1.5 x 12 = 18px, and the grandchild is 2 x 18 = 36px, because em on `font-size` is measured from the parent."
+        "kind": "text",
+        "acceptedIdeas": [
+          "Three times as large as the parent"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "Three times as large as the parent"
       }
     },
     {
@@ -7973,46 +8011,59 @@
         "mobile-first",
         "viewport-meta"
       ],
-      "prompt": "Finish the worked example: a box has `width: 75%` inside a container 480px wide. How wide in px is it?",
-      "responseType": "numeric",
+      "prompt": "Finish the worked example: a box has `width: 75%` inside a container 480px wide, on a viewport 1200px wide. About how wide is the box?",
+      "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "A percentage width is a share of the container.",
-        "Find 75% of 480.",
-        "480 x 0.75."
+        "What is a percentage width a share of: the container or the viewport?",
+        "Is 75% more or less than the half-width box in the line above?"
       ],
       "sourceIds": [
         "mdn-learn",
         "mdn-box"
       ],
-      "onCorrect": "A percentage is measured from the container and a vw from the viewport, so they agree only when the container is as wide as the viewport.",
+      "onCorrect": "A percentage width is a share of the containing block, so the box is three quarters of the 480px container, 360px. Only a width in vw is measured from the viewport.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 360px, three quarters of the container"
+        },
+        {
+          "id": "b",
+          "label": "About 240px, half of the container's width"
+        },
+        {
+          "id": "c",
+          "label": "About 900px, three quarters of the viewport's width"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              240
+            "choiceIds": [
+              "b"
             ]
           },
-          "feedback": "That is 50% of the container. This box is 75%."
+          "feedback": "That is the 50% box from the line above. A width of 75% is more than half of the container."
         },
         {
           "match": {
-            "numeric": [
-              900
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "A percentage here is a share of the container's width, not of the viewport."
+          "feedback": "A percentage width is a share of the container and not of the viewport. A share of the viewport would be written in vw."
         }
       ],
       "skill": "convert-units",
       "calculator": "available",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 360,
-        "unit": "",
-        "absoluteTolerance": 1e-9,
-        "relativeTolerance": 0,
-        "workedAnswer": "A percentage width is a share of the containing block's width, so 75% of 480 is 360px."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 360px, three quarters of the container"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 360px, three quarters of the container"
       }
     },
     {
@@ -11677,13 +11728,12 @@
         "web-vitals",
         "loading-cost"
       ],
-      "prompt": "Finish the worked example: what is the contrast ratio of #595959 on white, to one decimal place?",
-      "responseType": "numeric",
+      "prompt": "Finish the worked example: white has a relative luminance of 1 and the grey #595959 has about 0.1. The contrast ratio is the lighter luminance plus 0.05, divided by the darker luminance plus 0.05. Roughly what ratio does the grey give on white?",
+      "responseType": "short_text",
       "difficulty": 1.3,
       "hints": [
-        "Use (lighter + 0.05) / (darker + 0.05).",
-        "The luminances are 1 for white and 0.0999 for the grey.",
-        "Divide the lighter side plus 0.05 by the darker side plus 0.05."
+        "Which luminance belongs to the lighter colour, and which to the darker?",
+        "Once 0.05 is added to each, roughly how many times does the smaller number go into the larger?"
       ],
       "sourceIds": [
         "mdn-a11y",
@@ -11691,34 +11741,48 @@
         "wcag",
         "web-dev-vitals"
       ],
-      "onCorrect": "A ratio of 7:1 is the stricter AAA level for normal text, so this grey clears both levels.",
+      "onCorrect": "Dividing 1.05 by about 0.15 gives 7, so the grey clears the 4.5 to 1 minimum for normal text and also reaches the stricter AAA level of 7 to 1.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 3 to 1, which is below the AA minimum"
+        },
+        {
+          "id": "b",
+          "label": "About 7 to 1, which is well above the AA minimum"
+        },
+        {
+          "id": "c",
+          "label": "About 10 to 1, which is far above the AA minimum"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              0.0999
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "That is the luminance of the grey. The ratio compares the two luminances."
+          "feedback": "That compares the raw colour values, 255 for white and 89 for the grey. The ratio uses relative luminance, and the grey's is far lower than its channel value suggests, so the gap is much wider."
         },
         {
           "match": {
-            "numeric": [
-              10
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "Add 0.05 to both luminances before dividing."
+          "feedback": "That divides 1 by about 0.1 and leaves out the 0.05 added to each luminance. Adding 0.05 to the darker luminance makes the divisor about half as large again, so the ratio comes out lower."
         }
       ],
       "skill": "judge-contrast",
       "calculator": "available",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 7,
-        "unit": "",
-        "absoluteTolerance": 0.05,
-        "relativeTolerance": 0,
-        "workedAnswer": "The grey has relative luminance 0.0999 and white has 1, so the ratio is (1 + 0.05) / (0.0999 + 0.05) = 7.0."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 7 to 1, which is well above the AA minimum"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 7 to 1, which is well above the AA minimum"
       }
     },
     {
@@ -11964,13 +12028,12 @@
         "web-vitals",
         "loading-cost"
       ],
-      "prompt": "A layout shift score is the impact fraction times the distance fraction. A block that fills the full width and half the viewport's height moves down by a quarter of the viewport's height. The impact fraction, which covers the block's area before and after the move, is 0.75. What is the score?",
-      "responseType": "numeric",
+      "prompt": "A layout shift score is the impact fraction times the distance fraction, and the good limit is 0.1. A block that fills the full width and half the viewport's height moves down by a quarter of the viewport's height. The impact fraction, which covers the block's area before and after the move, is 0.75. About what score does the move give?",
+      "responseType": "short_text",
       "difficulty": 1.4,
       "hints": [
-        "The distance fraction is the distance moved as a fraction of the viewport.",
-        "The distance is a quarter, 0.25.",
-        "The score combines the two fractions by multiplying them."
+        "Which fraction says how far the block moved, and what is its value?",
+        "The score multiplies the two fractions. Is three quarters of a quarter larger or smaller than a quarter?"
       ],
       "sourceIds": [
         "mdn-a11y",
@@ -11978,34 +12041,60 @@
         "wcag",
         "web-dev-vitals"
       ],
-      "onCorrect": "A score above 0.1 is not good, so a late banner of this size would be enough to fail the vital.",
+      "onCorrect": "Three quarters of a quarter is about 0.19, almost twice the good limit of 0.1, so a late block of this size is enough to fail the vital.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "About 0.06, inside the good limit"
+        },
+        {
+          "id": "b",
+          "label": "About 0.2, twice the good limit"
+        },
+        {
+          "id": "c",
+          "label": "About 0.5, five times the good limit"
+        },
+        {
+          "id": "d",
+          "label": "About 1, ten times the good limit"
+        }
+      ],
       "misconceptions": [
         {
           "match": {
-            "numeric": [
-              1
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "The two fractions are multiplied, and neither is 1."
+          "feedback": "That multiplies the distance fraction by itself. The impact fraction is 0.75, so the score is three quarters of a quarter, which is well over the limit."
         },
         {
           "match": {
-            "numeric": [
-              0.5
+            "choiceIds": [
+              "c"
             ]
           },
-          "feedback": "The distance fraction is the quarter that the block moves, not the half it covers."
+          "feedback": "The distance fraction is the quarter that the block moves, not the half of the viewport that it covers. Using the half makes the score too large."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That adds the two fractions. The score multiplies them, and the product of two fractions is smaller than either one."
         }
       ],
       "skill": "fix-layout-shift",
       "calculator": "available",
       "answerAuthority": {
-        "kind": "numeric",
-        "value": 0.1875,
-        "unit": "",
-        "absoluteTolerance": 0.0005,
-        "relativeTolerance": 0,
-        "workedAnswer": "The distance fraction is 0.25, a quarter of the viewport's height. The score is 0.75 x 0.25 = 0.1875, above the good limit of 0.1."
+        "kind": "text",
+        "acceptedIdeas": [
+          "About 0.2, twice the good limit"
+        ],
+        "rejectedIdeas": [],
+        "exampleAnswer": "About 0.2, twice the good limit"
       }
     },
     {

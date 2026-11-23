@@ -12,10 +12,13 @@ import { describe, expect, it } from "vitest";
  * Machine Learning, from Models to MLOps follows the way History and Git ask questions
  * (docs/question-writing-guide.md), adapted to judgement about models and data: most questions put
  * a table of scores, a confusion matrix, a data split, a feature or a release result in front of the
- * learner and ask what it shows. Numeric questions stay where computing the metric is the skill, and
- * this file recomputes each of them, and the figures the other questions rely on, from the numbers
- * in the prompt. The definitions come from the scikit-learn user guide, Google's Machine Learning
- * Crash Course and its Rules of Machine Learning, which the course lists as sources.
+ * learner and ask what it shows. Five numeric questions remain, where counting precision, a
+ * threshold, a parameter total or a number of fits is the skill, and this file recomputes each of
+ * them from the numbers in the prompt. The other questions ask which option is larger, which way a
+ * figure moves or what drives it, since a calculator or a spreadsheet does the sum in practice, and
+ * this file recomputes the figures behind each of those judgements. The definitions come from the
+ * scikit-learn user guide, Google's Machine Learning Crash Course and its Rules of Machine
+ * Learning, which the course lists as sources.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -93,11 +96,20 @@ describe("questions in Machine Learning, from Models to MLOps", () => {
     );
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, of at least two types unless a sum became a choice", () => {
+    // These three lessons used to end on one sum and two choices. The sum is now a choice as well,
+    // so each of them ends on three choices.
+    const threeChoices = new Set([
+      "thresholds-and-ranking",
+      "trees-and-ensembles",
+      "responsible-ml",
+    ]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (threeChoices.has(lesson.id))
+        expect(types, lesson.id).toEqual(["choice", "choice", "choice"]);
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
@@ -108,40 +120,7 @@ describe("questions in Machine Learning, from Models to MLOps", () => {
   });
 
   it("recomputes every numeric answer from the numbers in its prompt", () => {
-    const sxy = (points: [number, number][]) => {
-      const mx = points.reduce((s, p) => s + p[0], 0) / points.length;
-      const my = points.reduce((s, p) => s + p[1], 0) / points.length;
-      return {
-        sxy: points.reduce((s, p) => s + (p[0] - mx) * (p[1] - my), 0),
-        sxx: points.reduce((s, p) => s + (p[0] - mx) ** 2, 0),
-      };
-    };
     const checks: Record<string, (text: string) => number> = {
-      "what-a-model-learns-sxy-three": (t) => sxy(pairs(t)).sxy,
-      "what-a-model-learns-practice-1": (t) => {
-        const { sxy: a, sxx: b } = sxy(pairs(t));
-        return a / b;
-      },
-      "loss-and-gradient-descent-w-after-one-step": (t) => {
-        const [w, gradient, eta] = numbers(t) as [number, number, number];
-        return w - eta * gradient;
-      },
-      "loss-and-gradient-descent-practice-1": (t) => {
-        const points = pairs(t);
-        const w0 = Number(/At w = (-?[\d.]+)/u.exec(flat(t))?.[1]);
-        const eta = Number(/learning rate ([\d.]+)/u.exec(flat(t))?.[1]);
-        const gradient = points.reduce((s, [x, y]) => s + x * (w0 * x - y), 0);
-        expect(gradient).toBe(Number(/gradient is (-?\d+)/u.exec(flat(t))?.[1]));
-        return w0 - eta * gradient;
-      },
-      "classification-and-metrics-f1-another": (t) => {
-        const [p, r] = numbers(t) as [number, number];
-        return (2 * p * r) / (p + r);
-      },
-      "classification-and-metrics-rare-baseline": (t) => {
-        const [n, positives] = numbers(t) as [number, number];
-        return (n - positives) / n;
-      },
       "classification-and-metrics-practice-1": (t) => {
         const [tp, fp] = numbers(t) as [number, number];
         return tp / (tp + fp);
@@ -150,52 +129,9 @@ describe("questions in Machine Learning, from Models to MLOps", () => {
         const flagged = labelled(t).filter((row) => row.score >= 0.5);
         return flagged.filter((row) => row.positive).length / flagged.length;
       },
-      "thresholds-and-ranking-auc-small": (t) => {
-        const scores = numbers(t.split("labels")[0] ?? "");
-        const labels = (t.match(/positive|negative/gu) ?? []).map((w) => w === "positive");
-        return auc(scores, labels);
-      },
-      "thresholds-and-ranking-fpr-at-04": (t) => {
-        const [, fp, negatives] = numbers(t) as [number, number, number];
-        return fp / negatives;
-      },
-      "thresholds-and-ranking-practice-3": (t) => {
-        const [head, tail] = t.split("labels");
-        const scores = numbers(head ?? "");
-        const labels = numbers((tail ?? "").split("What")[0] ?? "").map((x) => x === 1);
-        return auc(scores, labels);
-      },
-      "regularisation-and-cross-validation-pen-l2": (t) => {
-        const [mse, w, lambda] = numbers(t) as [number, number, number];
-        return mse + lambda * w * w;
-      },
-      "regularisation-and-cross-validation-sd-b": (t) => {
-        const [ss, folds] = numbers(t) as [number, number];
-        return Math.sqrt(ss / (folds - 1));
-      },
-      "features-and-leakage-z-of-eleven": (t) => {
-        const [mean, sd, x] = numbers(t) as [number, number, number];
-        return (x - mean) / sd;
-      },
-      "trees-and-ensembles-left-out-5": (t) => {
-        const [draws] = numbers(t) as [number];
-        return (1 - 1 / draws) ** draws;
-      },
-      "trees-and-ensembles-practice-1": (t) => {
-        const [a, b] = numbers(t) as [number, number];
-        return gini(a, b);
-      },
-      "trees-and-ensembles-gain-age-v2": (t) => {
-        const [left, , gl, right, gr] = numbers(t) as [number, number, number, number, number];
-        return (left / 10) * gl + (right / 10) * gr;
-      },
       "neural-networks-params-5-2-1": (t) => {
         const sizes = numbers(t.split("layer sizes")[1] ?? "").slice(0, 3);
         return sizes.slice(1).reduce((s, n, i) => s + (sizes[i] as number) * n + n, 0);
-      },
-      "neural-networks-w2-new": (t) => {
-        const [w, gradient, eta] = numbers(t.replace("w₂", "w")) as [number, number, number];
-        return w - eta * gradient;
       },
       "pipelines-and-experiments-fits-36": (t) => {
         const [a, b, c, folds] = numbers(t) as [number, number, number, number];
@@ -204,30 +140,6 @@ describe("questions in Machine Learning, from Models to MLOps", () => {
       "pipelines-and-experiments-practice-1": (t) => {
         const [a, b, folds] = numbers(t) as [number, number, number];
         return a * b * folds;
-      },
-      "serving-and-release-replicas-16": (t) => {
-        const [peak, each, utilisation] = numbers(t) as [number, number, number];
-        return Math.ceil(peak / (each * (utilisation / 100)));
-      },
-      "serving-and-release-practice-1": (t) => {
-        const [peak, each, utilisation] = numbers(t) as [number, number, number];
-        return Math.ceil(peak / (each * (utilisation / 100)));
-      },
-      "monitoring-and-drift-psi-two-bins": (t) => {
-        const [e1, e2, a1, a2] = numbers(t) as [number, number, number, number];
-        return psi([e1, e2], [a1, a2]);
-      },
-      "monitoring-and-drift-practice-1": (t) => {
-        const n = numbers(t.replace(/\.$/u, ""));
-        return psi(n.slice(0, 3), n.slice(3, 6));
-      },
-      "monitoring-and-drift-psi-169-v2": (t) => {
-        const [e1, e2, a1, a2] = numbers(t) as [number, number, number, number];
-        return psi([e1, e2], [a1, a2]) - (a1 - e1) * Math.log(a1 / e1);
-      },
-      "responsible-ml-practice-2": (t) => {
-        const [found1, n1, found2, n2] = numbers(t.replace(/In group [AB],/gu, "")) as number[];
-        return (found1 as number) / (n1 as number) - (found2 as number) / (n2 as number);
       },
     };
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
@@ -242,6 +154,39 @@ describe("questions in Machine Learning, from Models to MLOps", () => {
       expect(Math.abs(computed - authority.value), question.id).toBeLessThan(
         Math.max(authority.absoluteTolerance, 1e-6),
       );
+    }
+  });
+
+  it("asks each former sum as a choice, with the figure behind it in the prompt", () => {
+    const converted = [
+      "what-a-model-learns-sxy-three",
+      "what-a-model-learns-practice-1",
+      "loss-and-gradient-descent-w-after-one-step",
+      "loss-and-gradient-descent-practice-1",
+      "classification-and-metrics-f1-another",
+      "classification-and-metrics-rare-baseline",
+      "thresholds-and-ranking-auc-small",
+      "thresholds-and-ranking-fpr-at-04",
+      "thresholds-and-ranking-practice-3",
+      "regularisation-and-cross-validation-pen-l2",
+      "regularisation-and-cross-validation-sd-b",
+      "features-and-leakage-z-of-eleven",
+      "trees-and-ensembles-left-out-5",
+      "trees-and-ensembles-practice-1",
+      "trees-and-ensembles-gain-age-v2",
+      "neural-networks-w2-new",
+      "serving-and-release-replicas-16",
+      "serving-and-release-practice-1",
+      "monitoring-and-drift-psi-two-bins",
+      "monitoring-and-drift-practice-1",
+      "monitoring-and-drift-psi-169-v2",
+      "responsible-ml-practice-2",
+    ];
+    for (const suffix of converted) {
+      const question = get(suffix);
+      expect(kind(question), suffix).toBe("choice");
+      expect(question.answerAuthority.kind, suffix).toBe("text");
+      expect(question.prompt, suffix).not.toMatch(/calculator|round|decimal place|to three/iu);
     }
   });
 
@@ -382,6 +327,198 @@ describe("questions in Machine Learning, from Models to MLOps", () => {
 
     // The label delay on day 45.
     expect(45 - 30).toBe(15);
+  });
+
+  it("recomputes the figures behind the questions that ask for a judgement and not a number", () => {
+    const near = (a: number, b: number, digits = 6) => expect(a).toBeCloseTo(b, digits);
+    const meanOf = (xs: number[]) => xs.reduce((s, x) => s + x, 0) / xs.length;
+
+    // Sxy for (1, 3), (2, 5) and (3, 10): the outer examples add 3 and 4, the middle one adds 0.
+    const sxyPoints = pairs(get("what-a-model-learns-sxy-three").prompt);
+    expect(sxyPoints).toEqual([
+      [1, 3],
+      [2, 5],
+      [3, 10],
+    ]);
+    const mx = meanOf(sxyPoints.map((p) => p[0]));
+    const my = meanOf(sxyPoints.map((p) => p[1]));
+    expect([mx, my]).toEqual([2, 6]);
+    expect(sxyPoints.map(([x, y]) => Math.abs((x - mx) * (y - my)))).toEqual([3, 0, 4]);
+    expect(sxyPoints.reduce((s, [x, y]) => s + (x - mx) * (y - my), 0)).toBe(7);
+    expect(sxyPoints.reduce((s, [x]) => s + (x - mx) ** 2, 0)).toBe(2);
+    expect([7 / 2, 6 - (7 / 2) * 2]).toEqual([3.5, -1]);
+
+    // The four-point fit: the labels rise by 6 over 3 hours, and least squares gives 1.9 and 0.
+    const fit = pairs(get("what-a-model-learns-practice-1").prompt);
+    expect(fit).toHaveLength(4);
+    const fx = meanOf(fit.map((p) => p[0]));
+    const fy = meanOf(fit.map((p) => p[1]));
+    expect([fx, fy]).toEqual([2.5, 4.75]);
+    const slope =
+      fit.reduce((s, [x, y]) => s + (x - fx) * (y - fy), 0) /
+      fit.reduce((s, [x]) => s + (x - fx) ** 2, 0);
+    near(slope, 1.9, 10);
+    near(fy - slope * fx, 0, 10);
+    expect(((fit[3] as [number, number])[1] - (fit[0] as [number, number])[1]) / 3).toBe(2);
+
+    // One update at w = 3 on (1, 1) and (2, 3): gradient 8, minimum 1.4, step 0.8, landing at 2.2.
+    const gradientAt = (w: number) => 1 * (w * 1 - 1) + 2 * (w * 2 - 3);
+    expect(gradientAt(3)).toBe(8);
+    near((1 * 1 + 2 * 3) / (1 + 4), 1.4, 10);
+    near(3 - 0.1 * 8, 2.2, 10);
+    near(0.1 * 8, (3 - 1.4) / 2, 10);
+
+    // (1, 2) and (2, 4) from w = 0: loss 10, gradient -10, one step to w = 1, loss 2.5.
+    const loss2 = (w: number) => 0.5 * ((w * 1 - 2) ** 2 + (w * 2 - 4) ** 2);
+    const gradient2 = (w: number) => 1 * (w * 1 - 2) + 2 * (w * 2 - 4);
+    expect([loss2(0), gradient2(0)]).toEqual([10, -10]);
+    near(0 - 0.1 * gradient2(0), 1, 10);
+    near(loss2(1), 2.5, 10);
+    near(loss2(1) / loss2(0), 0.25, 10);
+    near(((1 - 2) / (0 - 2)) ** 2, 0.25, 10);
+
+    // F1 for precision 0.75 and recall 0.90: 0.818, below their average of 0.825 and above 0.75.
+    const f1 = (2 * 0.75 * 0.9) / (0.75 + 0.9);
+    near(f1, 0.818, 3);
+    near((0.75 + 0.9) / 2, 0.825, 10);
+    expect(f1).toBeLessThan(0.825);
+    expect(f1).toBeGreaterThan(0.75);
+    near(0.75 * 0.9, 0.675, 10);
+    near((2 * 18) / (2 * 18 + 6 + 2), 0.818, 3);
+
+    // The baseline on 4,000 people with 20 positives, against a model at 0.99.
+    near((4000 - 20) / 4000, 0.995, 10);
+    near((1 - 0.99) * 4000, 40, 8);
+    near(20 / 4000, 1 / 200, 10);
+
+    // The AUC of the four and the six examples, from the scores and labels in the prompts.
+    const small = get("thresholds-and-ranking-auc-small").prompt;
+    near(
+      auc(
+        numbers(small.split("have")[0] ?? ""),
+        (small.match(/positive|negative/gu) ?? []).map((w) => w === "positive"),
+      ),
+      0.75,
+      10,
+    );
+    const six = get("thresholds-and-ranking-practice-3").prompt;
+    const [sixScores, sixLabels] = six.split("have the labels");
+    const sixValues = numbers(sixScores ?? "");
+    const sixFlags = numbers((sixLabels ?? "").split("where")[0] ?? "").map((x) => x === 1);
+    expect(sixValues).toHaveLength(6);
+    near(auc(sixValues, sixFlags), 8 / 9, 10);
+    // The precision at 0.5 on the same six examples is the 0.75 that one wrong option quotes.
+    const flaggedSix = sixValues.map((v, i) => [v, sixFlags[i]] as const).filter(([v]) => v >= 0.5);
+    expect(flaggedSix.filter(([, p]) => p).length / flaggedSix.length).toBe(0.75);
+
+    // Threshold 0.2 on the eight examples: 7 flagged, 4 positives and 3 of the 4 negatives.
+    const eight: [number, boolean][] = [
+      [0.92, true],
+      [0.85, true],
+      [0.75, false],
+      [0.66, true],
+      [0.58, false],
+      [0.45, true],
+      [0.3, false],
+      [0.15, false],
+    ];
+    const flagged = eight.filter(([s]) => s >= 0.2);
+    expect(flagged).toHaveLength(7);
+    expect(flagged.filter(([, p]) => p)).toHaveLength(4);
+    expect(flagged.filter(([, p]) => !p)).toHaveLength(3);
+    near(3 / 4, 0.75, 10);
+    near(3 / 7, 0.4286, 4);
+
+    // The penalty 0.2 w squared at w = 3, against a mean squared error of 1.5.
+    near(0.2 * 3 ** 2, 1.8, 10);
+    near(1.5 + 0.2 * 3 ** 2, 3.3, 10);
+    near(0.2 * 3, 0.6, 10);
+    near(3 ** 2, 9, 10);
+
+    // Setting B's fold scores against setting A's.
+    const sumSquares = (xs: number[]) => {
+      const m = meanOf(xs);
+      return xs.reduce((s, x) => s + (x - m) ** 2, 0);
+    };
+    const settingA = [0.78, 0.8, 0.76, 0.79, 0.77];
+    const settingB = [0.84, 0.72, 0.8, 0.7, 0.84];
+    near(meanOf(settingA), 0.78, 10);
+    near(meanOf(settingB), 0.78, 10);
+    near(sumSquares(settingA), 0.001, 10);
+    near(sumSquares(settingB), 0.0176, 10);
+    near(sumSquares(settingB) / sumSquares(settingA), 17.6, 8);
+    const sdA = Math.sqrt(sumSquares(settingA) / 4);
+    const sdB = Math.sqrt(sumSquares(settingB) / 4);
+    near(sdA, 0.016, 3);
+    near(sdB, 0.066, 3);
+    near(sdB / sdA, 4.2, 1);
+    near(17.6 / 2, 8.8, 10);
+
+    // The scaler on 2, 4, 4, 4, 5, 5, 7 and 9: mean 5, standard deviation 2, so 11 is 3 and 9 is 2.
+    const training = [2, 4, 4, 4, 5, 5, 7, 9];
+    const mu = meanOf(training);
+    const sigma = Math.sqrt(meanOf(training.map((x) => (x - mu) ** 2)));
+    expect([mu, sigma]).toEqual([5, 2]);
+    expect([(11 - mu) / sigma, (9 - mu) / sigma]).toEqual([3, 2]);
+    near(6 / 4, 1.5, 10);
+    near(11 / 5, 2.2, 10);
+
+    // A bootstrap sample of 5 from 5 rows leaves a given row out with probability 0.8 to the fifth.
+    near(0.8 ** 5, 0.32768, 10);
+    near(1 / Math.E, 0.368, 3);
+    near(1 - 0.8, 0.2, 10);
+
+    // Gini of a 6 and 4 node, a 3 and 1 node, and the loan-term split.
+    near(gini(6, 4), 0.48, 10);
+    near(2 * 0.6 * 0.4, 0.48, 10);
+    near(gini(3, 1), 0.375, 10);
+    near(gini(7, 3), 0.42, 10);
+    near(gini(6, 2), 0.375, 10);
+    near(gini(1, 1), 0.5, 10);
+    near(0.8 * 0.375 + 0.2 * 0.5, 0.4, 10);
+    near(0.42 - 0.4, 0.02, 10);
+    near((0.375 + 0.5) / 2, 0.4375, 10);
+    near(0.375 + 0.5, 0.875, 10);
+    near(0.42 - 0.375, 0.045, 10);
+
+    // One update of a weight at 2 with gradient 8 and learning rate 0.05.
+    near(2 - 0.05 * 8, 1.6, 10);
+    near((0.05 * 8) / 2, 0.2, 10);
+
+    // Replicas: 1,000 at 80 each and a target of 80%, and 400 at 50 each and a target of 80%.
+    near(1000 / (80 * 0.8), 15.625, 10);
+    near(1000 / (15 * 80), 0.8333, 4);
+    near(1000 / (16 * 80), 0.78125, 10);
+    near(1000 / 80, 12.5, 10);
+    near(400 / (50 * 0.8), 10, 10);
+    expect(8 * 50).toBe(400);
+    near(400 / (10 * 50), 0.8, 10);
+
+    // The population stability index of the two and three bins in the prompts.
+    const term = (e: number, a: number) => (a - e) * Math.log(a / e);
+    near(term(0.7, 0.6), 0.0154, 4);
+    near(term(0.3, 0.4), 0.0288, 4);
+    near(psi([0.7, 0.3], [0.6, 0.4]), 0.0442, 4);
+    near(Math.log(0.6 / 0.7), -0.154, 3);
+    near(Math.log(0.4 / 0.3), 0.2877, 4);
+    near(term(0.5, 0.4), 0.0223, 4);
+    near(term(0.2, 0.3), 0.0405, 4);
+    near(psi([0.5, 0.3, 0.2], [0.4, 0.3, 0.3]), 0.0629, 4);
+    near(term(0.5, 0.3), 0.1022, 4);
+    near(term(0.5, 0.7), 0.0673, 4);
+    near(psi([0.5, 0.5], [0.3, 0.7]), 0.169, 3);
+    expect(term(0.5, 0.3)).toBeGreaterThan(term(0.5, 0.7));
+
+    // True positive rates of the two groups, and the same number of misses in each.
+    near(30 / 40, 0.75, 10);
+    near(10 / 20, 0.5, 10);
+    near(30 / 40 - 10 / 20, 0.25, 10);
+    expect([40 - 30, 20 - 10]).toEqual([10, 10]);
+
+    // The review cards that used to drill a sum.
+    near(45 / 60, 0.75, 10);
+    near(0.2 * 1.5 ** 2, 0.45, 10);
+    near(0.45 / 4, 0.1125, 4);
   });
 
   it("puts a case in front of the learner: scores, counts, a split, a feature or a result", () => {

@@ -94,6 +94,14 @@ pnpm stop
 
 From a checkout the server runs TypeScript through `tsx`, and its build command is a strict typecheck. The web application produces the deployable browser bundle. `pnpm package:release` bundles the server with esbuild into the Windows release.
 
+## Where Discere runs
+
+The same code runs as the Windows release (Instrumenta) and as a hosted copy on George's homelab,
+for his phone and a few testers. They differ only in settings;
+the homelab is updated by `scripts/deploy-homelab.sh`, not by a release. Read `docs/homelab.md`
+before changing deployment, settings, the tutor provider, saves or Read aloud. The repository is
+public: keep the homelab's addresses, hostnames and logins out of it.
+
 ## Change discipline
 
 1. Read the relevant ADR in `docs/adr/` before changing a boundary.

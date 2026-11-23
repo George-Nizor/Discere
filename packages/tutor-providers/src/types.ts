@@ -76,6 +76,11 @@ export interface TutorProvider {
   readonly label: string;
   /** True when the provider produces a reply in process rather than by learner copy/paste. */
   readonly generatesInProcess: boolean;
+  /**
+   * Asks the model to load without answering anything, so the learner's first question does not
+   * wait for it. Only providers whose model can be cold (a local server) implement it.
+   */
+  warm?(): Promise<void>;
   generate<TRequest, TResponse>(
     request: TutorRequest<TRequest>,
     options?: TutorGenerateOptions,

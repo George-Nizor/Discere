@@ -6,7 +6,8 @@ describe("tutor error wording", () => {
     expect(tutorErrorMessage("EXAM_GUARDRAIL", "fallback")).toContain("Exam mode");
     expect(tutorErrorMessage("TUTOR_PROVIDER_TIMEOUT", "fallback")).toContain("did not finish");
     expect(tutorErrorMessage("TUTOR_PROVIDER_UNAVAILABLE", "fallback")).toContain("not running");
-    expect(tutorErrorMessage("TUTOR_WRITING_GATE", "fallback")).toContain("withheld");
+    expect(tutorErrorMessage("TUTOR_WRITING_GATE", "fallback")).toContain("held back");
+    expect(tutorErrorMessage("TUTOR_ANSWER_WITHHELD", "fallback")).toContain("gave the answer away");
   });
 
   it("uses the server message when the code is unknown", () => {

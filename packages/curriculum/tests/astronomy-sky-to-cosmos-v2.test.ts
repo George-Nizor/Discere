@@ -32,11 +32,6 @@ const question = (id: string): Question => {
   if (!found) throw new Error(`no question ${id}`);
   return found;
 };
-const key = (id: string) => {
-  const authority = question(id).answerAuthority;
-  if (authority.kind !== "numeric") throw new Error(`${id} is not numeric`);
-  return authority.value;
-};
 const choiceMarked = (id: string) => {
   const item = question(id);
   if (item.answerAuthority.kind !== "text") throw new Error("not a choice");
@@ -54,7 +49,11 @@ const markedLabels = (id: string) => {
 /** Round to a number of decimal places, as the prompt asks. */
 const dp = (x: number, places: number) => Number(x.toFixed(places));
 const nearest = (x: number, step: number) => Math.round(x / step) * step;
-const same = (id: string, expected: number) => expect(key(id)).toBeCloseTo(expected, 9);
+/** The one option a converted choice question marks right, which must carry this label. */
+const picks = (id: string, label: string) => {
+  expect(choiceMarked(id), id).toHaveLength(1);
+  expect(markedLabels(id), id).toEqual([label]);
+};
 
 const rad = Math.PI / 180;
 /** Altitude of a body at declination δ seen from latitude φ at hour angle H, all in degrees. */
@@ -215,26 +214,41 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
 
   it("1 The turning sky: rate, pole height, circumpolar limit (story format)", () => {
     const p = "astro-turning-sky-";
-    // The ported prototype: six practice items and three skill-check items.
-    same(p + "7", (360 / 24) * 3);
+    // The ported prototype: six practice items and three skill-check items. The sky turns as one
+    // wheel, so every star turns through the same angle: 3 hours at 15° an hour.
+    picks(p + "7", "Both turn through the same angle");
+    expect((360 / 24) * 3).toBe(45);
     // The navigator item (12, retired but still in the bank) and its replacement (12-v2, in the
     // lesson): the pole's altitude is the latitude, so two readings give the distance sailed north.
-    same(p + "12", altitude(41, 90, 0));
+    picks(p + "12", "The ship is at latitude about 41° N");
+    expect(altitude(41, 90, 0)).toBeCloseTo(41, 9);
     const kmPerDegree = Math.round(6371 * rad); // the 111 km the prompt gives
     expect(kmPerDegree).toBe(111);
-    same(p + "12-v2", (altitude(56, 90, 0) - altitude(41, 90, 0)) * kmPerDegree);
-    expect(key(p + "12-v2")).toBe(15 * 111);
-    // The wrong values the item flags are the slips it names: the degrees, and either latitude in km.
-    expect(question(p + "12-v2").misconceptions!.flatMap((m) => m.match.numeric ?? [])).toEqual([
-      56 - 41,
-      41 * kmPerDegree,
-      56 * kmPerDegree,
-    ]);
+    picks(p + "12-v2", "About 1,700 km");
+    const sailed = (altitude(56, 90, 0) - altitude(41, 90, 0)) * kmPerDegree;
+    expect(sailed).toBeCloseTo(15 * 111, 6);
+    expect(nearest(sailed, 100)).toBe(1700);
+    // The wrong options are the slips it names: either latitude turned into kilometres.
+    expect(nearest(41 * kmPerDegree, 100)).toBe(4600);
+    expect(nearest(56 * kmPerDegree, 100)).toBe(6200);
+    expect(question(p + "12-v2").choices!.map((choice) => choice.label)).toEqual(
+      expect.arrayContaining(["About 4,600 km", "About 6,200 km"]),
+    );
     for (const lesson of bundle.lessons.filter((l) => l.id === "turning-sky"))
       expect(lesson.steps.map((step) => step.checkQuestionId)).toContain(p + "12-v2");
-    same(p + "13", circumpolarLimit(40));
-    same(p + "14", 135 / 15);
-    same(p + "15", circumpolarLimit(30));
+    picks(p + "13", "A star at declination +60°");
+    expect(circumpolarLimit(40)).toBeCloseTo(50, 6);
+    expect(lowestAltitude(40, 60)).toBeGreaterThan(0);
+    expect(lowestAltitude(40, 45)).toBeLessThan(0);
+    expect(lowestAltitude(40, 20)).toBeLessThan(0);
+    picks(p + "14", "About 9 hours");
+    expect(135 / 15).toBe(9);
+    expect((135 / 360) * 12).toBe(4.5); // taking 12 hours as the whole turn
+    expect(0.75 * 24).toBe(18); // three quarters of the day, which would be 270°
+    picks(p + "15", "Only from 60° N");
+    expect(circumpolarLimit(30)).toBeCloseTo(60, 6);
+    expect(lowestAltitude(60, 55)).toBeGreaterThan(0);
+    expect(lowestAltitude(30, 55)).toBeLessThan(0);
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(choiceMarked(p + "10")).toEqual(["a"]);
     expect(choiceMarked(p + "16")).toEqual(["c"]);
@@ -246,22 +260,37 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(Math.round((52 * 6371 * rad) / 100) * 100).toBe(5800); // equator to Amsterdam, km
     expect(Math.round(6371 * rad)).toBe(111); // one degree of latitude, km
     // Still in the question bank, no longer in the lesson.
-    same(p + "2", 15 * 6);
-    same(p + "3", 90 - 52);
-    same(p + "4", 90 - Math.abs(52 - 20));
-    same(p + "5", 90 - Math.abs(30 - -10));
-    same(p + "11", 270 / 15);
+    picks(p + "2", "A quarter of a full turn");
+    expect(6 / 24).toBe(0.25);
+    picks(p + "3", "It moves south of +38°, so more stars never set");
+    expect(circumpolarLimit(52)).toBeCloseTo(38, 6);
+    expect(circumpolarLimit(60)).toBeLessThan(circumpolarLimit(52));
+    picks(p + "4", "The +50° star, which passes near the zenith");
+    expect(altitude(52, 50, 0)).toBeGreaterThan(altitude(52, 20, 0));
+    expect(altitude(52, 20, 0)).toBeCloseTo(90 - Math.abs(52 - 20), 9);
+    picks(p + "5", "The +10° star, which lies nearer the zenith");
+    expect(altitude(30, 10, 0)).toBeCloseTo(70, 9);
+    expect(altitude(30, -10, 0)).toBeCloseTo(50, 9);
+    picks(p + "11", "About 18 hours");
+    expect(270 / 15).toBe(18);
   });
 
   it("2 Why the seasons change: noon altitude is 90° − |φ − δ|", () => {
     const p = "astro-seasons-";
     const tilt = 23.4;
     const noon = (latitude: number, declination: number) => 90 - Math.abs(latitude - declination);
-    same(p + "7", dp(tilt - -tilt, 1));
-    same(p + "1", dp(noon(51.5, tilt), 1));
-    same(p + "2", dp(noon(51.5, -tilt), 1));
-    same(p + "3", noon(40, 0));
-    same(p + "4", dp(noon(51.5, 0), 1));
+    picks(p + "7", "About 47°, twice the tilt");
+    expect(dp(tilt - -tilt, 1)).toBe(46.8);
+    picks(p + "1", "About 23° higher, a rise equal to the tilt");
+    expect(dp(noon(51.5, tilt) - noon(51.5, 0), 1)).toBe(tilt);
+    picks(p + "2", "About 15°");
+    expect(Math.round(noon(51.5, tilt))).toBe(62); // the June height the prompt quotes
+    expect(Math.abs(noon(51.5, 0) - 38)).toBeLessThan(1); // and the equinox height
+    expect(Math.round(noon(51.5, -tilt))).toBe(15);
+    picks(p + "3", "Higher at 40° N, by about 20°");
+    expect(noon(40, 0) - noon(60, 0)).toBe(20);
+    picks(p + "4", "The same height on both dates");
+    expect(dp(noon(51.5, 0), 1)).toBe(38.5);
     // Item 5 is a four-way choice: the Sun is overhead at noon where 90° − |φ − δ| = 90°, so the
     // latitude of the line equals the June declination, +tilt. Each option is a latitude to try.
     const lines = [
@@ -284,7 +313,9 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
       "c",
       "d",
     ]);
-    same(p + "11", dp(noon(-33.9, tilt), 1));
+    picks(p + "11", "Lower, by about 23°");
+    expect(dp(noon(-33.9, 0) - noon(-33.9, tilt), 1)).toBe(tilt);
+    expect(dp(noon(-33.9, tilt), 1)).toBe(32.7);
     expect(choiceMarked(p + "10")).toEqual(["a"]);
     expect(choiceMarked(p + "6")).toEqual(["c"]);
     expect(markedLabels(p + "6")).toEqual([
@@ -336,13 +367,24 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("3 Phases and eclipses: lit fraction, synodic month, angular size", () => {
     const p = "astro-moon-and-eclipses-";
     const lit = (degrees: number) => ((1 - Math.cos((degrees * Math.PI) / 180)) / 2) * 100;
-    same(p + "7", 30 / 2);
-    same(p + "1", dp(lit(90), 6));
-    same(p + "6", dp(lit(120), 6));
-    same(p + "2", dp(360 / 29.53, 1));
-    same(p + "5", dp(29.53 / 4, 2));
-    same(p + "4", dp((3475 / 384400) * 57.3, 2));
-    same(p + "11", dp((3475 / (2 * 384400)) * 57.3, 2));
+    picks(p + "7", "About 15 days");
+    expect(30 / 2).toBe(15);
+    picks(p + "1", "About half of it");
+    expect(lit(90)).toBeCloseTo(50, 9);
+    picks(p + "6", "A gibbous Moon, with more than half the disc lit");
+    expect(lit(120)).toBeCloseTo(75, 9); // more than half, and less than all
+    picks(p + "2", "About 12°");
+    expect(dp(360 / 29.53, 1)).toBe(12.2);
+    picks(p + "5", "About one week");
+    expect(dp(29.53 / 4, 2)).toBe(7.38);
+    picks(p + "4", "About the same, since the two ratios nearly cancel");
+    const moonSize = (3475 / 384400) * 57.3;
+    const sunSize = (1.39e6 / 1.496e8) * 57.3;
+    expect(sunSize / moonSize).toBeGreaterThan(0.95);
+    expect(sunSize / moonSize).toBeLessThan(1.05);
+    expect(Math.round(1.496e8 / 384400 / 10) * 10).toBe(390); // the Sun's distance over the Moon's
+    picks(p + "11", "It would be about half as large");
+    expect(((3475 / (2 * 384400)) * 57.3) / moonSize).toBeCloseTo(0.5, 9);
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(question(p + "3").answerAuthority.kind).toBe("text"); // one word: "full"
     // Numbers in the prose.
@@ -366,13 +408,24 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
 
   it("4 Kepler's laws: perihelion, speed ratio, P² = a³", () => {
     const p = "astro-kepler-laws-";
-    same(p + "7", 1 + 9);
-    same(p + "1", dp(2 * (1 - 0.6), 6));
-    same(p + "2", (2 * (1 + 0.6)) / (2 * (1 - 0.6)));
-    same(p + "3", Math.sqrt(4 ** 3));
-    same(p + "4", Math.sqrt(1 ** 3 / 4));
-    same(p + "5", dp(11.86 ** (2 / 3), 2));
-    same(p + "11", (0.5 + 7.5) / 2);
+    picks(p + "7", "Longer than 9 AU");
+    expect(1 + 9).toBeGreaterThan(9);
+    picks(p + "1", "About 0.8 AU, inside Earth’s orbit");
+    expect(2 * (1 - 0.6)).toBeCloseTo(0.8, 9);
+    expect(2 * 0.6).toBeCloseTo(1.2, 9); // a × e, the slip the second option names
+    expect(2 * (1 + 0.6)).toBeCloseTo(3.2, 9); // the far end, which the last option names
+    picks(p + "2", "About four times as fast");
+    expect(4 / 1).toBe(4); // the inverse ratio of the distances, 4 AU to 1 AU
+    picks(p + "3", "Eight times as long");
+    expect(Math.sqrt(4 ** 3)).toBe(8);
+    picks(p + "4", "Half as long");
+    expect(Math.sqrt(1 ** 3 / 4)).toBe(0.5);
+    picks(p + "5", "About 5 AU");
+    expect(12 ** (2 / 3)).toBeGreaterThan(5);
+    expect(12 ** (2 / 3)).toBeLessThan(5.5);
+    expect(dp(11.86 ** (2 / 3), 2)).toBe(5.2); // the exact period gives 5.2 AU
+    picks(p + "11", "About 4 AU");
+    expect((0.5 + 7.5) / 2).toBe(4);
     expect(3 * (1 + 0.5)).toBe(4.5); // the worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(choiceMarked(p + "9")).toEqual(["a"]);
@@ -393,13 +446,25 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("5 Newton's gravitation: inverse square, product of masses, field", () => {
     const p = "astro-newton-gravity-";
     const G = 6.674e-11;
-    same(p + "2", 2 * 3);
-    same(p + "3", dp(3.986e14 / 6.371e6 ** 2, 2));
+    picks(p + "2", "It becomes six times as strong");
+    expect(2 * 3).toBe(6);
+    picks(p + "3", "About 10 m/s²");
+    expect(dp(3.986e14 / 6.371e6 ** 2, 2)).toBe(9.82);
+    // The slips: the radius left in kilometres, and the radius not squared.
+    expect(nearest(3.986e14 / 6371 ** 2, 1e6)).toBe(1e7);
+    expect(nearest(3.986e14 / 6.371e6, 1e7)).toBe(6e7);
     // Earth on Moon and Moon on Earth: the same product of masses over the same r².
     const [earth, moon, r] = [81, 1, 3.844e8];
-    same(p + "5", dp(4.283e13 / 3.39e6 ** 2, 2));
-    same(p + "7", 1 / 2 ** 2);
-    same(p + "11", 1 / 4 ** 2);
+    picks(p + "5", "About two fifths of Earth’s");
+    const marsOverEarth = 4.283e13 / 3.39e6 ** 2 / (3.986e14 / 6.371e6 ** 2);
+    expect(marsOverEarth).toBeGreaterThan(0.35);
+    expect(marsOverEarth).toBeLessThan(0.45);
+    expect(0.1 / 0.5 ** 2).toBeCloseTo(0.4, 9); // a tenth of the GM, half of the radius
+    expect(dp(4.283e13 / 3.39e6 ** 2, 2)).toBe(3.73);
+    picks(p + "7", "A quarter of Earth’s");
+    expect(1 / 2 ** 2).toBe(0.25);
+    picks(p + "11", "It becomes a sixteenth as strong");
+    expect(1 / 4 ** 2).toBe(0.0625);
     expect(2 ** 2 * 2).toBe(8); // the worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     // Hammer and feather: F = GMm/r² and a = F/m = GM/r², whatever m is.
@@ -429,13 +494,28 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("6 Orbits, escape and tides: circular and escape speed, tidal cube law", () => {
     const p = "astro-orbits-escape-tides-";
     const GM = 3.986e14;
-    same(p + "7", 8 / 1); // 8 km along the ground per 5 m of fall, which takes 1 s
-    same(p + "1", dp(Math.sqrt(GM / 6.771e6) / 1000, 2));
-    same(p + "2", dp(Math.sqrt((2 * GM) / 6.371e6) / 1000, 2));
-    same(p + "3", dp(Math.sqrt(1.327e20 / 1.496e11) / 1000, 1));
-    same(p + "4", 2 ** 3);
-    same(p + "5", dp(Math.sqrt((2 * 4.9e12) / 1.737e6) / 1000, 2));
-    same(p + "11", dp(Math.sqrt(GM / 8e6) / 1000, 2));
+    picks(p + "7", "About 8 km/s");
+    expect(8000 / 1000).toBe(8); // 8 km along the ground per 5 m of fall, which takes 1 s
+    picks(p + "1", "Slightly slower, about 7.7 km/s");
+    const surface = Math.sqrt(GM / 6.371e6) / 1000;
+    const station = Math.sqrt(GM / 6.771e6) / 1000;
+    expect(dp(surface, 1)).toBe(7.9);
+    expect(dp(station, 1)).toBe(7.7);
+    expect(dp(surface * (6.371 / 6.771), 1)).toBe(7.4); // speed falling in proportion to the distance
+    expect(dp(6.771 / 6.371, 2)).toBe(1.06);
+    picks(p + "2", "About 11 km/s");
+    expect(dp(Math.sqrt((2 * GM) / 6.371e6) / 1000, 2)).toBe(11.19);
+    picks(p + "3", "About 30 km/s");
+    expect(dp(Math.sqrt(1.327e20 / 1.496e11) / 1000, 1)).toBe(29.8);
+    picks(p + "4", "About eight times as large");
+    expect(2 ** 3).toBe(8);
+    picks(p + "5", "About a fifth of it");
+    const moonOverEarth = Math.sqrt((2 * 4.9e12) / 1.737e6) / Math.sqrt((2 * GM) / 6.371e6);
+    expect(moonOverEarth).toBeGreaterThan(0.2);
+    expect(moonOverEarth).toBeLessThan(0.23);
+    expect(Math.sqrt(1 / 80 / (1 / 4))).toBeCloseTo(0.2236, 3); // from the rounded ratios in the prompt
+    picks(p + "11", "The farther one moves half as fast");
+    expect(Math.sqrt(GM / 32e6) / Math.sqrt(GM / 8e6)).toBeCloseTo(0.5, 9);
     expect(dp(Math.sqrt(GM / 3.844e8) / 1000, 2)).toBe(1.02); // the worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(choiceMarked(p + "10")).toEqual(["a"]);
@@ -456,13 +536,25 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
 
   it("7 Brightness and distance: flux, parallax, equal-flux distance", () => {
     const p = "astro-brightness-and-distance-";
-    same(p + "7", 3 ** 2);
-    same(p + "1", 1 / 2 ** 2);
-    same(p + "2", Math.round(3.828e26 / (4 * Math.PI * 1.496e11 ** 2)));
-    same(p + "3", dp(1 / 0.768, 2));
-    same(p + "4", Math.sqrt(100));
-    same(p + "5", dp((1 / 0.05) * 3.26, 1));
-    same(p + "11", dp(4 / 3 ** 2, 3));
+    picks(p + "7", "It becomes 9 times as large");
+    expect(3 ** 2).toBe(9);
+    picks(p + "1", "It falls to a quarter");
+    expect(1 / 2 ** 2).toBe(0.25);
+    picks(p + "2", "About 1,400 W/m²");
+    const flux = (area: number) => 3.83e26 / (area * 1.5e11 ** 2);
+    expect(nearest(flux(4 * Math.PI), 100)).toBe(1400);
+    expect(nearest(flux(Math.PI), 100)).toBe(5400); // the area of a circle, not a sphere
+    expect(nearest(flux(1), 1000)).toBe(17000); // the 4π left out
+    expect(Math.round(3.828e26 / (4 * Math.PI * 1.496e11 ** 2))).toBe(1361); // the exact value
+    picks(p + "3", "About 1.3 parsecs");
+    expect(dp(1 / 0.768, 1)).toBe(1.3);
+    picks(p + "4", "10 times as far");
+    expect(Math.sqrt(100)).toBe(10);
+    picks(p + "5", "The first is ten times as far");
+    expect(1 / 0.05 / (1 / 0.5)).toBeCloseTo(10, 9);
+    picks(p + "11", "A little under half of Y’s");
+    expect(4 / 3 ** 2).toBeCloseTo(4 / 9, 12);
+    expect(4 / 3 ** 2).toBeLessThan(0.5);
     expect(Math.round(3.828e26 / (4 * Math.PI * (5 * 1.496e11) ** 2))).toBe(54); // worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(choiceMarked(p + "9")).toEqual(["a"]);
@@ -476,13 +568,25 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("8 Temperature, colour and motion: Wien's law and the Doppler shift", () => {
     const p = "astro-colour-and-motion-";
     const wien = 2.898e-3;
-    same(p + "7", ((505 - 500) / 500) * 100);
-    same(p + "1", Math.round((wien / 5772) * 1e9));
-    same(p + "2", nearest(wien / 290e-9, 100));
-    same(p + "3", nearest((3e5 * (662.84 - 656.28)) / 656.28, 10));
-    same(p + "4", dp((500 * -150) / 3e5, 3));
-    same(p + "6", Math.round((wien / 3000) * 1e9));
-    same(p + "11", nearest((3e5 * 1.31) / 656.28, 10));
+    picks(p + "7", "About 1%");
+    expect(((505 - 500) / 500) * 100).toBeCloseTo(1, 9);
+    picks(p + "1", "About 500 nm, in visible light");
+    expect(Math.round((wien / 5772) * 1e9)).toBe(502);
+    picks(p + "2", "About 10,000 K");
+    expect(nearest(wien / 290e-9, 100)).toBe(10000);
+    picks(p + "3", "About 3,000 km/s, away from us");
+    expect(662.84).toBeGreaterThan(656.28); // a longer wavelength is a redshift, so the star recedes
+    expect((662.84 - 656.28) / 656.28).toBeCloseTo(0.01, 4);
+    expect(nearest((3e5 * (662.84 - 656.28)) / 656.28, 10)).toBe(3000);
+    picks(p + "4", "By about 0.05%, to a shorter wavelength");
+    expect(150 / 3e5).toBeCloseTo(0.0005, 12);
+    expect(dp((500 * -150) / 3e5, 3)).toBe(-0.25); // negative: a shorter wavelength
+    picks(p + "6", "In the infrared, past red light");
+    expect(Math.round((wien / 3000) * 1e9)).toBe(966);
+    expect(Math.round((wien / 3000) * 1e9)).toBeGreaterThan(700); // beyond the red end
+    picks(p + "11", "About 600 km/s");
+    expect(nearest((3e5 * 1.31) / 656.28, 10)).toBe(600);
+    expect(1.31 / 656.28).toBeCloseTo(0.002, 3);
     expect(Math.round((wien / 9000) * 1e9)).toBe(322); // the worked example
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(choiceMarked(p + "5")).toEqual(["b"]);
@@ -500,27 +604,37 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
   it("9 The H–R diagram: L = R²(T/T☉)⁴", () => {
     const p = "astro-hr-diagram-";
     const lum = (radius: number, tRatio: number) => radius ** 2 * tRatio ** 4;
-    same(p + "7", 2 ** 2);
-    same(p + "1", lum(1, 2));
-    same(p + "2", nearest(lum(760, 3600 / 5772), 1000));
-    same(p + "3", dp(lum(0.01, 4), 4));
-    same(p + "5", Math.sqrt(100));
+    picks(p + "7", "Four times as much");
+    expect(2 ** 2).toBe(4);
+    picks(p + "1", "Sixteen times as luminous");
+    expect(lum(1, 2)).toBe(16);
+    picks(p + "2", "About 90,000 times the Sun’s");
+    expect(nearest(lum(760, 3600 / 5772), 10000)).toBe(90000);
+    expect(3600 / 5772).toBeCloseTo(0.6, 1);
+    expect(760 ** 2).toBe(577600); // the radius effect alone, the slip the second option names
+    picks(p + "3", "About a fortieth of the Sun’s");
+    expect(dp(lum(0.01, 4), 4)).toBe(0.0256);
+    expect(1 / lum(0.01, 4)).toBeCloseTo(39, 0);
+    picks(p + "5", "The luminous star is 10 times as large");
+    expect(Math.sqrt(100)).toBe(10);
     // Item 6 (retired but still in the bank): solve 4 = 2² (T/T☉)⁴ for T.
-    same(p + "6", 5772 * (4 / 2 ** 2) ** 0.25);
+    picks(p + "6", "The same temperature");
+    expect(5772 * (4 / 2 ** 2) ** 0.25).toBeCloseTo(5772, 9);
     // Item 6-v2 (in the lesson): twice the Sun's radius and 64 L☉, so (T/T☉)⁴ = 64 / 2² = 16.
     const [radius6, luminosity6] = [2, 64];
     const tRatio6 = (luminosity6 / radius6 ** 2) ** 0.25;
     expect(tRatio6).toBeCloseTo(2, 12);
     expect(lum(radius6, tRatio6)).toBeCloseTo(luminosity6, 9); // the answer puts back the luminosity
-    same(p + "6-v2", 5772 * tRatio6);
-    expect(key(p + "6-v2")).toBe(11544);
-    // The slips the item flags: the fourth root of 64 alone, and a square root where a fourth is needed.
-    const flagged6 = question(p + "6-v2").misconceptions!.flatMap((m) => m.match.numeric ?? []);
-    expect(flagged6).toHaveLength(4);
-    for (const value of flagged6.slice(0, 3))
-      expect(Math.abs(value - 5772 * luminosity6 ** 0.25)).toBeLessThan(1);
-    expect(flagged6[3]).toBe(5772 * Math.sqrt(luminosity6 / radius6 ** 2));
-    same(p + "11", lum(0.5, 2));
+    picks(p + "6-v2", "Twice the Sun’s");
+    expect(5772 * tRatio6).toBeCloseTo(11544, 6);
+    // The slips the item names: the fourth root of 64 alone, and a square root where a fourth is needed.
+    expect(luminosity6 ** 0.25).toBeCloseTo(2.83, 2);
+    expect(Math.sqrt(luminosity6 / radius6 ** 2)).toBe(4);
+    expect(question(p + "6-v2").choices!.map((choice) => choice.label)).toEqual(
+      expect.arrayContaining(["Four times the Sun’s", "About 2.8 times the Sun’s"]),
+    );
+    picks(p + "11", "Four times as luminous");
+    expect(lum(0.5, 2)).toBe(4);
     expect(lum(2, 1.5)).toBeCloseTo(20.25, 9); // the worked example
     expect(3 ** 2).toBe(9); // a star three times as wide has nine times the surface
     expect(3 ** 4).toBe(81); // a surface three times hotter shines 81 times as brightly
@@ -537,12 +651,19 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
 
   it("10 How mass sets a star's life: t = 10 Gyr × M^−2.5, L = M^3.5", () => {
     const p = "astro-star-lives-";
-    same(p + "7", 3 / 12);
-    same(p + "1", dp((10e9 * 4 ** -2.5) / 1e6, 1));
-    same(p + "2", dp(2 ** 3.5, 1));
-    same(p + "3", dp(10 * 0.5 ** -2.5, 1));
-    same(p + "5", Math.round((1e7 / 1e10) ** (-1 / 2.5)));
-    same(p + "10", nearest(10 ** 3.5, 100));
+    picks(p + "7", "A quarter as long");
+    expect(3 / 12).toBe(0.25);
+    picks(p + "1", "About 300 million years");
+    expect(dp((10e9 * 4 ** -2.5) / 1e6, 1)).toBe(312.5);
+    picks(p + "2", "About 11 times as luminous");
+    expect(dp(2 ** 3.5, 1)).toBe(11.3);
+    picks(p + "3", "About 60 billion years");
+    expect(dp(10 * 0.5 ** -2.5, 1)).toBe(56.6);
+    picks(p + "5", "About 16");
+    expect(Math.round((1e7 / 1e10) ** (-1 / 2.5))).toBe(16);
+    expect(Math.abs(16 ** 2.5 - 1000)).toBeLessThan(50); // M^2.5 is about a thousand
+    picks(p + "10", "About 3,000 times as luminous");
+    expect(nearest(10 ** 3.5, 100)).toBe(3200);
     expect(dp(10 * 2 ** -2.5, 2)).toBe(1.77); // the worked example
     expect(dp(3 ** 3.5, 0)).toBe(47); // the teaching screen's 3 M☉ example
     expect(Math.round((10e9 * 10 ** -2.5) / 1e6)).toBe(32); // a 10 M☉ star lasts about 32 million years
@@ -550,20 +671,32 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
     expect(dp(100 ** 0.4, 1)).toBe(6.3); // a star that lasts a hundredth as long as the Sun
     expect(choiceMarked(p + "8")).toEqual(["a"]);
     expect(dp(2 ** 3.5, 0)).toBe(11); // the reveal for a 2 M☉ star
-    expect(bundle.questions.find((item) => item.id === p + "7")!.prompt).toContain(
-      "Give a decimal",
-    );
   });
 
   it("11 Galaxies and Hubble's law: v = H₀d", () => {
     const p = "astro-expanding-universe-";
-    same(p + "7", (20 * 2 - 20) / (10 * 2 - 10)); // C's gain over B's gain when every gap doubles
-    same(p + "1", dp(0.78 * 3.26, 1));
-    same(p + "2", 70 * 100);
-    same(p + "3", 14000 / 70);
-    same(p + "4", (73 - 67) * 300);
-    same(p + "5", Math.round((3e5 * (510 - 500)) / 500 / 70));
-    same(p + "11", 72 * 150);
+    picks(p + "7", "C moves twice as far as B");
+    expect((20 * 2 - 20) / (10 * 2 - 10)).toBe(2); // C's gain over B's gain when every gap doubles
+    picks(p + "1", "About 2.5 million years ago");
+    expect(dp(0.78 * 3.26, 1)).toBe(2.5);
+    picks(p + "2", "About 7,000 km/s");
+    expect(70 * 100).toBe(7000);
+    picks(p + "3", "About 200 Mpc");
+    expect(3500 / 70).toBe(50); // the first galaxy of the prompt
+    expect(14000 / 3500).toBe(4);
+    expect(14000 / 70).toBe(200);
+    picks(p + "4", "They differ by about 9%, whatever the distance");
+    expect(Math.round(((73 - 67) / ((73 + 67) / 2)) * 100)).toBe(9);
+    for (const distance of [30, 300, 3000])
+      expect((73 * distance - 67 * distance) / (70 * distance)).toBeCloseTo(6 / 70, 9);
+    expect((73 - 67) * 300).toBe(1800); // the gap the feedback quotes
+    picks(p + "5", "The first is twice as far");
+    expect((510 - 500) / (505 - 500)).toBe(2);
+    expect(Math.round((3e5 * (510 - 500)) / 500 / 70)).toBe(86);
+    expect(Math.round((3e5 * (505 - 500)) / 500 / 70)).toBe(43);
+    picks(p + "11", "About 11,000 km/s, a few percent of light speed");
+    expect(72 * 150).toBe(10800);
+    expect(dp((72 * 150) / 3e5, 3)).toBe(0.036);
     expect(70 * 30).toBe(2100); // the worked example
     expect(dp(0.05 * 3.26 * 1000, 0)).toBe(163); // the Large Magellanic Cloud, in thousands of years
     expect([5 * 1.2 - 5, 15 * 1.2 - 15]).toEqual([1, 3]); // the 20% stretch of the sheet, 5 cm and 15 cm gaps
@@ -586,12 +719,18 @@ describe("Astronomy: Sky to Cosmos (v2)", () => {
 
   it("12 The Big Bang: 1/H₀, the background's peak and its stretch", () => {
     const p = "astro-big-bang-";
-    same(p + "7", 100 / 50);
-    same(p + "1", dp(3.086e19 / 70 / 3.156e16, 1));
-    same(p + "2", dp((2.898e-3 / 2.725) * 1000, 2));
-    same(p + "3", Math.round(3000 / 2.725));
-    same(p + "4", dp(977.8 / 50, 1));
-    same(p + "11", dp((1.0 * Math.round(3000 / 2.725)) / 1000, 2));
+    picks(p + "7", "The faster car");
+    expect(100 / 100).toBeLessThan(100 / 50); // hours since leaving: 1 for the faster car, 2 for the slower
+    picks(p + "1", "About 14 billion years");
+    expect(dp(3.086e19 / 70 / 3.156e16, 1)).toBe(14);
+    picks(p + "2", "About 1 mm, in the microwave range");
+    expect(dp((2.898e-3 / 2.725) * 1000, 2)).toBe(1.06);
+    picks(p + "3", "About 1,000 times longer");
+    expect(Math.round(3000 / 2.725)).toBe(1101);
+    picks(p + "4", "About 20 billion years");
+    expect(dp(977.8 / 50, 1)).toBe(19.6);
+    picks(p + "11", "About 1 mm, in the microwave range");
+    expect(dp((1.0 * Math.round(3000 / 2.725)) / 1000, 2)).toBe(1.1);
     expect(dp(3.086e19 / 60 / 3.156e16, 1)).toBe(16.3); // the worked example
     expect(60 / 40).toBe(1.5); // the car on the first screen
     expect(dp(3.086e19 / 3.156e16, 1)).toBe(977.8); // the shortcut constant

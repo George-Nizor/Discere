@@ -1,4 +1,4 @@
-import { resolveDatabasePath } from "@discere/paths";
+import { dataDirectory, resolveDatabasePath } from "@discere/paths";
 import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
@@ -21,6 +21,8 @@ import {
 import { registerCodeQuestionRoutes } from "./rust/questions.js";
 import type { RustRuntime } from "./rust/runtime.js";
 import { registerSearchRoutes } from "./search.js";
+import { registerSpeechRoutes } from "./speech/routes.js";
+import { SpeechService } from "./speech/service.js";
 import { SqlProjectRepository } from "./sql-projects/repository.js";
 import type { SqlRuntime } from "./sql-projects/runtime.js";
 import type { TypeScriptRuntime } from "./typescript/runtime.js";
@@ -31,6 +33,7 @@ import { createTutorRuntime, type TutorRuntimeOptions } from "./tutor-provider.j
 import { registerTutorRoutes } from "./tutor-routes.js";
 import { registerWebRoot, resolveWebRoot } from "./web-root.js";
 import { registerWorkingsReviewRoutes } from "./workings-routes.js";
+import { deviceSavesEnabled, registerLearnerHook } from "./device-saves.js";
 
 export interface AppOptions {
   dbPath?: string;
@@ -57,6 +60,10 @@ export interface AppOptions {
   webRoot?: string;
   /** Host names accepted besides the loopback ones. Defaults to `DISCERE_ALLOWED_HOSTS`. */
   allowedHosts?: string[];
+  /** One save per browser (a hosted copy). Defaults to `DISCERE_DEVICE_SAVES=1`. */
+  deviceSaves?: boolean;
+  /** Read aloud's voice. Defaults to one kept in the data directory. */
+  speech?: SpeechService;
 }
 
 export interface DiscereApp {
@@ -96,6 +103,13 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
     ...(options.clock === undefined ? {} : { clock: options.clock }),
   });
   store.initialiseConcepts(content.concepts);
+  registerLearnerHook(app, {
+    deviceSaves: options.deviceSaves ?? deviceSavesEnabled(),
+    prepareLearner: () => {
+      store.ensureLearner();
+      store.initialiseConcepts(content.concepts);
+    },
+  });
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {
       return reply.status(400).send({
@@ -108,7 +122,9 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
       // A server-side fault leaves a trace even though the learner only sees one sentence.
       // Provider diagnostics used to be attached to the error and then dropped here.
       if (error.statusCode >= 500) {
-        app.log.error({ code: error.code, detail: error.detail }, error.message);
+        app.log.error({ code: error.code, detail: error.detail ?? error.logDetail }, error.message);
+      } else if (error.logDetail) {
+        app.log.warn({ code: error.code, detail: error.logDetail }, error.message);
       }
       return reply.status(error.statusCode).send({
         code: error.code,
@@ -130,6 +146,10 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const sqlRuntime = options.sqlRuntime ?? runners.sql;
   const typescriptRuntime = options.typescriptRuntime ?? runners.typescript;
   await registerCodeRuntimeRoutes(app, runners.runtimes);
+  await registerSpeechRoutes(
+    app,
+    options.speech ?? new SpeechService({ dataDirectory: dataDirectory() }),
+  );
   await registerRoutes(app, {
     content,
     store,
@@ -152,12 +172,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const pythonProjects = await PythonProjectRepository.load(contentRoot, content);
   await registerPythonProjectRoutes(
     app,
-    new PythonProjectService(
-      store,
-      pythonProjects,
-      pythonRuntime,
-      options.revealDelayMs ?? 5000,
-    ),
+    new PythonProjectService(store, pythonProjects, pythonRuntime, options.revealDelayMs ?? 5000),
   );
   await registerRustPlaygroundRoutes(app, rustRuntime);
   await registerRustProjectRoutes(
@@ -172,12 +187,7 @@ export async function createApp(options: AppOptions = {}): Promise<DiscereApp> {
   const sqlProjects = await SqlProjectRepository.load(contentRoot, content);
   await registerSqlProjectRoutes(
     app,
-    new SqlProjectService(
-      store,
-      sqlProjects,
-      sqlRuntime,
-      options.revealDelayMs ?? 5000,
-    ),
+    new SqlProjectService(store, sqlProjects, sqlRuntime, options.revealDelayMs ?? 5000),
   );
   await registerTransferRoutes(app, { content, store });
   await registerWorkingsReviewRoutes(app, { content, store, runtime });

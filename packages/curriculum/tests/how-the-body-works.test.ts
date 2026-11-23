@@ -4,10 +4,10 @@ import type { CourseBundle, Question } from "@discere/contracts";
 import { describe, expect, it } from "vitest";
 
 /**
- * How the Body Works asks most of its questions about a passage of OpenStax or a health body's page,
- * and every number in it can be recomputed. This file checks the shape of the questions, the length of
- * the right options, the quoted extracts against passages copied from the source pack, and each numeric
- * answer against the sum that produces it.
+ * How the Body Works asks most of its questions about a passage of OpenStax or a health body's page.
+ * This file checks the shape of the questions, the length of the right options, the quoted extracts
+ * against passages copied from the source pack, and that no question asks for an exact sum: figures
+ * are judged by size and direction from options, as in the other conceptual courses.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/how-the-body-works/bundle.json", import.meta.url), "utf8"),
@@ -81,10 +81,14 @@ describe("questions in How the Body Works", () => {
   });
 
   it("ends each lesson with three checks of at least two types", () => {
+    // The sum that closed each of these lessons (the day's filtrate, a glucose conversion) became a
+    // multiple-choice judgement question, so all three of their checks are now multiple choice.
+    const choiceOnly = new Set(["kidneys-and-water-balance", "hormones-and-blood-sugar"]);
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(questions.get(id) as Question));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (choiceOnly.has(lesson.id)) expect(new Set(types), lesson.id).toEqual(new Set(["choice"]));
+      else expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
     }
   });
 
@@ -153,45 +157,12 @@ describe("questions in How the Body Works", () => {
     expect(checked).toBeGreaterThan(0);
   });
 
-  it("recomputes every numeric answer", () => {
-    const expected: Record<string, number> = {
-      "keeping-the-body-steady-read-a-range": 38.1 - 37.5,
-      "bones-and-muscles-faded-low": 60 + 0.2 * 60,
-      "bones-and-muscles-faded-high": 60 + 0.3 * 60,
-      "bones-and-muscles-highest-expected": 50 + 0.3 * 50,
-      "the-heart-faded-millilitres": 130 * 150,
-      "the-heart-faded-litres": 19500 / 1000,
-      "the-heart-work-backwards": (5.4 * 1000) / 60,
-      "the-heart-resting-output": (80 * 90) / 1000,
-      "blood-vessels-and-blood-pressure-difference-120-80": 120 - 80,
-      "lungs-and-breathing-membrane-in-millimetres": 0.5 / 1000,
-      "lungs-and-breathing-breaths-a-minute": Math.round(25000 / (24 * 60)),
-      "lungs-and-breathing-relative-increase": 10 + 0.3 * 10,
-      "lungs-and-breathing-micrometres-to-millimetres": 3 / 1000,
-      "nutrition-and-energy-split-2200": 0.2 * 2200,
-      "nutrition-and-energy-free-sugars-limit": 0.1 * 2000,
-      "nutrition-and-energy-salt-portions": Math.floor(5 / 2.4),
-      "nutrition-and-energy-split-1600": 0.7 * 1600,
-      "kidneys-and-water-balance-female-urine": 0.01 * 150,
-      "kidneys-and-water-balance-two-percent": 0.02 * 180,
-      "kidneys-and-water-balance-check-gfr": (110 * 1440) / 1000,
-      "nerves-and-senses-voltage-rise": 30 - -70,
-      "nerves-and-senses-check-above-zero": 30 - 0,
-      "hormones-and-blood-sugar-convert-3": 3.0 * 18,
-      "hormones-and-blood-sugar-type-2-share": 0.95 * 400,
-      "hormones-and-blood-sugar-check-convert": 4.4 * 18,
-      "immune-system-and-vaccines-district": 0.84 * 2000,
-      "immune-system-and-vaccines-check-coverage": (100 - 84) * 10,
-    };
+  it("asks for a judgement and never for an exact sum", () => {
     const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id.replace(/^howbw-/u, "")).sort()).toEqual(
-      Object.keys(expected).sort(),
-    );
-    for (const question of numeric) {
-      const authority = question.answerAuthority;
-      if (authority.kind !== "numeric") throw new Error(question.id);
-      const key = question.id.replace(/^howbw-/u, "");
-      expect(authority.value, question.id).toBeCloseTo(expected[key] as number, 6);
+    expect(numeric.map((question) => question.id)).toEqual([]);
+    for (const question of bundle.questions) {
+      expect(question.calculator, question.id).not.toBe("available");
+      expect(question.prompt, question.id).not.toMatch(/calculator|nearest whole number|decimal place/iu);
     }
   });
 });

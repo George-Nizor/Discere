@@ -104,38 +104,90 @@ describe("questions in Industrial and Product Design", () => {
   it("recomputes every numeric answer", () => {
     const mean = 920;
     expect(numericValue("indpd-measuring-people-seated")).toBe(Math.round(mean + 1.645 * 35));
-    expect(numericValue("indpd-the-design-brief-power-1l")).toBeCloseTo(
-      (4.19 * 80 * 1000) / 120,
-      -1,
-    );
-    expect(numericValue("indpd-measuring-people-new-limit-v2")).toBeCloseTo(23 * 0.6 * 0.9, 2);
-    expect(numericValue("indpd-controls-and-reaction-edge")).toBeCloseTo(
-      Math.round((0.1 + 0.15 * log2(160 / 200 + 1)) * 100) / 100,
-      2,
-    );
     expect(numericValue("indpd-designing-for-everyone-p-ramp")).toBeCloseTo(0.3 * 12, 6);
-    expect(numericValue("indpd-design-for-manufacture-draft-40")).toBeCloseTo(40 * tan(1), 1);
-    expect(numericValue("indpd-design-for-manufacture-boss")).toBeCloseTo(10 - 2 * 0.6 * 2.5, 6);
-    expect(numericValue("indpd-design-for-assembly-after-30")).toBeCloseTo((3 * 5) / 30, 6);
-    expect(numericValue("indpd-design-for-assembly-service")).toBeCloseTo((3 * 5) / 27, 2);
-    expect(numericValue("indpd-prototypes-and-user-tests-five-users")).toBeCloseTo(
-      1 - 0.69 ** 5,
-      2,
+  });
+
+  it("recomputes the figures behind the judgement questions that used to be numeric", () => {
+    const rightLabel = (id: string) => (rightOption(questions.get(id) as Question) ?? [])[0]?.label;
+    // The kettle: 335 kJ in 120 s is about 2.8 kW.
+    expect((4.19 * 80 * 1000) / 120).toBeCloseTo(2793, 0);
+    expect(rightLabel("indpd-the-design-brief-power-1l")).toBe("About 3 kW");
+    // The screen edge: D/W + 1 = 1.8, so 0.85 bit and about 0.23 s, against 0.58 s for the drawn width.
+    const idOf = (d: number, w: number) => log2(d / w + 1);
+    const mt = (d: number, w: number) => 0.1 + 0.15 * idOf(d, w);
+    expect(mt(160, 20)).toBeCloseTo(0.58, 2);
+    expect(idOf(160, 200)).toBeCloseTo(0.85, 2);
+    expect(mt(160, 200)).toBeCloseTo(0.23, 2);
+    expect(mt(160, 20) - mt(160, 200)).toBeCloseTo(0.35, 2);
+    expect(rightLabel("indpd-controls-and-reaction-edge")).toBe("About 0.23 s");
+    // Draft: one degree moves an 80 mm face by 1.40 mm and a 40 mm face by 0.70 mm.
+    expect(80 * tan(1)).toBeCloseTo(1.4, 2);
+    expect(40 * tan(1)).toBeCloseTo(0.7, 2);
+    expect(rightLabel("indpd-design-for-manufacture-draft-40")).toBe("About 0.7 mm");
+    // The boss: a wall of 0.6 of 2.5 mm on both sides of the hole.
+    expect(0.6 * 2.5).toBeCloseTo(1.5, 6);
+    expect(10 - 2 * 0.6 * 2.5).toBeCloseTo(7, 6);
+    expect(rightLabel("indpd-design-for-manufacture-boss")).toBe("About 7 mm");
+    // Assembly efficiency after the redesign and with the battery door.
+    expect((3 * 5) / 30).toBeCloseTo(0.5, 6);
+    expect((3 * 5) / 54).toBeCloseTo(0.28, 2);
+    expect(rightLabel("indpd-design-for-assembly-after-30")).toBe("About 0.50");
+    expect((3 * 5) / 27).toBeCloseTo(0.56, 2);
+    expect((3 * 4) / 27).toBeCloseTo(0.44, 2);
+    expect(5 / 27).toBeCloseTo(0.19, 2);
+    expect(rightLabel("indpd-design-for-assembly-service")?.startsWith("A little over 0.5")).toBe(
+      true,
     );
-    expect(numericValue("indpd-prototypes-and-user-tests-users-for-90-v2")).toBeCloseTo(
-      1 - 0.69 ** 7,
-      2,
+    // Discovery: five users find about 84 percent, and a seventh adds a few points to six users' 89.
+    const found = (p: number, n: number) => 1 - (1 - p) ** n;
+    expect(found(0.31, 5)).toBeCloseTo(0.84, 2);
+    expect(rightLabel("indpd-prototypes-and-user-tests-five-users")).toBe("About 84 percent");
+    expect(found(0.31, 6)).toBeCloseTo(0.89, 2);
+    expect(found(0.31, 7)).toBeCloseTo(0.93, 2);
+    expect((1 - found(0.31, 6)) * 0.31 * 100).toBeCloseTo(3.3, 1);
+    expect(Math.round((found(0.31, 7) - found(0.31, 6)) * 100)).toBe(3);
+    expect(
+      rightLabel("indpd-prototypes-and-user-tests-users-for-90-v2")?.startsWith("A few points"),
+    ).toBe(true);
+    // The footprint of A matches B's 28 kg a year after 50 / 8 = 6.25 years.
+    expect(50 / (28 - 20)).toBe(6.25);
+    expect(50 / 6.25 + 20).toBe(28);
+    expect(50 / 20).toBe(2.5);
+    expect(rightLabel("indpd-life-cycle-and-sustainability-break-even")).toBe("Just over 6 years");
+    // The weighted totals: A 3.7, B 3.9, so B leads by 0.2, and the plain averages are 3.5 and 4.0.
+    const total = (weights: number[], scores: number[]) =>
+      weights.reduce((sum, weight, i) => sum + weight * (scores[i] as number), 0);
+    expect(total([0.4, 0.3, 0.2, 0.1], [3, 5, 4, 4])).toBeCloseTo(3.9, 6);
+    expect(total([0.4, 0.3, 0.2, 0.1], [4, 3, 5, 2])).toBeCloseTo(3.7, 6);
+    expect(-1 * 0.4 + 2 * 0.3 - 1 * 0.2 + 2 * 0.1).toBeCloseTo(0.2, 6);
+    expect(rightLabel("indpd-choosing-a-concept-score-b")?.startsWith("Higher by about 0.2")).toBe(
+      true,
     );
-    expect(numericValue("indpd-life-cycle-and-sustainability-break-even")).toBeCloseTo(50 / 8, 6);
-    expect(numericValue("indpd-choosing-a-concept-score-b")).toBeCloseTo(
-      0.4 * 3 + 0.3 * 5 + 0.2 * 4 + 0.1 * 4,
-      6,
+    // With cost at weight w and the others in the ratio 3 : 2 : 1, the totals meet at w = 0.5.
+    const totalA = (w: number) => 3.5 + 0.5 * w;
+    const totalB = (w: number) => 4.5 - 1.5 * w;
+    expect(totalA(0.4)).toBeCloseTo(3.7, 6);
+    expect(totalB(0.4)).toBeCloseTo(3.9, 6);
+    expect(totalA(0.5)).toBeCloseTo(totalB(0.5), 6);
+    expect(totalA(0.5 + 0.1) - totalA(0.5)).toBeCloseTo(0.05, 6);
+    expect(totalB(0.5) - totalB(0.5 + 0.1)).toBeCloseTo(0.15, 6);
+    expect(rightLabel("indpd-choosing-a-concept-break-even")?.startsWith("At about 0.5")).toBe(
+      true,
     );
-    // 3.5 + 0.5w = 4.5 - 1.5w
-    expect(numericValue("indpd-choosing-a-concept-break-even")).toBeCloseTo((4.5 - 3.5) / 2, 6);
-    expect(numericValue("indpd-design-for-manufacture-tooling-break-even")).toBe(
-      Math.ceil(12000 / (8 - 0.6)),
-    );
+    // The lifting limit falls from 16.56 kg to 12.42 kg, three quarters of what it was.
+    expect(23 * 0.8 * 0.9).toBeCloseTo(16.56, 2);
+    expect(23 * 0.6 * 0.9).toBeCloseTo(12.42, 2);
+    expect((23 * 0.6 * 0.9) / (23 * 0.8 * 0.9)).toBeCloseTo(0.75, 6);
+    expect(16.56 * 0.6).toBeCloseTo(9.94, 2);
+    expect(
+      rightLabel("indpd-measuring-people-new-limit-v2")?.startsWith("It falls to about 12.4 kg"),
+    ).toBe(true);
+    // Tooling: £7.40 saved on each case repays £12,000 after 1,622 cases.
+    expect(8 - 0.6).toBeCloseTo(7.4, 6);
+    expect(Math.ceil(12000 / (8 - 0.6))).toBe(1622);
+    expect(12000 / 150).toBe(80);
+    expect(12000 / 0.6).toBe(20000);
+    expect(rightLabel("indpd-design-for-manufacture-tooling-break-even")).toBe("About 1,600 cases");
   });
 
   it("recomputes the figures that prompts, options and feedback quote", () => {

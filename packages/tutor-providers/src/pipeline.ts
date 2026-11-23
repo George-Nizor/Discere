@@ -69,7 +69,10 @@ export interface AiRuntimeStatus {
   lastError: string;
   calls: number;
   /** Totals since the server started, by model. Cost is the provider's own figure when given. */
-  byModel: Record<string, { calls: number; costUsd: number; inputTokens: number; outputTokens: number }>;
+  byModel: Record<
+    string,
+    { calls: number; costUsd: number; inputTokens: number; outputTokens: number }
+  >;
   recent: UsageEntry[];
 }
 
@@ -89,7 +92,12 @@ export function aiRuntimeStatus(): AiRuntimeStatus {
 
 function record(entry: UsageEntry) {
   status.calls += 1;
-  const totals = status.byModel[entry.model] ?? { calls: 0, costUsd: 0, inputTokens: 0, outputTokens: 0 };
+  const totals = status.byModel[entry.model] ?? {
+    calls: 0,
+    costUsd: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+  };
   status.byModel[entry.model] = totals;
   totals.calls += 1;
   totals.costUsd += entry.costUsd ?? 0;
@@ -125,7 +133,8 @@ function writePath(payload: unknown, dotted: string, value: string): void {
     if (current === null || typeof current !== "object") return;
     current = (current as Record<string, unknown>)[segment];
   }
-  if (current !== null && typeof current === "object") (current as Record<string, unknown>)[last] = value;
+  if (current !== null && typeof current === "object")
+    (current as Record<string, unknown>)[last] = value;
 }
 
 function hardViolations(text: string, target: TutorLintTarget): StyleViolation[] {
@@ -154,29 +163,37 @@ export abstract class PipelineTutorProvider implements TutorProvider {
     options: TutorGenerateOptions = {},
   ): Promise<TutorResponse<TResponse>> {
     if (status.queueDepth >= MAX_QUEUE_DEPTH)
-      throw new TutorProviderError("PROVIDER_BUSY", "The tutor is already working through other requests.", {
-        provider: this.id,
-      });
+      throw new TutorProviderError(
+        "PROVIDER_BUSY",
+        "The tutor is already working through other requests.",
+        {
+          provider: this.id,
+        },
+      );
     const deadlineMs = options.timeoutMs ?? this.defaultTimeoutMs;
     const controller = new AbortController();
     const abortUpstream = () => controller.abort();
     options.signal?.addEventListener("abort", abortUpstream, { once: true });
     status.queueDepth += 1;
-    const work = enqueue(() => this.run<TRequest, TResponse>(request, { ...options, signal: controller.signal })).finally(
-      () => {
-        status.queueDepth -= 1;
-        options.signal?.removeEventListener("abort", abortUpstream);
-      },
-    );
+    const work = enqueue(() =>
+      this.run<TRequest, TResponse>(request, { ...options, signal: controller.signal }),
+    ).finally(() => {
+      status.queueDepth -= 1;
+      options.signal?.removeEventListener("abort", abortUpstream);
+    });
     let deadline: NodeJS.Timeout | undefined;
     try {
       const response = await new Promise<TutorResponse<TResponse>>((resolve, reject) => {
         deadline = setTimeout(() => {
           controller.abort();
           reject(
-            new TutorProviderError("PROVIDER_TIMEOUT", `The tutor did not answer within ${Math.round(deadlineMs / 1000)} seconds.`, {
-              provider: this.id,
-            }),
+            new TutorProviderError(
+              "PROVIDER_TIMEOUT",
+              `The tutor did not answer within ${Math.round(deadlineMs / 1000)} seconds.`,
+              {
+                provider: this.id,
+              },
+            ),
           );
         }, deadlineMs);
         deadline.unref();
@@ -238,13 +255,18 @@ export abstract class PipelineTutorProvider implements TutorProvider {
     const prompt = buildTutorPrompt(request, {
       envelope: false,
       ...(options.systemPrompt === undefined ? {} : { systemPrompt: options.systemPrompt }),
-      ...(options.extraInstructions === undefined ? {} : { extraInstructions: options.extraInstructions }),
+      ...(options.extraInstructions === undefined
+        ? {}
+        : { extraInstructions: options.extraInstructions }),
     });
     const maxAttempts = Math.max(1, options.maxAttempts ?? 2);
     const timeoutMs = options.timeoutMs ?? this.defaultTimeoutMs;
     this.assertSession(options.sessionId);
     const payload = request.payload as Record<string, unknown> | null;
-    const question = payload && typeof payload["question"] === "string" ? (payload["question"] as string) : undefined;
+    const question =
+      payload && typeof payload["question"] === "string"
+        ? (payload["question"] as string)
+        : undefined;
     const payloadText = JSON.stringify(request.payload ?? null);
 
     let lastError: TutorProviderError | undefined;
@@ -287,9 +309,14 @@ export abstract class PipelineTutorProvider implements TutorProvider {
         };
       } catch (error) {
         if (!(error instanceof TutorProviderError)) throw error;
-        if (error.code === "PROVIDER_WRITING_GATE" || error.code === "PROVIDER_ABORTED") throw error;
+        if (error.code === "PROVIDER_WRITING_GATE" || error.code === "PROVIDER_ABORTED")
+          throw error;
         // A missing or unusable binary, a timeout or a full queue will not improve on a retry.
-        if (error.code === "PROVIDER_SPAWN_FAILED" || error.code === "PROVIDER_TIMEOUT" || error.code === "PROVIDER_UNAVAILABLE")
+        if (
+          error.code === "PROVIDER_SPAWN_FAILED" ||
+          error.code === "PROVIDER_TIMEOUT" ||
+          error.code === "PROVIDER_UNAVAILABLE"
+        )
           throw error;
         lastError = error;
       }
@@ -312,11 +339,15 @@ export abstract class PipelineTutorProvider implements TutorProvider {
     try {
       return options.parsePayload(payload);
     } catch (error) {
-      throw new TutorProviderError("PROVIDER_OUTPUT_INVALID", "The generated response did not match the requested shape.", {
-        provider: this.id,
-        diagnostics: JSON.stringify(payload).slice(0, MAX_DIAGNOSTIC_CHARS),
-        cause: error,
-      });
+      throw new TutorProviderError(
+        "PROVIDER_OUTPUT_INVALID",
+        "The generated response did not match the requested shape.",
+        {
+          provider: this.id,
+          diagnostics: JSON.stringify(payload).slice(0, MAX_DIAGNOSTIC_CHARS),
+          cause: error,
+        },
+      );
     }
   }
 
@@ -330,13 +361,22 @@ export abstract class PipelineTutorProvider implements TutorProvider {
     const targets = options.lintTargets ?? [];
     const failing = targets
       .map((target) => ({ target, text: readPath(payload, target.path) }))
-      .filter((entry): entry is { target: TutorLintTarget; text: string } => typeof entry.text === "string")
+      .filter(
+        (entry): entry is { target: TutorLintTarget; text: string } =>
+          typeof entry.text === "string",
+      )
       .map((entry) => ({ ...entry, violations: hardViolations(entry.text, entry.target) }))
       .filter((entry) => entry.violations.length > 0);
     if (failing.length === 0) return payload;
     const remaining: StyleViolation[] = [];
     for (const entry of failing) {
-      const revised = await this.editStyle(entry.text, entry.violations, timeoutMs, options.signal, operation);
+      const revised = await this.editStyle(
+        entry.text,
+        entry.violations,
+        timeoutMs,
+        options.signal,
+        operation,
+      );
       const still = hardViolations(revised, entry.target);
       if (still.length) remaining.push(...still);
       else writePath(payload, entry.target.path, revised);
@@ -363,7 +403,13 @@ export abstract class PipelineTutorProvider implements TutorProvider {
         requestId: randomUUID(),
         payload: {
           draft: text,
-          violations: violations.map((v) => ({ ruleId: v.ruleId, message: v.message, start: v.start, end: v.end, excerpt: v.excerpt })),
+          violations: violations.map((v) => ({
+            ruleId: v.ruleId,
+            message: v.message,
+            start: v.start,
+            end: v.end,
+            excerpt: v.excerpt,
+          })),
           instruction:
             "Repair only the flagged spans. Preserve every number, unit, equation, citation, and answer boundary already present.",
         },
@@ -371,7 +417,9 @@ export abstract class PipelineTutorProvider implements TutorProvider {
       {
         systemPrompt: "style-editor",
         envelope: false,
-        extraInstructions: ["Do not add new facts, examples, or solution steps while repairing the flagged spans."],
+        extraInstructions: [
+          "Do not add new facts, examples, or solution steps while repairing the flagged spans.",
+        ],
       },
     );
     const output = await this.call(
@@ -390,10 +438,14 @@ export abstract class PipelineTutorProvider implements TutorProvider {
     );
     const parsed = StyleEditDraftSchema.safeParse(parseModelJson(output.text));
     if (!parsed.success)
-      throw new TutorProviderError("PROVIDER_OUTPUT_INVALID", "The style editor did not return a usable revision.", {
-        provider: this.id,
-        diagnostics: output.text.slice(0, MAX_DIAGNOSTIC_CHARS),
-      });
+      throw new TutorProviderError(
+        "PROVIDER_OUTPUT_INVALID",
+        "The style editor did not return a usable revision.",
+        {
+          provider: this.id,
+          diagnostics: output.text.slice(0, MAX_DIAGNOSTIC_CHARS),
+        },
+      );
     return parsed.data.revisedText;
   }
 }

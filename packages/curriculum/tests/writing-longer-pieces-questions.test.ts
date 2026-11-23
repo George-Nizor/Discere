@@ -13,9 +13,10 @@ import { describe, expect, it } from "vitest";
  * (docs/question-writing-guide.md), adapted to planning, drafting and revising an essay or report:
  * most put a short draft, an outline, a summary or a plan in front of the learner and ask which
  * revision serves a stated reader, what a paragraph needs, or which cut or change comes first.
- * Every draft is invented for the exercise and labelled so; no real work is quoted. Numbers stay
- * where the lesson teaches a calculation (the word budget, a percentage, a percent change, a
- * drafting plan), and each one that is not a worked-example blank carries a decision.
+ * Every draft is invented for the exercise and labelled so; no real work is quoted. The questions
+ * that once asked for a figure (the word budget, a percentage, a percent change, a drafting plan)
+ * now ask for a judgement, such as whether a plan fits a writer's pace or how big a saving is, and
+ * the figures behind each right answer are recomputed here from the scenario.
  */
 const bundle = JSON.parse(
   readFileSync(
@@ -39,11 +40,6 @@ const kind = (question: Question): "numeric" | "choice" | "typed" | "order" | "s
         : "typed";
 const extractsOf = (question: Question | undefined): string[] =>
   (question?.extracts ?? []).map((extract) => extract.text);
-const numericValue = (id: string): number => {
-  const authority = get(id).answerAuthority;
-  if (authority.kind !== "numeric") throw new Error(`${id} is not numeric`);
-  return authority.value;
-};
 const rightChoice = (question: Question) => {
   if (question.answerAuthority.kind !== "text") return undefined;
   const authority = question.answerAuthority;
@@ -86,71 +82,98 @@ describe("questions in Writing Longer Pieces", () => {
     }
   });
 
-  it("ends each lesson with three questions of at least two types", () => {
+  it("ends each lesson with three questions, and mixes types in most lessons", () => {
+    // Three lessons ended with a calculation beside two multiple-choice questions. Those calculations
+    // now ask for a judgement, so those lessons end with three multiple-choice questions.
+    const singleType: string[] = [];
     for (const lesson of bundle.lessons) {
       const types = lesson.questionIds.map((id) => kind(get(id)));
       expect(types, lesson.id).toHaveLength(3);
-      expect(new Set(types).size, lesson.id).toBeGreaterThanOrEqual(2);
+      if (new Set(types).size < 2) singleType.push(lesson.id);
+    }
+    expect(singleType.length, singleType.join(", ")).toBeLessThanOrEqual(3);
+  });
+
+  it("asks for a judgement and not a calculation: no question wants a typed number", () => {
+    expect(bundle.questions.filter((question) => kind(question) === "numeric")).toEqual([]);
+    for (const id of [
+      "wrilp-reader-purpose-and-form-section-length",
+      "wrilp-reader-purpose-and-form-points-that-fit",
+      "wrilp-evidence-and-analysis-second-percent",
+      "wrilp-clear-and-short-remaining-v2",
+      "wrilp-a-process-that-finishes-shorter-piece",
+      "wrilp-a-process-that-finishes-drafting-days",
+      "wrilp-shape-of-a-report-second-saving",
+      "wrilp-numbers-tables-figures-rise",
+      "wrilp-numbers-tables-figures-back-to-the-start",
+    ]) {
+      const question = get(id);
+      expect(kind(question), id).toBe("choice");
+      expect(question.hints, id).toHaveLength(2);
+      expect(question.choices?.length, id).toBeGreaterThanOrEqual(3);
     }
   });
 
-  it("keeps numeric questions to nine, each with three hints, where the number is the lesson", () => {
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id).sort()).toEqual([
-      "wrilp-a-process-that-finishes-drafting-days",
-      "wrilp-a-process-that-finishes-shorter-piece",
-      "wrilp-clear-and-short-remaining-v2",
-      "wrilp-evidence-and-analysis-second-percent",
-      "wrilp-numbers-tables-figures-back-to-the-start",
-      "wrilp-numbers-tables-figures-rise",
-      "wrilp-reader-purpose-and-form-points-that-fit",
-      "wrilp-reader-purpose-and-form-section-length",
-      "wrilp-shape-of-a-report-second-saving",
-    ]);
-    for (const question of numeric) expect(question.hints.length, question.id).toBe(3);
-    // Six of the nine are the last line of a faded example; the other three carry a decision.
-    const blanks = new Set(
-      bundle.lessons.flatMap((lesson) =>
-        lesson.steps.flatMap((step) =>
-          (step.workedSteps ?? []).map((line) => line.blank?.questionId ?? ""),
-        ),
-      ),
-    );
-    expect(numeric.filter((question) => !blanks.has(question.id)).map((q) => q.id)).toEqual([
-      "wrilp-reader-purpose-and-form-points-that-fit",
-      "wrilp-a-process-that-finishes-drafting-days",
-      "wrilp-numbers-tables-figures-back-to-the-start",
-    ]);
-  });
-
-  it("recomputes every number the numeric questions state", () => {
-    // Faded-example blanks.
-    expect(numericValue("wrilp-reader-purpose-and-form-section-length")).toBe(
-      (2000 * (1 - 0.15 - 0.1)) / 3,
-    );
-    expect(numericValue("wrilp-evidence-and-analysis-second-percent")).toBe((36 / 150) * 100);
-    expect(numericValue("wrilp-clear-and-short-remaining-v2")).toBe(((250 - 200) / 250) * 100);
-    expect(numericValue("wrilp-a-process-that-finishes-shorter-piece")).toBe(2400 / 3);
-    expect(numericValue("wrilp-shape-of-a-report-second-saving")).toBe(0.08 * 150000);
-    expect(numericValue("wrilp-numbers-tables-figures-rise")).toBe(((65 - 50) / 50) * 100);
-    // Decisions.
-    expect(numericValue("wrilp-reader-purpose-and-form-points-that-fit")).toBe(
-      Math.floor((2000 * 0.8) / 200),
-    );
-    expect(numericValue("wrilp-a-process-that-finishes-drafting-days")).toBe(3000 / 500);
-    expect(numericValue("wrilp-numbers-tables-figures-back-to-the-start")).toBeCloseTo(
-      (1 / (1 - 0.2) - 1) * 100,
-      9,
-    );
-    // The wrong answers named in the feedback.
+  it("recomputes the figures behind each judgement answer", () => {
+    const label = (id: string) => rightChoice(get(id))?.label;
+    // 15% and 10% leave 75% of 2,000 for the body, 1,500 words, and three sections get 500 each.
+    // Dividing all 2,000 by three gives 667, and five equal parts give 400.
+    expect((2000 * (1 - 0.15 - 0.1)) / 3).toBe(500);
+    expect(Math.round(2000 / 3)).toBe(667);
+    expect(2000 / 5).toBe(400);
+    expect(label("wrilp-reader-purpose-and-form-section-length")).toBe("About 500 words");
+    // 10% and 10% leave 1,600 words, and points of 200 words fit eight times. Taking off only one
+    // share leaves 1,800 words and nine points, and the whole essay gives ten.
+    expect((2000 * 0.8) / 200).toBe(8);
+    expect((2000 * 0.9) / 200).toBe(9);
     expect(2000 / 200).toBe(10);
-    expect(2000 * 0.8).toBe(1600);
-    expect(3000 / 4).toBe(750);
-    // The short decisions the blanks now carry: 24% is under a quarter, a fifth is short of the
-    // quarter the brief asked for, and 800 words a day is more than the 600 she can write.
-    expect((36 / 150) * 100).toBeLessThan(25);
+    expect(label("wrilp-reader-purpose-and-form-points-that-fit")).toBe("About 8 points");
+    // 36 of 150 is 24%, under a quarter and well under the half that "most" needs.
+    expect((36 / 150) * 100).toBe(24);
+    expect(36 / 150).toBeLessThan(0.25);
+    expect(label("wrilp-evidence-and-analysis-second-percent")).toMatch(/^It fails/u);
+    // 50 words cut from 250 is a fifth, short of the quarter the brief asked for. A quarter of the 200
+    // words that remain is 50, and the section keeps four fifths of its words.
+    expect((250 - 200) / 250).toBe(0.2);
     expect((250 - 200) / 250).toBeLessThan(0.25);
-    expect(2400 / 3).toBeGreaterThan(600);
+    expect((250 - 200) / 200).toBe(0.25);
+    expect(200 / 250).toBe(0.8);
+    expect(label("wrilp-clear-and-short-remaining-v2")).toMatch(/^No, 50 words is only a fifth/u);
+    // 2,400 words in 3 days is 800 a day against 600, a third above her pace. Three days at her pace
+    // come to 1,800 words, and twice her pace would be 1,200 a day.
+    expect(2400 / 3).toBe(800);
+    expect(800 / 600 - 1).toBeCloseTo(1 / 3, 12);
+    expect(3 * 600).toBe(1800);
+    expect(label("wrilp-a-process-that-finishes-shorter-piece")).toBe(
+      "It falls short, by about a third of her daily pace",
+    );
+    // 3,000 words at 500 a day need 6 days, 2 more than the 4 planned. Four days give 2,000 words, a
+    // third short, and 750 words a day is half as fast again as 500.
+    expect(3000 / 500 - 4).toBe(2);
+    expect(4 * 500).toBe(2000);
+    expect((3000 - 2000) / 3000).toBeCloseTo(1 / 3, 12);
+    expect(3000 / 4 / 500).toBe(1.5);
+    expect(label("wrilp-a-process-that-finishes-drafting-days")).toBe(
+      "Take two days from research to add to drafting",
+    );
+    // 8% of £150,000 is £12,000, a little under 10% (£15,000) and well over 1%. The spend after the
+    // saving is £138,000.
+    expect(0.08 * 150000).toBeCloseTo(12000, 9);
+    expect(0.08 * 150000).toBeLessThan(0.1 * 150000);
+    expect(0.08 * 150000).toBeGreaterThan(0.01 * 150000);
+    expect(150000 - 0.08 * 150000).toBeCloseTo(138000, 9);
+    expect(label("wrilp-shape-of-a-report-second-saving")).toBe("About £12,000 a year");
+    // 15 of 50 is 30%, and 15 of 65 is about 23%.
+    expect(((65 - 50) / 50) * 100).toBeCloseTo(30, 9);
+    expect(Math.round(((65 - 50) / 65) * 100)).toBe(23);
+    expect(label("wrilp-numbers-tables-figures-rise")).toBe(
+      "Up about 30%, measured against the 50 it began at",
+    );
+    // After a 20% fall from 100 the sales are 80, and getting back is a 25% rise, more than 20%.
+    const rise = (1 / (1 - 0.2) - 1) * 100;
+    expect(rise).toBeCloseTo(25, 9);
+    expect(rise).toBeGreaterThan(20);
+    expect(label("wrilp-numbers-tables-figures-back-to-the-start")).toMatch(/^About 25%/u);
   });
 
   it("recomputes the figures that sit in prompts, options and feedback", () => {

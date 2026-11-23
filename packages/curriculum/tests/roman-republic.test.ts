@@ -6,8 +6,8 @@ import { describe, expect, it } from "vitest";
 /**
  * The Roman Republic asks most of its questions about a quoted passage from a public-domain translation,
  * and every number in it can be recomputed. This file checks the shape of the questions, the length of
- * the right options, the quoted extracts against passages copied from the source pack, and each numeric
- * answer against the sum that produces it.
+ * the right options, the quoted extracts against passages copied from the source pack, and the figures
+ * behind each judgement question that used to ask for a number.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/roman-republic/bundle.json", import.meta.url), "utf8"),
@@ -178,33 +178,114 @@ describe("questions in The Roman Republic", () => {
       expect(questions.get(id)?.prompt, id).toMatch(/in this translation/iu);
   });
 
-  it("recomputes every numeric answer", () => {
-    const expected: Record<string, number> = {
-      "what-livy-knew-kings-years": 753 - 509,
-      "what-livy-knew-first-four": 244 - (38 + 40 + 25),
-      "the-constitution-from-outside-years": 220 - 168,
-      "orders-and-the-twelve-tables-eighty": 367 - 287,
-      "rome-and-italy-four-legions": 4 * (4200 + 300),
-      "rome-and-italy-end-danger": 4 * (5000 + 300),
-      "why-the-second-punic-war-began-gap": 241 - 218,
-      "hannibal-and-the-numbers-total": 40000 + 2700,
-      "what-empire-did-to-rome-gap": 146 - 112,
-      "the-gracchi-in-plutarch-gap": 133 - 121,
-      "marius-sulla-and-their-armies-whole-list": 80 + 220 + 220,
-      "catiline-cicero-and-the-triumvirate-the-gap": 60 - 49,
-      "caesar-in-his-own-words-not-at-home": 368000 - 110000,
-      // 23 BCE to 14 CE: there is no year 0, so 23 + 14 - 1.
-      "augustus-and-the-res-gestae-tribunician-power": 23 + 14 - 1,
+  it("asks no numeric question, and the figures behind each judgement hold", () => {
+    expect(bundle.questions.filter((question) => kind(question) === "numeric")).toEqual([]);
+    /**
+     * The 14 questions that used to ask for a number now ask for a judgement. Each entry names the right
+     * option, checks the figures that make it right and the figures each wrong option comes from, and lists
+     * what the prompt must still carry.
+     */
+    const judged: Record<string, { right: string; holds: () => boolean; uses: string[] }> = {
+      "what-livy-knew-kings-years": {
+        right: "About 250 years",
+        // 753 - 509 = 244; adding the dates gives 1,262; reading 753 as a length gives about 750.
+        holds: () => 753 - 509 === 244 && 753 + 509 === 1262,
+        uses: ["753 BCE", "509 BCE"],
+      },
+      "what-livy-knew-first-four": {
+        right: "About 140 years",
+        // The last three reigns add to 103; 244 - 103 = 141; adding them instead gives 347.
+        holds: () => 38 + 40 + 25 === 103 && 244 - 103 === 141 && 244 + 103 === 347,
+        uses: ["38, 40 and 25", "244"],
+      },
+      "the-constitution-from-outside-years": {
+        right: "It fits, since the plan spans about fifty years",
+        // 220 - 168 = 52, under fifty-three; adding the year numbers gives 388; counting both ends gives 53.
+        holds: () => 220 - 168 === 52 && 220 - 168 < 53 && 220 + 168 === 388,
+        uses: ["220 BCE", "168 BCE"],
+      },
+      "orders-and-the-twelve-tables-eighty": {
+        right: "About eighty years, so the Struggle was slow",
+        // 367 - 287 = 80; adding the years gives 654.
+        holds: () => 367 - 287 === 80 && 367 + 287 === 654,
+        uses: ["367 BCE", "287 BCE"],
+      },
+      "rome-and-italy-four-legions": {
+        right: "About 18,000 men, the citizens' levy only",
+        // One legion holds 4,500; four hold 18,000.
+        holds: () => 4200 + 300 === 4500 && 4 * (4200 + 300) === 18000,
+        uses: ["4,200", "300"],
+      },
+      "why-the-second-punic-war-began-gap": {
+        right: "About two decades",
+        // 241 - 218 = 23; from the start of the First war it is 264 - 218 = 46; adding gives 459.
+        holds: () => 241 - 218 === 23 && 264 - 218 === 46 && 241 + 218 === 459,
+        uses: ["241 BCE", "218 BCE"],
+      },
+      "hannibal-and-the-numbers-total": {
+        right: "About 43,000, the foot and horse together",
+        // 40,000 + 2,700 = 42,700; counting the allies again would give 85,400.
+        holds: () => 40000 + 2700 === 42700 && 2 * 42700 === 85400,
+        uses: [],
+      },
+      "what-empire-did-to-rome-gap": {
+        right: "About a generation",
+        // 146 - 112 = 34; adding the dates gives 258.
+        holds: () => 146 - 112 === 34 && 146 + 112 === 258,
+        uses: ["146 BCE", "112 BCE"],
+      },
+      "the-gracchi-in-plutarch-gap": {
+        right: "No, since Gaius died about a dozen years after the law",
+        // 133 - 121 = 12, under thirty; adding the dates gives 254.
+        holds: () => 133 - 121 === 12 && 133 - 121 < 30 && 133 + 121 === 254,
+        uses: ["133 BCE", "121 BCE"],
+      },
+      "marius-sulla-and-their-armies-whole-list": {
+        right: "About 520, the third list as large as the second",
+        // 80 + 220 = 300; with "as many" read as 220 the total is 520; read as 80 it is 380.
+        holds: () => 80 + 220 === 300 && 80 + 220 + 220 === 520 && 80 + 220 + 80 === 380,
+        uses: ["as many"],
+      },
+      "catiline-cicero-and-the-triumvirate-the-gap": {
+        right: "About a decade passed, so the claim needs more than the two dates",
+        // 60 - 49 = 11; adding the year numbers gives 109.
+        holds: () => 60 - 49 === 11 && 60 + 49 === 109,
+        uses: ["60 BCE", "49 BCE"],
+      },
+      "caesar-in-his-own-words-not-at-home": {
+        right: "About seven in ten, the share missing from the count",
+        // 368,000 - 110,000 = 258,000, which is 70 per cent; 110,000 is 30 per cent; 92,000 is 25 per cent.
+        holds: () =>
+          368000 - 110000 === 258000 &&
+          Math.abs(258000 / 368000 - 0.7) < 0.01 &&
+          Math.abs(110000 / 368000 - 0.3) < 0.01 &&
+          92000 / 368000 === 0.25,
+        uses: ["368,000"],
+      },
+      "augustus-and-the-res-gestae-tribunician-power": {
+        right: "Yes, since 14 CE is the thirty-seventh year counted from 23 BCE",
+        // There is no year 0, so 36 years passed and counting 23 BCE as year one makes 14 CE year 37.
+        holds: () => 23 + 14 - 1 === 36 && 23 + 14 === 37 && 23 - 14 === 9,
+        uses: ["23 BCE", "14 CE"],
+      },
     };
-    const numeric = bundle.questions.filter((question) => kind(question) === "numeric");
-    expect(numeric.map((question) => question.id.replace(/^romr-/u, "")).sort()).toEqual(
-      Object.keys(expected).sort(),
-    );
-    for (const question of numeric) {
-      const authority = question.answerAuthority;
-      if (authority.kind !== "numeric") throw new Error(question.id);
-      const key = question.id.replace(/^romr-/u, "");
-      expect(authority.value, question.id).toBeCloseTo(expected[key] as number, 6);
+    for (const [key, entry] of Object.entries(judged)) {
+      const question = questions.get(`romr-${key}`) as Question;
+      expect(kind(question), key).toBe("choice");
+      expect(rightOption(question).label, key).toBe(entry.right);
+      expect(entry.holds(), key).toBe(true);
+      for (const figure of entry.uses) expect(question.prompt, key).toContain(figure);
     }
+    // The levy question is an order question: one legion, four legions, the danger levy, and the allies on top.
+    const levy = questions.get("romr-rome-and-italy-end-danger") as Question;
+    expect(kind(levy)).toBe("order");
+    expect(levy.order?.items).toEqual([
+      "One legion at ordinary strength",
+      "Four legions at ordinary strength",
+      "Four legions in a time of special danger",
+      "Four legions in a time of special danger, with the allied troops added",
+    ]);
+    expect(4200 + 300 < 4 * (4200 + 300) && 4 * (4200 + 300) < 4 * (5000 + 300)).toBe(true);
+    expect(4 * (5000 + 300) - 4 * (4200 + 300)).toBe(3200);
   });
 });

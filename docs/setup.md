@@ -145,6 +145,8 @@ The first setup creates `.env`. Supported fields are:
 | `DISCERE_AI_API_KEY` | unset | Key for the `openai-compatible` provider. Optional for a local server such as Ollama or LM Studio. |
 | `DISCERE_AI_FAST_MODEL` | `gpt-4o-mini` | Fast model for the `openai-compatible` provider. |
 | `DISCERE_AI_SMART_MODEL` | the fast model | Capable model for the `openai-compatible` provider. |
+| `DISCERE_AI_OUTPUT` | `schema` | `json` puts the reply schema in the prompt and asks the server only for a JSON object. Ollama needs it: it fails on the tutor's schema with "failed to initialize grammar". |
+| `DISCERE_AI_REASONING_EFFORT` | unset | Sent as `reasoning_effort`. `none` stops a thinking model, such as Gemma 4 on Ollama, from reasoning before every reply. |
 | `DISCERE_CODEX_BIN` | `codex` | Executable used by the `codex` provider. |
 | `DISCERE_CODEX_MODEL` | account default | Model passed to the CLI. Leave unset to use the account default; `instrumenta/product.json` pins `gpt-5.6-luna`. |
 | `DISCERE_CODEX_EFFORT` | `xhigh` | Reasoning effort passed to the CLI. |

@@ -11,9 +11,9 @@ import { describe, expect, it } from "vitest";
 /**
  * Data Engineering follows the way System Design and DevOps ask questions (docs/question-writing-guide.md).
  * Questions put a pipeline, a log, a table or a schedule in front of the learner and ask what a rerun, a late
- * record, a layout or a schema change does. Numeric questions stay in the worked and faded examples, where
- * one step of arithmetic completes the example, and in a few places where the number decides something: a
- * query bill, a critical path, a storage bill, the bytes pruning skips, and a backlog.
+ * record, a layout or a schema change does. A learner judges which design costs more, roughly how much, and
+ * what drives a figure, and does not compute it, so two numeric questions remain: replaying a commit log to
+ * count live files, and adding up the latest amount for each key. Both are worked-example steps.
  */
 const bundle = JSON.parse(
   readFileSync(new URL("../../../content/data-engineering/bundle.json", import.meta.url), "utf8"),
@@ -39,24 +39,6 @@ const minutes = (time: string) => {
  * example's text, so its inputs (marked `example`) come from that text and not from the prompt.
  */
 const recompute: Record<string, { value: () => number; uses?: number[]; example?: string }> = {
-  "what-a-pipeline-is-upsert-rows": {
-    value: () => new Set([10, 11, 12, 13]).size,
-    example: "ids 10 and 11 exist, and the batch holds ids 10, 11, 12 and 13",
-  },
-  "files-and-formats-columnar-gb": {
-    value: () => (200_000_000 * 3 * 4) / 1e9,
-    example: "200,000,000 rows, 3 columns of 4 bytes",
-  },
-  "files-and-formats-scan-cost": { value: () => (((2 / 4) * 3) / 25) * 5, uses: [5, 2, 25, 3] },
-  "orchestrating-dependencies-floor-time": {
-    // extract 3 feeds clean_orders 5 and clean_customers 8, and join 2 reads both
-    value: () => 3 + Math.max(5, 8) + 2,
-    uses: [3, 5, 8, 2],
-  },
-  "orchestrating-dependencies-backfill-waves": {
-    value: () => Math.ceil(45 / 6),
-    example: "45 daily partitions, 6 at a time",
-  },
   "open-table-formats-files-at-v3": {
     value: () => {
       const live = new Set(["m", "n"]);
@@ -67,23 +49,6 @@ const recompute: Record<string, { value: () => number; uses?: number[]; example?
       return live.size;
     },
     uses: [3],
-  },
-  "open-table-formats-storage-before-vacuum": { value: () => 8 * 1 + 5, uses: [8, 1, 5] },
-  "partitioning-and-file-layout-gb-read": {
-    value: () => (1800 / 360) * 30,
-    example: "1,800 GB over 360 days, the last 30 days",
-  },
-  "partitioning-and-file-layout-files-after-compaction": {
-    value: () => (7200 * 4) / 200,
-    uses: [7200, 4, 200],
-  },
-  "partitioning-and-file-layout-gb-skipped": {
-    value: () => 900 - (900 / 360) * 12,
-    uses: [900, 360, 12],
-  },
-  "distributed-processing-skew-seconds": {
-    value: () => (0.4 * 1000e6) / 2e6,
-    example: "1,000 million rows, 10 reducers at 2 million rows a second, one key with 40%",
   },
   "cleaning-and-deduplicating-dedupe-total": {
     value: () => {
@@ -102,26 +67,6 @@ const recompute: Record<string, { value: () => number; uses?: number[]; example?
       return [...latest.values()].reduce((sum, [amount]) => sum + amount, 0);
     },
     example: "five rows over three keys",
-  },
-  "streaming-and-event-time-behind-watermark": {
-    value: () => minutes("14:41") - 10 - minutes("14:03"),
-    example: "latest event 14:41, lateness 10 minutes, event 14:03",
-  },
-  "checking-data-in-motion-batch-percent": {
-    value: () => ((30 + 60 + 20) / 5000) * 100,
-    example: "30 null keys, 60 negative amounts and 20 duplicate keys in 5,000 rows",
-  },
-  "monitoring-and-tuning-backlog": {
-    value: () => (12000 - 9000) * 20 * 60,
-    uses: [12000, 9000, 20],
-  },
-  "monitoring-and-tuning-overnight-age": {
-    value: () => minutes("05:45") + (24 * 60 - minutes("23:20")),
-    example: "loaded 23:20, checked 05:45 the next day",
-  },
-  "environments-security-and-release-parameter-total": {
-    value: () => 3 * 4,
-    example: "3 environments, 4 parameters",
   },
 };
 const mentions = (prompt: string, value: number) => {
@@ -298,6 +243,44 @@ describe("questions in Data Engineering", () => {
     expect(900e6 / 200e3 / 60).toBe(75);
     expect(minutes("03:00") - minutes("01:50")).toBe(70);
     expect(0.8 * 1_200_000).toBe(960_000);
+    // Judgement questions that used to ask for a number: the figures their options and feedback quote.
+    expect(new Set([10, 11, 12, 13]).size).toBe(4);
+    expect((200_000_000 * 12 * 4) / 1e9).toBe(9.6);
+    expect((200_000_000 * 3 * 4) / 1e9).toBe(2.4);
+    expect(3 / 12).toBe(0.25);
+    expect((((2 / 4) * 3) / 25) * 5).toBeCloseTo(0.3, 9);
+    expect((1 / 4) * (3 / 25)).toBeCloseTo(0.03, 9);
+    expect(Math.round(10 / 0.3)).toBe(33);
+    expect(3 + 8 + 2).toBe(13);
+    expect(3 + 5 + 2).toBe(10);
+    expect(3 + 5 + 8 + 2).toBe(18);
+    expect(45 - 7 * 6).toBe(3);
+    expect(Math.ceil(45 / 6)).toBe(8);
+    expect(8 * 1 + 5).toBe(13);
+    expect((1800 / 360) * 30).toBe(150);
+    expect(360 / 30).toBe(12);
+    expect(330 + 30).toBe(360);
+    expect((7200 * 4) / 200).toBe(144);
+    expect(200 / 4).toBe(50);
+    expect(900 - (900 / 360) * 12).toBe(870);
+    expect(360 / 12).toBe(30);
+    expect((0.4 * 1000e6) / 2e6).toBe(200);
+    expect(1000e6 / 10 / 2e6).toBe(50);
+    expect(0.4 / (1 / 10)).toBeCloseTo(4, 9);
+    expect(minutes("14:41") - 10).toBe(minutes("14:31"));
+    expect(minutes("14:31")).toBeGreaterThan(minutes("14:05"));
+    expect(30 + 60 + 20).toBe(110);
+    expect((30 + 60 + 20) / 5000).toBeCloseTo(0.022, 9);
+    expect(0.02 * 5000).toBe(100);
+    expect(Math.max(30, 60, 20)).toBeLessThan(100);
+    expect((12000 - 9000) * 20 * 60).toBe(3_600_000);
+    expect((12000 - 9000) / 12000).toBe(0.25);
+    expect(3_600_000 / 9000).toBe(400);
+    expect(minutes("05:45") + (24 * 60 - minutes("23:20"))).toBe(385);
+    expect(385 - (5 * 60 + 20)).toBe(65);
+    expect(minutes("05:45") - (5 * 60 + 20)).toBe(25);
+    expect(3 * 4).toBe(12);
+    expect(4 * 4).toBe(16);
   });
 
   it("puts a situation in front of the learner in most questions", () => {
