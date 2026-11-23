@@ -15,7 +15,7 @@ const FIGURES = new Set(
     " ",
   ),
 );
-const KINDS = new Set("numeric choice single-term order_sequence self code-run-python code-run-sql code-run-rust code-reading".split(" "));
+const KINDS = new Set("numeric choice single-term order_sequence sort self code-run-python code-run-sql code-run-rust code-reading".split(" "));
 const existing = new Set(readdirSync(path.join(ROOT, "content")).filter((d) => existsSync(path.join(ROOT, "content", d, "bundle.json"))));
 const files = readdirSync(DIR).filter((f) => f.endsWith(".json")).sort();
 const courses = [];

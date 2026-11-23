@@ -144,6 +144,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
       courseIds: [
         "physics-motion-and-forces",
         "physics-waves-electricity-heat",
+        "modern-physics",
         "astronomy-sky-to-cosmos",
         "chemistry-atoms-to-reactions",
         "biology-cells-to-ecosystems",
@@ -176,6 +177,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
         "psychology-how-minds-work",
         "economics-markets-and-strategy",
         "decision-theory",
+        "how-government-works",
       ],
     },
     {
