@@ -99,7 +99,12 @@ const AREAS = [
   ],
   [
     "Mind, society and decisions",
-    ["psychology-how-minds-work", "economics-markets-and-strategy", "decision-theory"],
+    [
+      "psychology-how-minds-work",
+      "economics-markets-and-strategy",
+      "decision-theory",
+      "how-government-works",
+    ],
   ],
   [
     "History, language and writing",

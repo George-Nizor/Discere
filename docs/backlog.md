@@ -20,6 +20,14 @@ says what is wrong now and how it was measured, so nobody has to redo a pass to 
 
 ## Decisions for George
 
+- **OpenStax and AI.** OpenStax book pages now forbid ingesting the books into large language
+  models or generative AI without OpenStax's written permission. 31 courses cite OpenStax, and
+  nine rest almost entirely on it (Calculus II, Astronomy, Physics, Economics, Biology,
+  Trigonometry, Calculus, Chemistry, Geometry and Maths Foundations among them); several were
+  written or rewritten by agents that read OpenStax pages. Options: ask OpenStax for written
+  permission for a private, non-commercial app; accept the risk for private use; or move those
+  courses onto other sources over time. New courses use no OpenStax text until this is settled.
+
 - **Learner-agent testing** (`docs/learner-agent-testing-plan.md`): agents work through each
   course as a learner and report where they get stuck. Planned on 4 November; one trial run;
   not started.
