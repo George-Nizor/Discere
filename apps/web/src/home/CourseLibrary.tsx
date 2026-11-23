@@ -176,6 +176,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
         "psychology-how-minds-work",
         "economics-markets-and-strategy",
         "decision-theory",
+        "how-government-works",
       ],
     },
     {
