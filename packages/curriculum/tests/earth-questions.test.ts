@@ -444,7 +444,7 @@ describe("questions in Earth and Environmental Science", () => {
       "why-the-weather-moves-cb-28-16": [14 * 125, null, "Higher, because the gap is wider"],
       "the-ocean-system-rise-10": [0.00001 * 100_000, 1, "About 1 cm"],
       "the-ocean-system-rise-20": [(7220 / 361_000_000) * 100_000, 2, "About 2 cm"],
-      "the-ocean-system-ice-to-mm": [(135 + 264) / 361, 1, "About 1 mm a year"],
+      "the-ocean-system-ice-to-mm": [(135 + 264) / 361 / 3.7, 1 / 3, "About a third"],
       "carbon-moves-to-co2": [(10 * 44) / 12, 37, "About 37 GtCO₂"],
       "carbon-moves-to-carbon": [(37.4 * 12) / 44, 10.2, "About 10.2 GtC"],
       "carbon-moves-budget-ppm": [(10 * 0.45) / 2.13, 2, "About 2 ppm"],

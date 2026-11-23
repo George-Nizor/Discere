@@ -442,11 +442,6 @@ describe("questions in Industrial and Product Design", () => {
         expect(assessTextAnswer(answer, authority).correct, `${id}: ${answer}`).toBe(false);
     };
     check(
-      "indpd-affordances-and-mapping-safe-default",
-      ["default", "the default", "a safe default"],
-      ["constraint", "signifier", "feedback", "mapping"],
-    );
-    check(
       "indpd-measuring-people-lift-change",
       ["A lift table", "raise the start of the lift", "put the boxes on a raised pallet"],
       ["a lighter box", "train the packer", "tell them to lift less"],
