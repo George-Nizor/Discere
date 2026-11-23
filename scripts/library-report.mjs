@@ -77,6 +77,7 @@ const AREAS = [
     [
       "physics-motion-and-forces",
       "physics-waves-electricity-heat",
+      "modern-physics",
       "astronomy-sky-to-cosmos",
       "chemistry-atoms-to-reactions",
       "biology-cells-to-ecosystems",
