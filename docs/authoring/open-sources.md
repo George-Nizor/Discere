@@ -4,6 +4,16 @@ Collected on 14 November 2026 by an agent, partly from Atlas Open Academy's cita
 
 NonCommercial (NC) licences suit Discere, which is private and not sold; ShareAlike (SA) means adapted text keeps the same licence; NoDerivatives (ND) means cite only.
 
+## OpenStax: not for AI tools without permission
+
+Every OpenStax book page now says: "This book may not be used in the training of large language
+models or otherwise be ingested into large language models or generative AI offerings without
+OpenStax's prior written permission." Discere's writers are AI agents that read their sources, so
+OpenStax text must not go into a source pack or be fetched by a writer until OpenStax has given
+written permission. The OpenStax entries below are kept for reference only. Wikipedia (CC BY-SA),
+public-domain texts and the other open textbooks listed carry no such restriction, but check each
+publisher's page for one before use.
+
 ## How to read the licence tags
 
 | Tag | Meaning |
