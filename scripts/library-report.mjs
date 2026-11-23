@@ -92,6 +92,7 @@ const AREAS = [
       "electronics-foundations",
       "mechanisms-and-machine-design",
       "materials-and-manufacturing",
+      "thermodynamics-and-energy",
       "control-theory",
       "mechatronics-and-robotics",
       "industrial-and-product-design",
