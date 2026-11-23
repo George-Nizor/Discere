@@ -48,6 +48,18 @@ says what is wrong now and how it was measured, so nobody has to redo a pass to 
 - **Licences.** OpenStax books are CC BY-NC-SA, which suits private use; NHS and WHO pages are
   paraphrased, never quoted.
 
+- **Questions that do not test the subject** (sample of 23 November 2026). Two readers judged 8
+  random lesson questions from every course, 544 in all, against "does this exercise an idea a
+  practitioner of the subject uses?": 504 were fine (93%). The 40 flagged were 21 giveaways (the
+  wording or absurd distractors give the answer), 8 off-subject (generic arithmetic or reading
+  comprehension), 6 contrived or debatable keys, 5 trivia. No course had a pattern like the old
+  arithmetic one; History was worst at 3 of 8. Extrapolated, roughly 600 questions library-wide
+  need a fix, most of them giveaways. A few flagged ones came out of the judgement pass and are
+  still arithmetic (Drawing's two hatching layers, Earth Science's ice to millimetres, Analytics'
+  breach across midnight, Creative Writing's bark gap). The flagged list is in
+  `~/.cache/discere-old-work/subject-sense-sample-2026-11-23.json`. Next: a giveaway sweep per
+  course, since giveaways are half the problem and the easiest to find.
+
 ## Marking
 
 - The typed-answer marker stems "dominates" and "dominated" to the same word.
