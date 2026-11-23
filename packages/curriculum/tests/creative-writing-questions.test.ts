@@ -211,12 +211,17 @@ describe("questions in Creative and Game Writing", () => {
     expect(1 + 3 + 9 + 27).toBe(40);
     expect(Math.abs(17 - 20)).toBeLessThan(Math.abs(17 - 40));
     expect(label("cregw-branching-structures-bottleneck-13")).toBe("About 20");
-    // 25 lines, 600 seconds, no repeats: 24 seconds apart, so about 25. A 10-second gap plays 60
-    // times and a 2.5-second gap 240 times.
-    expect((10 * 60) / 25).toBe(24);
+    // A bark every 10 seconds in a 600-second fight plays 60 times. 25 lines run out after 25
+    // plays, which is 250 seconds, a little over four minutes, and by the end each line has played
+    // 2.4 times. Spacing the barks 24 seconds apart, about 25, would let 25 lines cover the fight.
     expect((10 * 60) / 10).toBe(60);
-    expect((10 * 60) / 2.5).toBe(240);
-    expect(label("cregw-writing-game-text-shortest-gap")).toBe("About 25 seconds");
+    expect(25 * 10).toBe(250);
+    expect(250 / 60).toBeCloseTo(4.17, 2);
+    expect(60 / 25).toBe(2.4);
+    expect((10 * 60) / 25).toBe(24);
+    expect(label("cregw-writing-game-text-shortest-gap")).toBe(
+      "Lines repeat from about four minutes in, two or three times each by the end",
+    );
     // a 40-character button and translations 35 percent longer
     const longest = Math.floor(40 / 1.35);
     expect(longest).toBe(29);

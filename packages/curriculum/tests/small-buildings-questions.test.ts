@@ -151,7 +151,7 @@ const judged: Record<
     uses: [20, 0, 3, 0.5, 19.55],
   },
   "comfort-and-passive-design-seminar-gain": {
-    right: "About 2.5 kW",
+    right: "Together they give off about as much as a small heater, so the room needs less heating",
     holds: () => Math.abs(1.2 * 58.2 * 1.8 - 125.7) < 0.1 && Math.abs(20 * 1.2 * 58.2 * 1.8 - 2514) < 1,
     mistakes: () => Math.abs(1.2 * 58.2 * 1.8 * 20 * 10 - 25140) < 10,
     uses: [20, 1.2, 58.2, 1.8, 125],
