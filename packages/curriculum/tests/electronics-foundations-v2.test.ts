@@ -63,11 +63,11 @@ describe("Electronics Foundations v2 keys", () => {
     near("loop-water-flow", 2);
     near("current-after-resistor", 0.05);
     near("calculate-current-6v-150ohm", ohm(6, 150));
-    near("calculate-current-5v-100ohm", ohm(5, 100));
+    near("calculate-current-5v-100ohm", ohm(3, 200));
     near("current-at-second-meter", ohm(12, 60));
     near("check-current-10v-400ohm", ohm(10, 400));
-    // Skill-check item: halving the resistance of a 6 V loop that carried 0.02 A.
-    near("reason-halve-resistance", ohm(6, 6 / 0.02 / 2));
+    // Skill-check item: halving the resistance of a 12 V loop that carried 0.012 A.
+    near("reason-halve-resistance", ohm(12, 12 / 0.012 / 2));
     // Examples written into the teaching and worked screens.
     expect(ohm(9, 90)).toBeCloseTo(0.1, 9);
     expect(ohm(18, 90)).toBeCloseTo(0.2, 9);
@@ -98,9 +98,11 @@ describe("Electronics Foundations v2 keys", () => {
     near("generated-parallel-branch-voltage", 6);
     near("generated-parallel-total-current", ohm(12, 100) + ohm(12, 300));
     near("generated-parallel-equivalent", par(100, 100));
-    near("battery-current-two-lamps", ohm(9, 90) + ohm(9, 45));
-    near("check-parallel-current-12v-30-60", ohm(12, 30) + ohm(12, 60));
-    near("check-parallel-equivalent-30-60", par(30, 60));
+    near("battery-current-two-lamps", ohm(10, 200) + ohm(10, 50));
+    near("check-parallel-current-12v-30-60", ohm(12, 24) + ohm(12, 40));
+    near("check-parallel-equivalent-30-60", par(24, 40));
+    // Skill-check item: two branches carrying 0.3 A from 6 V act like 20 Ω, and a third branch of 20 Ω halves that.
+    expect(par(6 / 0.3, 20)).toBeCloseTo(10, 9);
     expect(par(100, 300)).toBeCloseTo(75, 9);
     // Worked screens and teaching examples.
     expect(ohm(6, 20) + ohm(6, 30)).toBeCloseTo(0.5, 9);

@@ -141,7 +141,8 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-forces-as-vectors-3")).toBeCloseTo(Math.hypot(3,4), 0);
     expect(key("engr-forces-as-vectors-4")).toBeCloseTo(Math.hypot(6,8), 0);
     expect(key("engr-forces-as-vectors-5")).toBeCloseTo(Math.hypot(12,5), 0);
-    expect(key("engr-forces-as-vectors-11")).toBeCloseTo(26*5/Math.hypot(5,12), 0);
+    expect(key("engr-forces-as-vectors-11")).toBeCloseTo(50*7/Math.hypot(7,24), 0);
+    expect(key("engr-forces-as-vectors-two-cables-on-a-ring")).toBeCloseTo(Math.hypot(25*3/5, 16+25*4/5), 0);
     expect(choiceMarked("engr-forces-as-vectors-6")).toEqual(["1"]);
   // moments
     expect(key("engr-moments-7")).toBeCloseTo(300, 0);
@@ -149,7 +150,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-moments-1")).toBeCloseTo(150*0.3, 0);
     expect(choiceMarked("engr-moments-9")).toEqual(["a"]);
     expect(key("engr-moments-2")).toBeCloseTo(150*0.3*Math.sin(30*Math.PI/180), 1);
-    expect(key("engr-moments-4")).toBeCloseTo(300*2/400, 1);
+    expect(key("engr-moments-4")).toBeCloseTo(300*2/500, 1);
     expect(key("engr-moments-5")).toBeCloseTo(40*0.8, 0);
     expect(key("engr-moments-10")).toBeCloseTo(60*0.5*Math.sin(30*Math.PI/180), 1);
     expect(choiceMarked("engr-moments-6")).toEqual(["1"]);
@@ -163,7 +164,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-supported-beam-3")).toBeCloseTo((4*3)*1.5/6, 0);
     expect(key("engr-supported-beam-4")).toBeCloseTo(10-10*6/4, 0);
     expect(key("engr-supported-beam-5")).toBeCloseTo((20*7+10*2)/10, 0);
-    expect(key("engr-supported-beam-10")).toBeCloseTo(3*10/2, 0);
+    expect(key("engr-supported-beam-10")).toBeCloseTo(4*12/2, 0);
     expect(textAccepts("engr-supported-beam-6", "roller")).toBe(true);
   // trusses-by-joints
     expect(key("engr-trusses-by-joints-7")).toBeCloseTo(12/2, 0);
@@ -171,7 +172,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-trusses-by-joints-1")).toBeCloseTo(12/(2*1.5/2.5), 0);
     expect(choiceMarked("engr-trusses-by-joints-9")).toEqual(["a"]);
     expect(key("engr-trusses-by-joints-3")).toBeCloseTo(10*2/2.5, 0);
-    expect(textAccepts("engr-trusses-by-joints-2", "tension")).toBe(true);
+    expect(choiceMarked("engr-trusses-by-joints-2")).toEqual(["a"]);
     expect(key("engr-trusses-by-joints-4")).toBeCloseTo(0, 0);
     expect(key("engr-trusses-by-joints-5")).toBeCloseTo((16/(2*2/2.5))*1.5/2.5, 0);
     expect(key("engr-trusses-by-joints-10")).toBeCloseTo(32/(2*4/5), 0);
@@ -179,7 +180,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
   // stress-and-strain
     expect(key("engr-stress-and-strain-7")).toBeCloseTo(20/2, 0);
     expect(choiceMarked("engr-stress-and-strain-8")).toEqual(["a"]);
-    expect(key("engr-stress-and-strain-1")).toBeCloseTo(20000/400, 0);
+    expect(key("engr-stress-and-strain-1")).toBeCloseTo(18000/240, 0);
     expect(key("engr-stress-and-strain-11")).toBeCloseTo(1/2000, 4);
     expect(choiceMarked("engr-stress-and-strain-9")).toEqual(["a"]);
     expect(key("engr-stress-and-strain-2")).toBeCloseTo(50/200000*2000, 1);
@@ -199,7 +200,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(choiceMarked("engr-factor-of-safety-3")).toEqual(["b"]);
     expect(key("engr-factor-of-safety-4")).toBeCloseTo((60000/625)/200000*3000, 2);
     expect(key("engr-factor-of-safety-5")).toBeCloseTo(355/2.5, 0);
-    expect(key("engr-factor-of-safety-6")).toBeCloseTo(300*250/1.5/1000, 0);
+    expect(key("engr-factor-of-safety-6")).toBeCloseTo(300*270/1.5/1000, 0);
     expect(key("engr-factor-of-safety-10")).toBeCloseTo(240/(30000/200), 1);
   // shear-and-moment
     expect(key("engr-shear-and-moment-7")).toBeCloseTo(8, 0);
@@ -221,7 +222,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-bending-stress-2")).toBeCloseTo(20e6*50/(200*100**3/12), 0);
     expect(key("engr-bending-stress-3")).toBeCloseTo(60*100**3/12/1e6, 0);
     expect(key("engr-bending-stress-4")).toBeCloseTo((100*200**3-94*180**3)/12/1e6, 2);
-    expect(key("engr-bending-stress-5")).toBeCloseTo(5e6*50/(100**4/12), 0);
+    expect(key("engr-bending-stress-5")).toBeCloseTo(6e6*50/(100**4/12), 0);
     expect(key("engr-bending-stress-10")).toBeCloseTo(2**3, 0);
     expect(textAccepts("engr-bending-stress-6", "neutral axis")).toBe(true);
   // deflection-and-stiffness
@@ -246,7 +247,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-levers-and-pulleys-3")).toBeCloseTo(800/4, 0);
     expect(key("engr-levers-and-pulleys-4")).toBeCloseTo(4*0.5, 0);
     expect(key("engr-levers-and-pulleys-5")).toBeCloseTo(50*0.32/0.04, 0);
-    expect(key("engr-levers-and-pulleys-10")).toBeCloseTo(900/3, 0);
+    expect(key("engr-levers-and-pulleys-10")).toBeCloseTo(1800/3, 0);
   // gear-trains
     expect(key("engr-gear-trains-7")).toBeCloseTo(100, 0);
     expect(choiceMarked("engr-gear-trains-8")).toEqual(["a"]);
@@ -260,7 +261,7 @@ describe("Engineering: Structures and Machines (v2)", () => {
     expect(key("engr-gear-trains-10")).toBeCloseTo(6*45/15, 0);
 
   // efficiency-and-power
-    expect(key("engr-efficiency-and-power-7")).toBeCloseTo(600*2, 0);
+    expect(key("engr-efficiency-and-power-7")).toBeCloseTo(750*2, 0);
     expect(key("engr-efficiency-and-power-8")).toBeCloseTo(60*2*Math.PI/60, 2);
     expect(key("engr-efficiency-and-power-1")).toBeCloseTo(20*1500*2*Math.PI/60, 0);
     expect(choiceMarked("engr-efficiency-and-power-9")).toEqual(["a"]);
