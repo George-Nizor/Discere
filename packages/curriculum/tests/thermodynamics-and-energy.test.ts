@@ -15,6 +15,22 @@ import { describe, expect, it } from "vitest";
  * extracts against passages copied from the source pack, and every numeric answer, which is
  * recomputed here from the figures in the question and the pack, not copied from the bundle.
  */
+/** The lines and sentences the fixture copies from the pack for the numbers this test reads. */
+type FigureName =
+  | "waterTableHeader"
+  | "waterTable40"
+  | "waterTable200"
+  | "doeCondenserExample"
+  | "heatRateHeader"
+  | "heatRate2025"
+  | "btuPerKwh"
+  | "fossilFactorHeader"
+  | "fossilFactor2025"
+  | "nonFossilFactorHeader"
+  | "nonFossilFactor2025"
+  | "methaneHeatingValues"
+  | "brayton11to16"
+  | "ge9ha";
 const bundle = JSON.parse(
   readFileSync(
     new URL("../../../content/thermodynamics-and-energy/bundle.json", import.meta.url),
@@ -26,7 +42,7 @@ const fixture = JSON.parse(
     new URL("./fixtures/thermodynamics-and-energy-passages.json", import.meta.url),
     "utf8",
   ),
-) as { files: Record<string, string[]>; figures: { text: Record<string, string> } };
+) as { files: Record<string, string[]>; figures: { text: Record<FigureName, string> } };
 const questions = new Map(bundle.questions.map((question) => [question.id, question]));
 const kind = (question: Question): "numeric" | "choice" | "typed" | "order" | "sort" =>
   question.responseType === "numeric"
@@ -66,19 +82,16 @@ const squash = (text: string) =>
 
 // Figures read from the pack's own lines, so a figure in the fixture and a figure in a question
 // cannot drift apart without a test failing.
-const figure = fixture.figures.text as Record<string, string>;
+const figure = fixture.figures.text;
 const cells = (line: string) => line.split("|").map((cell) => cell.trim());
 const row = (header: string, values: string) => {
   const names = cells(header);
   const found = cells(values);
   return (name: string) => found[names.indexOf(name)] as string;
 };
-const heatRate = row(figure.heatRateHeader as string, figure.heatRate2025 as string);
-const fossilFactor = row(figure.fossilFactorHeader as string, figure.fossilFactor2025 as string);
-const nonFossilFactor = row(
-  figure.nonFossilFactorHeader as string,
-  figure.nonFossilFactor2025 as string,
-);
+const heatRate = row(figure.heatRateHeader, figure.heatRate2025);
+const fossilFactor = row(figure.fossilFactorHeader, figure.fossilFactor2025);
+const nonFossilFactor = row(figure.nonFossilFactorHeader, figure.nonFossilFactor2025);
 const waterTable = (line: string) => {
   const found = cells(line).map(Number);
   // Temperature, pressure, enthalpy of the liquid and of vaporisation, in kJ/kg (the table's J/g).
@@ -88,23 +101,21 @@ const percent = (text: string) => Number(text.replace("%", ""));
 
 const coalHeatRate = Number(heatRate("Coal")); // Btu/kWh, 2025
 const gasHeatRate = Number(heatRate("Natural Gas"));
-const btuPerKwh = Number(
-  /\(([\d,]+) Btu\)/u.exec(figure.btuPerKwh as string)?.[1]?.replace(",", ""),
-);
+const btuPerKwh = Number(/\(([\d,]+) Btu\)/u.exec(figure.btuPerKwh)?.[1]?.replace(",", ""));
 const ccFactor = percent(fossilFactor("Natural gas, combined cycle")) / 100;
 const nuclearFactor = percent(nonFossilFactor("Nuclear")) / 100;
 const windFactor = percent(nonFossilFactor("Wind")) / 100;
 const hoursPerYear = 8760;
 const methane = /HHV of methane is ([\d.]+) MJ\/kg .* ([\d.]+) MJ\/kg \(.*\) LHV/u.exec(
-  figure.methaneHeatingValues as string,
+  figure.methaneHeatingValues,
 ) as RegExpExecArray;
 const lhvOverHhv = Number(methane[2]) / Number(methane[1]);
-const doeHs = [...(figure.doeCondenserExample as string).matchAll(/h = ([\d.]+)/gu)].map((match) =>
+const doeHs = [...figure.doeCondenserExample.matchAll(/h = ([\d.]+)/gu)].map((match) =>
   Number(match[1]),
 );
 const [steamIn, steamOut, waterIn, waterOut] = doeHs as [number, number, number, number];
-const table40 = waterTable(figure.waterTable40 as string);
-const table200 = waterTable(figure.waterTable200 as string);
+const table40 = waterTable(figure.waterTable40);
+const table200 = waterTable(figure.waterTable200);
 
 const kelvin = (celsius: number) => celsius + 273;
 /** The Carnot efficiency between two Celsius temperatures, in percent. */
