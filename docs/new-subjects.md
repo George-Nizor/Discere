@@ -1,8 +1,10 @@
 # New subjects, prioritised
 
 A proposal of 14 November 2026 for completing the library's breadth, for a learner who wants to be
-well rounded across the main fields of knowledge. Nothing here is started; George chooses what goes
-ahead and in what order. George agreed the order on 15 November; the first two are being written.
+well rounded across the main fields of knowledge. How Government Works was written on 23 November 2026 and has left the list. On that day George
+put science, engineering, and money and business courses ahead of the humanities ones below
+(Modern Physics, Thermodynamics and Energy Systems, and Personal Finance under Australian rules
+first). George chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
 
 OpenStax text is left out of every source list here: its books now forbid use in AI tools without
 written permission (`docs/authoring/open-sources.md`). Once a course is written it leaves this list and enters
@@ -32,7 +34,6 @@ answers, order, sort, quoted sources side by side, code).
 | # | Course | What it adds | Main sources (licence) |
 |---|---|---|---|
 | 1 | **The Modern World, 1750 to Today** | Revolutions, industrialisation, empire, the world wars, decolonisation, the Cold War, globalisation. The History course teaches method with cases up to 1914; nothing covers how the present world was made. | Wikipedia (CC BY-SA); Our World in Data (CC BY) for long-run charts; Avalon Project and Fordham Modern History Sourcebook (public domain) for quoted documents |
-| 2 | **How Government Works** | States and regimes, constitutions, elections and parties, rights, international relations. Needed to read the news well. | Wikipedia (CC BY-SA); McGlinchey, International Relations (BY-NC); constitutions and founding documents (public domain) |
 | 3 | **Personal Finance and Investing** | Budgeting, debt and interest, compounding, index funds and fees, risk, insurance, retirement saving. The highest everyday payoff of anything missing. | Government consumer guides (public domain in the US; check the local equivalent); Saylor Personal Finance (NC-SA) |
 | 4 | **Law and Legal Reasoning** | How law is made and argued: sources of law, precedent, contract, tort, criminal law, constitutional rights. | Law 101 (Open SUNY, CC BY); constitutions and court judgments (public domain); CALI casebooks (NC-SA) |
 | 5 | **Art History: a Survey** | How to look at a painting, sculpture or building, and the main traditions from cave art to now, across cultures. | Smarthistory (NC-SA); Introduction to Art, University of North Georgia (BY-SA); Met, Art Institute and National Gallery open images (CC0), through the existing Wikimedia image retriever |
