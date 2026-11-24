@@ -20,7 +20,7 @@ beforeEach(async () => {
 afterEach(async () => {
   await app.close();
 });
-const answer = (response = "0.05 A", attemptId?: string) =>
+const answer = (response = "0.015 A", attemptId?: string) =>
   app.inject({
     method: "POST",
     url: "/api/attempts",
@@ -101,7 +101,7 @@ describe("earned learning rewards", () => {
   });
   it("awards only the improvement on a retry and earns a correction once", async () => {
     const wrong = (await answer("0.5 A")).json();
-    const right = (await answer("0.05 A", wrong.attemptId)).json();
+    const right = (await answer("0.015 A", wrong.attemptId)).json();
     expect(right.xpGained).toBeGreaterThan(0);
     expect(wrong.xpGained + right.xpGained).toBe(right.xpAwarded);
     const study = await summary();

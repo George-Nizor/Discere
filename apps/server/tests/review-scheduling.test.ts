@@ -259,7 +259,7 @@ describe("study streak", () => {
     const attempt = await app.inject({
       method: "POST",
       url: "/api/attempts",
-      payload: { questionId: "calculate-current-5v-100ohm", response: "0.05 A", mode: "coach" },
+      payload: { questionId: "calculate-current-5v-100ohm", response: "0.015 A", mode: "coach" },
     });
     expect(attempt.statusCode).toBe(200);
     expect((await app.inject({ method: "GET", url: "/api/home" })).json().streakDays).toBe(1);
@@ -272,7 +272,7 @@ describe("study streak", () => {
       app.inject({
         method: "POST",
         url: "/api/attempts",
-        payload: { questionId: "calculate-current-5v-100ohm", response: "0.05 A", mode: "coach" },
+        payload: { questionId: "calculate-current-5v-100ohm", response: "0.015 A", mode: "coach" },
       });
     const streak = async () =>
       (await app.inject({ method: "GET", url: "/api/home" })).json().streakDays;

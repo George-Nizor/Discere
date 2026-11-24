@@ -19,10 +19,10 @@ whether the course has coding projects, and whether a review record binds the bu
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Maths Foundations | 6 | 76 | 25 | 51 | 0 | 0 | 0 | 0 | 88% | 13% | 0 | 3 | 6 |  | yes | targeted |
 | Geometry: Shape and Space | 12 | 132 | 39 | 93 | 0 | 0 | 0 | 0 | 55% | 13% | 0 | 3 | 6 |  | yes | targeted |
-| Trigonometry | 12 | 121 | 33 | 86 | 2 | 0 | 0 | 0 | 52% | 15% | 0 | 0 | 23 |  |  | targeted |
-| Linear Algebra: Vectors and Maps | 20 | 217 | 63 | 154 | 0 | 0 | 0 | 0 | 70% | 16% | 0 | 3 | 22 |  | yes | targeted |
+| Trigonometry | 12 | 121 | 33 | 86 | 2 | 0 | 0 | 0 | 49% | 15% | 0 | 0 | 23 |  |  | targeted |
+| Linear Algebra: Vectors and Maps | 20 | 217 | 63 | 154 | 0 | 0 | 0 | 0 | 70% | 15% | 0 | 3 | 22 |  | yes | targeted |
 | Calculus: Change and Accumulation | 12 | 147 | 40 | 107 | 0 | 0 | 0 | 0 | 67% | 15% | 0 | 3 | 11 |  | yes | targeted |
-| Calculus II: Series and Differential Equations | 15 | 182 | 49 | 128 | 5 | 0 | 0 | 0 | 64% | 7% | 0 | 0 | 34 |  |  | targeted |
+| Calculus II: Series and Differential Equations | 15 | 182 | 49 | 128 | 5 | 0 | 0 | 0 | 63% | 9% | 0 | 0 | 34 |  |  | targeted |
 | Logic and Reasoning | 8 | 86 | 71 | 4 | 11 | 0 | 0 | 0 | 57% | 15% | 0 | 3 | 6 |  | yes | targeted |
 | Probability and Statistics | 6 | 77 | 23 | 54 | 0 | 0 | 0 | 0 | 36% | 14% | 0 | 3 | 8 |  | yes | targeted |
 | Statistical and Causal Inference | 14 | 124 | 101 | 1 | 10 | 0 | 12 | 0 | 10% | 4% | 0 | 0 | 9 |  |  | rewritten |
@@ -31,7 +31,7 @@ whether the course has coding projects, and whether a review record binds the bu
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| How Computers Solve Problems | 6 | 69 | 23 | 46 | 0 | 0 | 0 | 0 | 62% | 14% | 0 | 3 | 12 |  | yes | targeted |
+| How Computers Solve Problems | 6 | 69 | 23 | 46 | 0 | 0 | 0 | 0 | 59% | 14% | 0 | 3 | 12 |  | yes | targeted |
 | How Computers and Networks Work | 12 | 110 | 81 | 11 | 6 | 0 | 12 | 0 | 15% | 14% | 0 | 0 | 21 |  |  | rewritten |
 | Data Structures and Algorithms | 14 | 136 | 93 | 28 | 3 | 0 | 12 | 0 | 10% | 3% | 0 | 0 | 35 |  |  | rewritten |
 | Linux and the Command Line | 14 | 135 | 104 | 10 | 11 | 0 | 10 | 0 | 27% | 10% | 0 | 0 | 8 |  |  | rewritten |
@@ -74,7 +74,7 @@ whether the course has coding projects, and whether a review record binds the bu
 
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Physics: Motion and Forces | 18 | 231 | 61 | 170 | 0 | 0 | 0 | 0 | 35% | 10% | 0 | 3 | 20 |  | yes | targeted |
+| Physics: Motion and Forces | 18 | 231 | 61 | 170 | 0 | 0 | 0 | 0 | 34% | 11% | 0 | 3 | 20 |  | yes | targeted |
 | Physics II: Waves, Electricity and Magnetism, and Heat | 15 | 162 | 28 | 133 | 1 | 0 | 0 | 0 | 14% | 14% | 0 | 0 | 8 |  |  | targeted |
 | Modern Physics: Relativity and the Quantum | 14 | 145 | 86 | 45 | 1 | 0 | 13 | 6 | 14% | 8% | 0 | 0 | 12 |  |  | new |
 | Astronomy: From Sky to Cosmos | 12 | 138 | 133 | 0 | 5 | 0 | 0 | 0 | 32% | 13% | 0 | 3 | 26 |  | yes | targeted |
@@ -89,11 +89,11 @@ whether the course has coding projects, and whether a review record binds the bu
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Engineering: Structures and Machines | 12 | 153 | 38 | 113 | 2 | 0 | 0 | 0 | 20% | 14% | 0 | 3 | 16 |  | yes | targeted |
 | Electronics Foundations | 5 | 70 | 25 | 39 | 6 | 0 | 0 | 0 | 37% | 16% | 1 | 0 | 5 |  | yes | targeted |
-| Mechanisms and Machine Design | 12 | 138 | 33 | 100 | 5 | 0 | 0 | 0 | 23% | 15% | 0 | 0 | 34 |  |  | targeted |
+| Mechanisms and Machine Design | 12 | 138 | 33 | 100 | 5 | 0 | 0 | 0 | 22% | 12% | 0 | 0 | 34 |  |  | targeted |
 | Materials and Manufacturing | 13 | 128 | 113 | 5 | 1 | 0 | 9 | 0 | 8% | 16% | 0 | 0 | 9 |  |  | rewritten |
 | Thermodynamics and Energy Systems | 14 | 154 | 95 | 48 | 0 | 0 | 11 | 7 | 8% | 6% | 0 | 0 | 12 |  |  | new |
 | Control Theory | 12 | 146 | 25 | 120 | 1 | 0 | 0 | 0 | 28% | 8% | 0 | 0 | 17 |  |  | targeted |
-| Mechatronics and Robotics | 13 | 141 | 37 | 103 | 1 | 0 | 0 | 0 | 46% | 14% | 0 | 0 | 32 |  |  | targeted |
+| Mechatronics and Robotics | 13 | 141 | 38 | 103 | 0 | 0 | 0 | 0 | 43% | 21% | 0 | 0 | 32 |  |  | targeted |
 | Industrial and Product Design | 11 | 106 | 87 | 2 | 5 | 0 | 12 | 0 | 8% | 2% | 0 | 0 | 13 |  |  | rewritten |
 | Small Buildings and Architectural Design | 12 | 112 | 91 | 7 | 2 | 0 | 12 | 0 | 17% | 5% | 0 | 0 | 11 |  |  | rewritten |
 
@@ -125,7 +125,7 @@ whether the course has coding projects, and whether a review record binds the bu
 | Course | Lessons | Questions | Choice | Num | Text | Code | Order/sort | Extracts | Short prompts | Right longest | Writing | Checks | Sources | Projects | Reviewed | Question pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Music Theory | 12 | 119 | 80 | 12 | 15 | 0 | 12 | 5 | 57% | 3% | 0 | 0 | 40 |  |  | rewritten |
-| Sound and Audio Fundamentals | 13 | 124 | 70 | 47 | 7 | 0 | 0 | 0 | 31% | 14% | 0 | 0 | 8 |  |  | targeted |
+| Sound and Audio Fundamentals | 13 | 124 | 71 | 47 | 6 | 0 | 0 | 0 | 27% | 15% | 0 | 0 | 8 |  |  | targeted |
 
 ## First aid
 
