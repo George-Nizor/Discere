@@ -29,8 +29,9 @@ How Government Works, which was written alongside it, is finished and is in the 
 - **Other new subjects:** the others of the first eight in `docs/new-subjects.md` are Law, Art
   History, Reading Literature and World Religions. Modern Physics, Thermodynamics and Energy
   Systems, Personal Finance and Investing (under Australian rules) and Accounting are written
-  and in the library. Under George's 23 November decision, Art History, Reading Literature and World
-  Religions wait with The Modern World. Law is not covered by what he said, so ask, and ask
+  and in the library, and so is Corporate Finance, which the list never carried. Under George's
+  23 November decision, Art History, Reading Literature and World Religions wait with The Modern
+  World. Law is not covered by what he said, so ask, and ask
   which country's law to teach.
 
 ## Usage
