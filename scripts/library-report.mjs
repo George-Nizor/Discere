@@ -107,6 +107,7 @@ const AREAS = [
       "decision-theory",
       "personal-finance",
       "accounting",
+      "corporate-finance",
       "how-government-works",
     ],
   ],
