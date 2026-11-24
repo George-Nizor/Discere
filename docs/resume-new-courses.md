@@ -26,12 +26,12 @@ How Government Works, which was written alongside it, is finished and is in the 
   check which of those texts reached `modern-world/pack/` before redoing it. Then approve,
   copy the curriculum to `docs/curricula/modern-world.json`, scaffold, and write the course the
   way How Government Works was done (`docs/authoring/README.md`, "A new course").
-- **Other new subjects:** the other five of the first eight in `docs/new-subjects.md` are Personal
-  Finance, Law, Art History, Reading Literature and World Religions. Modern Physics was written on
-  23 November 2026 and is in the library. Under George's 23 November decision, Personal Finance
-  (money) comes before the humanities, and Art History, Reading Literature and World Religions
-  wait with The Modern World. Law is not covered by what he said, so ask. Personal Finance and Law need George
-  to say which country's rules to teach.
+- **Other new subjects:** the others of the first eight in `docs/new-subjects.md` are Law, Art
+  History, Reading Literature and World Religions. Modern Physics, Thermodynamics and Energy
+  Systems and Personal Finance and Investing (under Australian rules) are written and in the
+  library. Under George's 23 November decision, Art History, Reading Literature and World
+  Religions wait with The Modern World. Law is not covered by what he said, so ask, and ask
+  which country's law to teach.
 
 ## Usage
 
