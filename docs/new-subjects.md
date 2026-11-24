@@ -1,11 +1,11 @@
 # New subjects, prioritised
 
 A proposal of 14 November 2026 for completing the library's breadth, for a learner who wants to be
-well rounded across the main fields of knowledge. How Government Works and Modern Physics were
-written on 23 November 2026 and have left the list. On that day George put science, engineering,
-and money and business courses ahead of the humanities ones below. Modern Physics came first, and
-Thermodynamics and Energy Systems and Personal Finance under Australian rules are next. George
-chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
+well rounded across the main fields of knowledge. How Government Works, Modern Physics and
+Thermodynamics and Energy Systems were written on 23 November 2026 and have left the list. On that
+day George put science, engineering, and money and business courses ahead of the humanities ones
+below. Modern Physics and Thermodynamics and Energy Systems came first, and Personal Finance under
+Australian rules is next. George chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
 
 OpenStax text is left out of every source list here: its books now forbid use in AI tools without
 written permission (`docs/authoring/open-sources.md`). Once a course is written it leaves this list and enters
