@@ -10936,12 +10936,12 @@
           "label": "RefCell"
         },
         {
-          "id": "b",
-          "label": "Arc"
+          "id": "d",
+          "label": "Rc"
         },
         {
-          "id": "d",
-          "label": "Vec"
+          "id": "b",
+          "label": "Arc"
         }
       ],
       "misconceptions": [
@@ -10967,7 +10967,7 @@
               "d"
             ]
           },
-          "feedback": "A Vec holds many values and has one owner. It does not give several threads a handle to one map."
+          "feedback": "Rc counts its owners without atomic operations, so the compiler refuses to send one to another thread."
         }
       ]
     },
@@ -11794,35 +11794,64 @@
         "round-robin",
         "deadlock"
       ],
-      "prompt": "Two threads each hold one lock and wait for the lock the other holds. Which of the four deadlock conditions describes this ring of waiting? Give its two-word name.",
+      "prompt": "A program is changed so that each thread asks for both of its locks together and receives either both or neither. Which of the four deadlock conditions can then no longer occur? Give its name.",
       "responseType": "short_text",
       "difficulty": 1.2,
       "hints": [
-        "The four conditions are mutual exclusion, hold and wait, no preemption and one more.",
-        "The ring of waiting is the one that a global lock order forbids."
+        "One condition is about a thread keeping what it already has while it asks for more.",
+        "Ask what a thread that has to wait is holding once it gets both locks or neither."
       ],
       "sourceIds": [
         "ostep",
         "csapp"
       ],
-      "onCorrect": "A circular wait is a cycle of threads each waiting for a lock held by the next.",
+      "onCorrect": "A thread that gets both locks or neither never waits while holding one, so it cannot block another thread that way. The other three conditions are untouched.",
       "skill": "break-deadlock-condition",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "circular wait"
+          "hold and wait"
         ],
         "acceptedAlternatives": [
-          "circular-wait",
-          "a circular wait",
-          "circular waiting",
-          "cyclic wait",
-          "circular"
+          "hold-and-wait",
+          "hold & wait",
+          "hold and wait condition",
+          "the hold and wait condition",
+          "holding and waiting",
+          "hold wait"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "circular wait"
-      }
+        "exampleAnswer": "hold and wait"
+      },
+      "misconceptions": [
+        {
+          "match": {
+            "textIdeas": [
+              "circular wait",
+              "circular"
+            ]
+          },
+          "feedback": "A global lock order removes that one. Taking both locks together changes something else: what a waiting thread is holding."
+        },
+        {
+          "match": {
+            "textIdeas": [
+              "mutual exclusion"
+            ]
+          },
+          "feedback": "Each lock is still held by one thread at a time. The change is about whether a waiting thread holds a lock."
+        },
+        {
+          "match": {
+            "textIdeas": [
+              "no preemption",
+              "preemption"
+            ]
+          },
+          "feedback": "A lock still cannot be taken from the thread that holds it. The change is about whether a thread can hold one lock while it waits for another."
+        }
+      ]
     },
     {
       "id": "sysp-scheduling-and-deadlock-practice-3",
@@ -12226,13 +12255,12 @@
         "page-table",
         "tlb"
       ],
-      "prompt": "The page table is a single array in ordinary memory, and nothing speeds up the translation. Compared with a machine that needs no translation, how long does a load of one data value take?",
+      "prompt": "A machine keeps its page table as one array in ordinary memory and has no cache of translations. How many memory accesses does one load of a data value make?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The page table lives in memory too.",
-        "The processor must read the table entry before it knows the physical address.",
-        "Then it can read the data."
+        "Where does the page table live, and what does the processor need from it before it can read the data?",
+        "Reading an entry of the table is itself a memory access."
       ],
       "sourceIds": [
         "ostep",
@@ -12245,19 +12273,19 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "About twice as long, because the table entry has to be read from memory before the data"
+          "Two, because the table entry is read from memory before the data"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "About twice as long, because the table entry has to be read from memory before the data"
+        "exampleAnswer": "Two, because the table entry is read from memory before the data"
       },
       "misconceptions": [
         {
           "match": {
             "choiceIds": [
-              "b"
+              "a"
             ]
           },
-          "feedback": "The table sits in ordinary memory, so finding the frame means reading an entry from it, and that read costs a memory access of its own."
+          "feedback": "The page table is data in ordinary memory, so the hardware has to read an entry from it, and that read is a memory access of its own."
         },
         {
           "match": {
@@ -12265,21 +12293,21 @@
               "c"
             ]
           },
-          "feedback": "The page number indexes the table directly, so one read finds the entry, and a single-level table adds one access, not many."
+          "feedback": "The page number is used directly as an index, so one read finds the entry. A single-level table adds one access, not many."
         }
       ],
       "choices": [
         {
-          "id": "c",
-          "label": "Many times as long, because the processor must search the whole table entry by entry"
+          "id": "a",
+          "label": "One, because the hardware translates without reading memory"
         },
         {
           "id": "b",
-          "label": "About the same, because the hardware translates addresses instantly, in a dedicated circuit"
+          "label": "Two, because the table entry is read from memory before the data"
         },
         {
-          "id": "a",
-          "label": "About twice as long, because the table entry has to be read from memory before the data"
+          "id": "c",
+          "label": "Many, because the processor has to search the table for the entry"
         }
       ]
     },
@@ -13250,12 +13278,12 @@
         "raw-pointer",
         "ffi"
       ],
-      "prompt": "Which error does rustc report for a dereference of a raw pointer outside an `unsafe` block?",
+      "prompt": "`let y = *p;` reads through a raw pointer `p` outside an `unsafe` block, and rustc rejects it with E0133. What changes when the line is written inside an `unsafe` block?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The message says that the operation is unsafe and requires an unsafe block.",
-        "Compare the four codes: one is about the `unsafe` keyword, and the others are about closures, moves and borrows."
+        "Think about what the compiler can and cannot know about where a raw pointer points.",
+        "An unsafe block adds five operations to what the compiler allows and takes no checks away."
       ],
       "sourceIds": [
         "rust-book",
@@ -13263,33 +13291,33 @@
         "rust-ref",
         "man-pages"
       ],
-      "onCorrect": "E0133 covers every unsafe operation used outside an unsafe block, not only a pointer dereference.",
+      "onCorrect": "The compiler cannot check a raw pointer, so the block records that you have. E0133 is the code for any of the five unsafe operations used outside such a block.",
       "skill": "list-unsafe-operations",
       "calculator": "off",
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "E0133"
+          "It states that you have checked the pointer, and the read is accepted"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "E0133"
+        "exampleAnswer": "It states that you have checked the pointer, and the read is accepted"
       },
       "choices": [
         {
-          "id": "a",
-          "label": "E0133"
-        },
-        {
           "id": "b",
-          "label": "E0373"
+          "label": "It makes the compiler check that the pointer is valid before the read"
         },
         {
           "id": "c",
-          "label": "E0382"
+          "label": "It switches off borrow checking for the rest of the function"
         },
         {
           "id": "d",
-          "label": "E0502"
+          "label": "It makes the read safe, so a null pointer no longer matters"
+        },
+        {
+          "id": "a",
+          "label": "It states that you have checked the pointer, and the read is accepted"
         }
       ],
       "misconceptions": [
@@ -13299,7 +13327,7 @@
               "b"
             ]
           },
-          "feedback": "E0373 is for a closure that may outlive the function that made it."
+          "feedback": "The compiler cannot see where a raw pointer points, since it may be null, dangling or unaligned. That is why it hands the check to you."
         },
         {
           "match": {
@@ -13307,7 +13335,7 @@
               "c"
             ]
           },
-          "feedback": "E0382 is for a value used after it has moved."
+          "feedback": "The block adds five operations and removes no checks, so borrows are checked inside it exactly as they are outside."
         },
         {
           "match": {
@@ -13315,7 +13343,7 @@
               "d"
             ]
           },
-          "feedback": "E0502 is a borrow conflict, which an `unsafe` block does not remove."
+          "feedback": "A null or dangling pointer is still undefined behaviour inside the block. The block only moves the responsibility to you."
         }
       ]
     },
@@ -13632,26 +13660,34 @@
           "label": "The pointer was made by `Box::new`, so Rust owns the string"
         },
         {
-          "id": "b",
-          "label": "The pointer leads to readable bytes that end with a zero byte"
+          "id": "a",
+          "label": "The bytes are valid UTF-8, as every Rust string must be"
         },
         {
           "id": "c",
           "label": "The string is shorter than 256 bytes, so that strlen can finish"
         },
         {
-          "id": "a",
-          "label": "The pointer is aligned to 64 bytes, like a cache line"
+          "id": "b",
+          "label": "The pointer leads to readable bytes that end with a zero byte"
         }
       ],
       "misconceptions": [
         {
           "match": {
             "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "The pointer may come from anywhere, provided it is valid. Box::new is not required."
+        },
+        {
+          "match": {
+            "choiceIds": [
               "a"
             ]
           },
-          "feedback": "strlen needs no special alignment for a string of bytes."
+          "feedback": "strlen works on raw bytes and stops at the first zero byte. It does not read them as text, so UTF-8 plays no part."
         },
         {
           "match": {
@@ -13660,14 +13696,6 @@
             ]
           },
           "feedback": "There is no length limit. strlen reads as far as the NUL, wherever it is."
-        },
-        {
-          "match": {
-            "choiceIds": [
-              "d"
-            ]
-          },
-          "feedback": "The pointer may come from anywhere, provided it is valid. Box::new is not required."
         }
       ]
     },

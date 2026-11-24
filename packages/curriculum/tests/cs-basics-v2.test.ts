@@ -152,14 +152,12 @@ describe("CS Basics v2 lessons", () => {
         (v) => v + 1,
       ) * 2,
     );
+    // practice-1: the rule is "7 or less", so the right test is true at 7 and below and false above it.
+    const sevenOrLess: Array<(v: number) => boolean> = [(v) => v < 7, (v) => v <= 7, (v) => v >= 7];
     expect(
-      run(
-        4,
-        (v) => v > 4,
-        () => 1,
-        () => 0,
-      ),
-    ).toBe(0); // practice-1: 4 > 4 is false
+      sevenOrLess.map((test) => [3, 7].every((v) => test(v)) && !test(8)),
+    ).toEqual([false, true, false]);
+    expect(marked(L, "practice-1")).toEqual(["c"]);
     expect(
       run(
         4,
@@ -191,6 +189,14 @@ describe("CS Basics v2 lessons", () => {
     for (let i = 0; i < 3; i++) y *= 2;
     expect(key(L, "practice-1")).toBe(y);
     expect(key(L, "practice-3")).toBe(whileDown(19, 6, 5).x);
+    // practice-2: `while x < 50` from 2 ends only when the body adds to x (+ 7 reaches 51); subtracting or changing y never ends it.
+    const upTo = (step: number, target: "x" | "y") => {
+      let v = 2;
+      for (let i = 0; i < 100 && v < 50; i++) if (target === "x") v += step;
+      return v >= 50;
+    };
+    expect([upTo(-4, "x"), upTo(7, "x"), upTo(7, "y")]).toEqual([false, true, false]);
+    expect(marked(L, "practice-2")).toEqual(["a"]);
     expect(whileDown(10, 4, 3)).toEqual({ x: 4, passes: 2 }); // worked example
     expect(marked(L, "range-check")).toEqual(["a"]);
   });
@@ -203,7 +209,7 @@ describe("CS Basics v2 lessons", () => {
     expect(key(L, "3")).toBe(linear(a, 7) === a.length ? a.length : -1);
     expect(key(L, "4")).toBe(linear([9, 4, 12, 1, 7, 3, 15, 6], 6));
     expect(key(L, "practice-1")).toBe(50);
-    expect(key(L, "practice-2")).toBe(["a", "b", "c", "d"].indexOf("d"));
+    expect(key(L, "practice-2")).toBe(12 - 1); // the last of twelve items
     expect(key(L, "practice-3")).toBe(6 - 2);
     expect(linear([4, 9, 1, 7], 1)).toBe(3); // worked example: index 2, 3 checks
     expect(marked(L, "why-index")).toEqual(["a"]);
@@ -219,6 +225,25 @@ describe("CS Basics v2 lessons", () => {
     expect(key(L, "practice-2")).toBe(worstBinary(7));
     expect(key(L, "practice-3")).toBe((15 - 1) / 2);
     expect(binary([3, 6, 9, 12, 15], 15)).toBe(3); // worked example
+    // practice-1: on 42, 7, 55, 48, 60 the search compares 55 and then 42 and throws the 7 away, so it reports it missing.
+    const unsorted = [42, 7, 55, 48, 60];
+    let lo = 0;
+    let hi = unsorted.length - 1;
+    let found = false;
+    const compared: number[] = [];
+    while (lo <= hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      compared.push(unsorted[mid]!);
+      if (unsorted[mid] === 7) {
+        found = true;
+        break;
+      }
+      if (unsorted[mid]! < 7) lo = mid + 1;
+      else hi = mid - 1;
+    }
+    expect(compared).toEqual([55, 42]);
+    expect(found).toBe(false);
+    expect(marked(L, "practice-1")).toEqual(["a"]);
     expect(marked(L, "why-ignored")).toEqual(["a"]);
   });
 
@@ -231,7 +256,7 @@ describe("CS Basics v2 lessons", () => {
     expect(key(L, "3")).toBe(worstBinary(15));
     expect(key(L, "4")).toBe(worstBinary(1023));
     expect(2 ** key(L, "4") - 1).toBe(1023);
-    expect(key(L, "practice-1")).toBe(1000);
+    expect(key(L, "practice-1")).toBe(500 - worstBinary(500)); // 500 linear against 9 binary
     expect(key(L, "practice-2")).toBe(worstBinary(1000));
     expect(worstBinary(31)).toBe(5); // worked example
     expect(marked(L, "practice-3")).toEqual(["a"]);

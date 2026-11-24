@@ -507,7 +507,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Halving the work per pass doubles the rate, so the 2000-cycle loop of the text reaches 8000 passes a second."
+              "text": "A loop of 5000 cycles runs 3200 times a second, fewer than the 8000 of the 2000-cycle loop in the text, because each pass takes longer."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3613,7 +3613,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "Speed and torque are separate requirements, so a drive must be checked against the steepest slope as well as against the speed."
+              "text": "A higher ratio gives more torque at the wheel from the same motor and less speed, so a drive has to be checked against the steepest slope as well as against the speed."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -3940,7 +3940,7 @@
           "reveal": [
             {
               "kind": "paragraph",
-              "text": "The smallest reach is |l1 − l2| = 0.1 m, so a target nearer than that is in the hole of the ring, whatever the joint angles."
+              "text": "The smallest reach is |l1 − l2| = 0.2 m for this arm, so a target nearer than that is in the hole of the ring, whatever the joint angles."
             }
           ],
           "answerVisibility": "hidden-until-response",
@@ -5121,41 +5121,69 @@
         "mcu",
         "timer"
       ],
-      "prompt": "Which memory keeps the program when the power is off? Give its name.",
+      "prompt": "A robot's program keeps a count of switch presses in a variable. The battery is taken out and put back in. What is left of the program and of the count afterwards?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "It is the memory the program is written into when you upload code.",
-        "The other kind, RAM, loses its contents."
+        "Ask which memory holds the program and which holds a variable.",
+        "One of the two keeps its contents when the power is off."
+      ],
+      "choices": [
+        {
+          "id": "a",
+          "label": "Both are gone, and the program must be uploaded again"
+        },
+        {
+          "id": "b",
+          "label": "Both are still there, and the count carries on where it stopped"
+        },
+        {
+          "id": "c",
+          "label": "The program is still there, but the count starts again from zero"
+        },
+        {
+          "id": "d",
+          "label": "The count is still there, but the program must be uploaded again"
+        }
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "flash"
-        ],
-        "acceptedAlternatives": [
-          "flash memory",
-          "Flash",
-          "flash rom",
-          "program memory"
+          "The program is still there, but the count starts again from zero"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "flash"
+        "exampleAnswer": "The program is still there, but the count starts again from zero"
       },
       "sourceIds": [
         "atmega328p-ds",
         "arduino-secrets-pwm",
         "arduino-blink-without-delay"
       ],
-      "onCorrect": "Flash is written at upload and read at start-up, while RAM holds only variables.",
+      "onCorrect": "The program is in flash, which keeps its contents with the power off, and the count is in RAM, which starts empty.",
       "misconceptions": [
         {
           "match": {
-            "textIdeas": [
-              "ram"
+            "choiceIds": [
+              "a"
             ]
           },
-          "feedback": "RAM is emptied when the power goes off, so it cannot hold the program."
+          "feedback": "The program is kept in flash, which holds its contents with the power off, so it is still there at the next start."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "b"
+            ]
+          },
+          "feedback": "The count is a variable, and variables live in RAM, which is emptied when the power goes. Only flash keeps its contents."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "That has the two memories the wrong way round. The program is in flash and survives the power cut, while the count is in RAM and does not."
         }
       ],
       "skill": "name-mcu-parts",
@@ -5241,21 +5269,21 @@
         "mcu",
         "timer"
       ],
-      "prompt": "Each pass of loop takes 4000 clock cycles on a 16 MHz chip. How many passes per second?",
+      "prompt": "Each pass of `loop` takes 5000 clock cycles on a 16 MHz chip. How many passes per second?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Passes per second is cycles per second divided by cycles per pass.",
-        "Write each quantity with its unit, then combine them in the order the question describes.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "A 16 MHz clock gives 16,000,000 cycles in a second.",
+        "Keep the full 16,000,000 in the division, and not 16."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 4000,
+        "value": 3200,
         "unit": "passes per second",
-        "absoluteTolerance": 20,
+        "absoluteTolerance": 16,
         "relativeTolerance": 0,
-        "workedAnswer": "16,000,000 / 4000 = 4000."
+        "workedAnswer": "16,000,000 / 5000 = 3200."
       },
       "sourceIds": [
         "atmega328p-ds",
@@ -5267,18 +5295,18 @@
         {
           "match": {
             "numeric": [
-              250
+              3.2
             ]
           },
-          "feedback": "That divides the other way, 4000 by 16 million of something. Cycles per second go on top."
+          "feedback": "That is passes per millisecond. A second has a thousand of them."
         },
         {
           "match": {
             "numeric": [
-              16000
+              0.0003125
             ]
           },
-          "feedback": "That is the cycles per millisecond. Divide the full 16,000,000 by 4000."
+          "feedback": "That is the length of one pass in seconds. Passes per second is its reciprocal."
         }
       ],
       "skill": "explain-loop",
@@ -5486,33 +5514,33 @@
         "mcu",
         "timer"
       ],
-      "prompt": "A clock runs at 8 MHz. How long is one cycle, in nanoseconds?",
+      "prompt": "A clock runs at 20 MHz. How long is one cycle, in nanoseconds?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "One over the frequency.",
-        "Write each quantity with its unit, then combine them in the order the question describes.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "One cycle lasts one over the frequency.",
+        "20 MHz is 20,000,000 cycles in a second.",
+        "One second is 1,000,000,000 nanoseconds."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 125,
+        "value": 50,
         "unit": "ns",
-        "absoluteTolerance": 0.625,
+        "absoluteTolerance": 0.25,
         "relativeTolerance": 0,
-        "workedAnswer": "1 / 8,000,000 s = 125 ns."
+        "workedAnswer": "1 / 20,000,000 s = 50 ns."
       },
       "sourceIds": [
         "atmega328p-ds",
         "arduino-secrets-pwm",
         "arduino-blink-without-delay"
       ],
-      "onCorrect": "At half the clock rate of the 16 MHz chip each cycle lasts twice as long, 125 ns instead of 62.5 ns.",
+      "onCorrect": "At 20 MHz each cycle lasts 50 ns, shorter than the 62.5 ns of the 16 MHz chip.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              0.125
+              0.05
             ]
           },
           "feedback": "That is microseconds. Multiply by 1000."
@@ -5535,27 +5563,27 @@
         "mcu",
         "timer"
       ],
-      "prompt": "What does the program on a microcontroller normally do?",
+      "prompt": "A robot's `loop` function ends with the line that sets its motor speed. What does the chip do after that last line?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Think of the loop function.",
-        "Consider what happens when it reaches the last line."
+        "Think about what the chip can do when there is no operating system to hand control back to.",
+        "Compare what `setup` does with what `loop` does."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Repeats forever"
+          "It runs the function again from its first line"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Repeats forever"
+        "exampleAnswer": "It runs the function again from its first line"
       },
       "sourceIds": [
         "atmega328p-ds",
         "arduino-secrets-pwm",
         "arduino-blink-without-delay"
       ],
-      "onCorrect": "With no operating system to return to, the program keeps running its loop until the power is removed.",
+      "onCorrect": "With no operating system to return to, the chip runs `loop` again as soon as it ends, and keeps doing so until the power is removed.",
       "misconceptions": [
         {
           "match": {
@@ -5563,7 +5591,7 @@
               "a"
             ]
           },
-          "feedback": "A program that ended would stop sensing. The chip simply runs it again."
+          "feedback": "Nothing in the chip waits for a reset. When `loop` ends it is started again at once."
         },
         {
           "match": {
@@ -5571,7 +5599,7 @@
               "b"
             ]
           },
-          "feedback": "There is no operating system by default; the program in flash starts itself."
+          "feedback": "A microcontroller has no operating system by default, so there is no prompt to return to."
         },
         {
           "match": {
@@ -5579,27 +5607,27 @@
               "d"
             ]
           },
-          "feedback": "Compiling is done on a computer before upload; the chip only runs the result."
+          "feedback": "Flash holds a single program here, and it is the only thing that runs."
         }
       ],
       "skill": "explain-loop",
       "calculator": "off",
       "choices": [
         {
-          "id": "b",
-          "label": "Waits for an operating system to start it"
+          "id": "a",
+          "label": "It stops, and waits for someone to press the reset button"
         },
         {
           "id": "c",
-          "label": "Repeats forever"
+          "label": "It runs the function again from its first line"
         },
         {
-          "id": "a",
-          "label": "Ends after one run"
+          "id": "b",
+          "label": "It returns to a command prompt and waits for input"
         },
         {
           "id": "d",
-          "label": "Compiles itself at power-on"
+          "label": "It starts the next program stored in flash"
         }
       ]
     },
@@ -6097,20 +6125,20 @@
         "pull",
         "bounce"
       ],
-      "prompt": "How is switch bounce handled in a program?",
+      "prompt": "A button's contacts bounce for about 5 ms, and a program counts every fall of the pin. What change to the program removes the extra counts?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Bounce is a few milliseconds of extra edges.",
+        "The extra falls all arrive within a few milliseconds of the first one.",
         "What would stop the program reacting to them?"
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "By ignoring changes for a few milliseconds after the first one"
+          "Ignore further changes for 20 ms after the first fall"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "By ignoring changes for a few milliseconds after the first one"
+        "exampleAnswer": "Ignore further changes for 20 ms after the first fall"
       },
       "sourceIds": [
         "sparkfun-pull-up-resistors",
@@ -6118,7 +6146,7 @@
         "arduino-debounce",
         "atmega328p-ds"
       ],
-      "onCorrect": "Ignoring changes for a time longer than the bounce leaves one clean press.",
+      "onCorrect": "Changes inside the 5 ms of bounce are ignored, so one press is counted once. The wait only has to be longer than the bounce.",
       "misconceptions": [
         {
           "match": {
@@ -6126,15 +6154,15 @@
               "a"
             ]
           },
-          "feedback": "A faster clock sees the bounce more clearly and counts more edges."
+          "feedback": "That sees even more of the bounce, so it counts even more falls."
         },
         {
           "match": {
             "choiceIds": [
-              "c"
+              "b"
             ]
           },
-          "feedback": "The LED is on the output side and has no effect on the input."
+          "feedback": "A bounce makes as many rises as falls, so the count is still too high."
         },
         {
           "match": {
@@ -6142,27 +6170,27 @@
               "d"
             ]
           },
-          "feedback": "A lower voltage moves the thresholds but does not remove the repeated contact."
+          "feedback": "A pull-up sets the level of an open switch. It does not stop the contacts rebounding, so the extra falls remain."
         }
       ],
       "skill": "debounce",
       "calculator": "off",
       "choices": [
         {
-          "id": "b",
-          "label": "By ignoring changes for a few milliseconds after the first one"
-        },
-        {
           "id": "a",
-          "label": "By running the chip at a faster clock, so the contacts settle sooner"
+          "label": "Check the pin every 1 ms instead, so that no change is missed"
         },
         {
-          "id": "d",
-          "label": "By lowering the supply voltage, so the contacts bounce less"
+          "id": "b",
+          "label": "Count the rises of the pin instead of the falls"
         },
         {
           "id": "c",
-          "label": "By using a larger LED, so the pin sees a steadier current"
+          "label": "Ignore further changes for 20 ms after the first fall"
+        },
+        {
+          "id": "d",
+          "label": "Fit a stronger pull-up resistor, so the pin settles faster"
         }
       ]
     },
@@ -7111,16 +7139,12 @@
               "d"
             ]
           },
-          "feedback": "A thermistor measures temperature."
+          "feedback": "An accelerometer measures how the robot speeds up. Adding that up twice gives distance only with a growing drift, and it says nothing about each wheel's turns."
         }
       ],
       "skill": "pick-sensor",
       "calculator": "off",
       "choices": [
-        {
-          "id": "a",
-          "label": "A quadrature encoder"
-        },
         {
           "id": "b",
           "label": "A gyroscope"
@@ -7131,7 +7155,11 @@
         },
         {
           "id": "d",
-          "label": "A thermistor"
+          "label": "An accelerometer"
+        },
+        {
+          "id": "a",
+          "label": "A quadrature encoder"
         }
       ]
     },
@@ -7190,33 +7218,33 @@
         "encoder",
         "tof"
       ],
-      "prompt": "An echo returns after 11.6 ms at 343 m/s. How far is the object, in metres, to two decimal places?",
+      "prompt": "An echo returns after 14.6 ms at 343 m/s. How far is the object, in metres, to two decimal places?",
       "responseType": "numeric",
       "difficulty": 1.2,
       "hints": [
         "Distance = speed × time / 2.",
-        "11.6 ms = 0.0116 s.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "14.6 ms = 0.0146 s.",
+        "The sound goes to the object and back, so halve the distance it covers."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1.99,
+        "value": 2.5,
         "unit": "m",
-        "absoluteTolerance": 0.00995,
+        "absoluteTolerance": 0.0125,
         "relativeTolerance": 0,
-        "workedAnswer": "343 × 0.0116 / 2 = 1.989 m."
+        "workedAnswer": "343 × 0.0146 / 2 = 2.504 m."
       },
       "sourceIds": [
         "mit-2-12-ch2",
         "nu-rotary-encoder",
         "openstax-up1-17-2"
       ],
-      "onCorrect": "An echo twice as late as the 5.8 ms example comes from twice the distance, about 2 m.",
+      "onCorrect": "Half of the 5.01 m the sound covered gives 2.50 m.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              3.98
+              5.01
             ]
           },
           "feedback": "That is the round trip. Halve it."
@@ -7224,10 +7252,10 @@
         {
           "match": {
             "numeric": [
-              0.995
+              2503.9
             ]
           },
-          "feedback": "That is the distance for 5.8 ms."
+          "feedback": "That uses 14.6 as seconds. Convert the milliseconds first."
         }
       ],
       "skill": "compute-tof-distance",
@@ -7868,27 +7896,27 @@
         "mecr-fsm",
         "nonblocking"
       ],
-      "prompt": "In a state that has no listed move for an event, what should the machine do when the event arrives?",
+      "prompt": "A program finds the next state with `s = table.get((s, e), s)`. A programmer changes it to `s = table.get((s, e), 'idle')`. What changes when an event arrives that the table has no entry for?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Think of the blank cells of the table.",
-        "The default value in `table.get((s, e), s)` is `s`."
+        "The second argument of `get` is the value used when the pair is not in the table.",
+        "In the original code that value was `s`, the current state."
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Leave the state unchanged"
+          "The machine goes to idle, whatever state it was in"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Leave the state unchanged"
+        "exampleAnswer": "The machine goes to idle, whatever state it was in"
       },
       "sourceIds": [
         "ut-valvano-fsm",
         "arduino-blink-without-delay",
         "arduino-millis"
       ],
-      "onCorrect": "Leaving the state unchanged is what a blank cell means, and it should be a decision and not an oversight.",
+      "onCorrect": "The default is what a blank cell means, so passing 'idle' turns every blank cell into a move to idle, and the machine forgets where it was.",
       "misconceptions": [
         {
           "match": {
@@ -7896,15 +7924,15 @@
               "a"
             ]
           },
-          "feedback": "An unlisted event is normal. The machine just ignores it."
+          "feedback": "The second argument is the state used when the pair is missing. It is now 'idle' and no longer the current state `s`."
         },
         {
           "match": {
             "choiceIds": [
-              "b"
+              "c"
             ]
           },
-          "feedback": "A blanket reset would lose the state the machine was in."
+          "feedback": "`get` returns its second argument when the key is missing. Only indexing with `table[(s, e)]` raises a `KeyError`."
         },
         {
           "match": {
@@ -7912,7 +7940,7 @@
               "d"
             ]
           },
-          "feedback": "Repeating the last event would invent a move that the table does not list."
+          "feedback": "A missing pair has no next state listed, so there is nothing to move on to. Only the default is used."
         }
       ],
       "skill": "design-fsm",
@@ -7920,19 +7948,19 @@
       "choices": [
         {
           "id": "a",
-          "label": "Crash with an error"
+          "label": "The machine stays in its current state, as before"
         },
         {
           "id": "c",
-          "label": "Leave the state unchanged"
-        },
-        {
-          "id": "b",
-          "label": "Reset to idle every time"
+          "label": "The program stops with a `KeyError`"
         },
         {
           "id": "d",
-          "label": "Repeat the previous event"
+          "label": "The machine moves on to the next state in the table"
+        },
+        {
+          "id": "b",
+          "label": "The machine goes to idle, whatever state it was in"
         }
       ]
     },
@@ -8849,44 +8877,44 @@
         "pwm",
         "hbridge"
       ],
-      "prompt": "A 24 V supply is switched at 25% duty. What is the average voltage, in volts?",
+      "prompt": "A 24 V supply is switched at 30% duty. What is the average voltage, in volts?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Average = duty × supply.",
-        "25% is 0.25.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "30% is 0.30.",
+        "Multiply 24 V by that fraction."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 6,
+        "value": 7.2,
         "unit": "V",
-        "absoluteTolerance": 0.03,
+        "absoluteTolerance": 0.036,
         "relativeTolerance": 0,
-        "workedAnswer": "24 × 0.25 = 6 V."
+        "workedAnswer": "24 × 0.30 = 7.2 V."
       },
       "sourceIds": [
         "mit-2-12-ch2",
         "nu-h-bridge",
         "openstax-up2-14-4"
       ],
-      "onCorrect": "A quarter of the supply is 6 V.",
+      "onCorrect": "Three tenths of the supply is 7.2 V.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              24
+              30
             ]
           },
-          "feedback": "That is the supply while on."
+          "feedback": "That is the duty in percent, not volts."
         },
         {
           "match": {
             "numeric": [
-              1
+              16.8
             ]
           },
-          "feedback": "That treats 25% as 25 divided by 24."
+          "feedback": "That is the average for 70% duty, the share of the period for which the switch is off."
         }
       ],
       "skill": "compute-pwm-average",
@@ -8947,27 +8975,27 @@
         "pwm",
         "hbridge"
       ],
-      "prompt": "What happens if both switches on one side of an H-bridge are on at the same time?",
+      "prompt": "In forward, Q1 and Q4 are on. A bug leaves Q3 switched on as well. What happens?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Both switches on one side connect to the supply and ground.",
+        "Which side of the bridge are Q1 and Q3 on?",
         "Where does the current go if the motor is not in its path?"
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "The supply is shorted to ground"
+          "The supply is shorted straight to ground, with no motor in the path"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "The supply is shorted to ground"
+        "exampleAnswer": "The supply is shorted straight to ground, with no motor in the path"
       },
       "sourceIds": [
         "mit-2-12-ch2",
         "nu-h-bridge",
         "openstax-up2-14-4"
       ],
-      "onCorrect": "Shoot-through puts no load in the current path, so the current is limited only by the switches.",
+      "onCorrect": "Q1 and Q3 stand on the same side of the bridge, so with both on the supply is joined to ground through them, with no motor in the path. This is called shoot-through.",
       "misconceptions": [
         {
           "match": {
@@ -8975,7 +9003,7 @@
               "a"
             ]
           },
-          "feedback": "Braking joins the two bottom switches, on both sides of the motor."
+          "feedback": "Braking turns on both bottom switches and leaves the top ones off. Here Q1 is still on, so the supply is connected as well."
         },
         {
           "match": {
@@ -8983,7 +9011,7 @@
               "b"
             ]
           },
-          "feedback": "Reversing uses the opposite diagonal of the bridge."
+          "feedback": "The extra switch adds no voltage across the motor. Q1 and Q3 stand on the same side of the bridge, so they do not share the motor's current."
         },
         {
           "match": {
@@ -8991,27 +9019,27 @@
               "d"
             ]
           },
-          "feedback": "Idle means all four switches off."
+          "feedback": "Reversing needs Q2 and Q3 on and Q1 and Q4 off. With Q1 still on, Q3 does not reverse the motor."
         }
       ],
       "skill": "explain-h-bridge",
       "calculator": "off",
       "choices": [
         {
-          "id": "d",
-          "label": "The motor idles with all four switches off"
+          "id": "a",
+          "label": "The motor brakes, because a bottom switch is on"
         },
         {
           "id": "c",
-          "label": "The supply is shorted to ground"
-        },
-        {
-          "id": "a",
-          "label": "The motor brakes against its own back-EMF"
+          "label": "The supply is shorted straight to ground, with no motor in the path"
         },
         {
           "id": "b",
-          "label": "The motor reverses and runs backwards"
+          "label": "The motor runs faster, because two switches carry the current"
+        },
+        {
+          "id": "d",
+          "label": "The motor reverses, because Q3 belongs to the reverse pair"
         }
       ]
     },
@@ -9856,43 +9884,35 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "A robot's motors suit its top speed well, but the robot cannot climb a ramp. What did the sizing leave out?",
+      "prompt": "A robot's drive reaches its target speed on the flat, but its motors stall on a 15° ramp. Which change helps most without changing the motors?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Speed and force are different requirements.",
-        "Which requirement was checked?"
+        "Climbing needs force at the ground, and force comes from torque.",
+        "Which of the four changes the torque at the wheel for the same motor?"
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "A check of the torque needed on the steepest slope"
+          "A gearbox with a higher ratio, which trades speed for torque"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "A check of the torque needed on the steepest slope"
+        "exampleAnswer": "A gearbox with a higher ratio, which trades speed for torque"
       },
       "sourceIds": [
         "openstax-up1-6-2",
         "modern-robotics-8-9",
         "mit-2-12-ch2"
       ],
-      "onCorrect": "The slope force sets the torque, and torque has to be checked on its own besides the speed.",
+      "onCorrect": "A higher ratio multiplies the motor's torque at the wheel, at the cost of top speed.",
       "misconceptions": [
-        {
-          "match": {
-            "choiceIds": [
-              "a"
-            ]
-          },
-          "feedback": "Capacity decides how long the robot runs, not how steep a slope its motors can climb."
-        },
         {
           "match": {
             "choiceIds": [
               "b"
             ]
           },
-          "feedback": "The top speed was already right, and a climb is a question of force, which a speed check does not cover."
+          "feedback": "A larger radius needs more torque for the same force at the ground, since torque is force times radius, so it makes the stall worse."
         },
         {
           "match": {
@@ -9900,27 +9920,35 @@
               "c"
             ]
           },
-          "feedback": "The controller's speed has no bearing on how much torque the drive gives."
+          "feedback": "The PWM frequency changes how smooth the current is. The average voltage is still the duty cycle times the supply, so there is no extra torque."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "A faster loop reacts sooner but cannot make torque. The ramp needs force, which the motor, the ratio and the wheel radius set."
         }
       ],
       "skill": "pick-ratio",
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "A check of the battery's capacity in amp-hours"
-        },
-        {
           "id": "b",
-          "label": "A check of the speed the wheels reach with no load"
+          "label": "Wheels of a larger radius, which put out more force"
         },
         {
           "id": "c",
-          "label": "A check of the microcontroller's clock speed"
+          "label": "A higher PWM frequency, which gives the motor more voltage"
         },
         {
           "id": "d",
-          "label": "A check of the torque needed on the steepest slope"
+          "label": "A faster control loop, so the robot reacts sooner"
+        },
+        {
+          "id": "a",
+          "label": "A gearbox with a higher ratio, which trades speed for torque"
         }
       ]
     },
@@ -9930,21 +9958,21 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "A force of 5 N acts at the ground on a wheel of radius 0.04 m. What torque is needed at the wheel, in N m?",
+      "prompt": "A force of 6 N acts at the ground on a wheel of radius 0.035 m. What torque is needed at the wheel, in N m?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Torque = force × radius.",
-        "The radius is 0.04 m.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "The radius is 0.035 m.",
+        "Both quantities are in newtons and metres already, so no conversion is needed."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 0.2,
+        "value": 0.21,
         "unit": "N m",
         "absoluteTolerance": 0.001,
         "relativeTolerance": 0,
-        "workedAnswer": "5 × 0.04 = 0.2 N m."
+        "workedAnswer": "6 × 0.035 = 0.21 N m."
       },
       "sourceIds": [
         "openstax-up1-6-2",
@@ -9956,7 +9984,7 @@
         {
           "match": {
             "numeric": [
-              125
+              171
             ]
           },
           "feedback": "That divides the force by the radius."
@@ -9964,7 +9992,7 @@
         {
           "match": {
             "numeric": [
-              5
+              6
             ]
           },
           "feedback": "That is the force."
@@ -9979,33 +10007,33 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "A motor turns at 3000 rpm and the wheel at 100 rpm. What is the gear ratio?",
+      "prompt": "A motor turns at 4200 rpm and the wheel at 150 rpm. What is the gear ratio?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
         "Motor speed over wheel speed.",
-        "Write each quantity with its unit, then combine them in the order the question describes.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Both speeds are in rpm, so the units cancel.",
+        "Divide 4200 by 150."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 30,
+        "value": 28,
         "unit": "",
-        "absoluteTolerance": 0.15,
+        "absoluteTolerance": 0.14,
         "relativeTolerance": 0,
-        "workedAnswer": "3000 / 100 = 30."
+        "workedAnswer": "4200 / 150 = 28."
       },
       "sourceIds": [
         "openstax-up1-6-2",
         "modern-robotics-8-9",
         "mit-2-12-ch2"
       ],
-      "onCorrect": "The ratio 30:1 means the wheel turns once for every 30 turns of the motor.",
+      "onCorrect": "The ratio 28:1 means the wheel turns once for every 28 turns of the motor.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              0.033
+              0.036
             ]
           },
           "feedback": "That inverts the ratio."
@@ -10013,7 +10041,7 @@
         {
           "match": {
             "numeric": [
-              300000
+              630000
             ]
           },
           "feedback": "That multiplies the two speeds."
@@ -10028,21 +10056,21 @@
         "wheel-torque",
         "reflect"
       ],
-      "prompt": "The wheel needs 0.25 N m, the ratio is 30 and the efficiency is 0.8. What torque does the motor need, in mN m, to one decimal place?",
+      "prompt": "The wheel needs 0.45 N m, the ratio is 45 and the efficiency is 0.8. What torque does the motor need, in mN m, to one decimal place?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
         "Motor torque = wheel torque / (ratio × efficiency).",
-        "30 × 0.8 = 24.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "45 × 0.8 = 36.",
+        "Convert newton metres to millinewton metres at the end."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 10.4,
+        "value": 12.5,
         "unit": "mN m",
         "absoluteTolerance": 0.1,
         "relativeTolerance": 0,
-        "workedAnswer": "0.25 / (30 × 0.8) = 0.0104 N m = 10.4 mN m."
+        "workedAnswer": "0.45 / (45 × 0.8) = 0.0125 N m = 12.5 mN m."
       },
       "sourceIds": [
         "openstax-up1-6-2",
@@ -10054,7 +10082,7 @@
         {
           "match": {
             "numeric": [
-              8.3
+              10
             ]
           },
           "feedback": "That leaves out the efficiency."
@@ -10062,10 +10090,10 @@
         {
           "match": {
             "numeric": [
-              7.5
+              8
             ]
           },
-          "feedback": "That multiplies 0.25 by the ratio of 30 instead of dividing by the ratio and the efficiency."
+          "feedback": "That multiplies by the efficiency instead of dividing by it."
         }
       ],
       "skill": "compute-motor-torque",
@@ -10347,12 +10375,12 @@
         "fk",
         "workspace"
       ],
-      "prompt": "Can the arm (l1 = 0.30 m, l2 = 0.20 m) reach a point 0.08 m from its base?",
+      "prompt": "Can an arm with l1 = 0.50 m and l2 = 0.30 m reach a point 0.12 m from its base?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
         "Find the least reach, the difference of the two lengths.",
-        "Compare with 0.08 m."
+        "Compare it with 0.12 m."
       ],
       "answerAuthority": {
         "kind": "text",
@@ -10367,7 +10395,7 @@
         "mit-2-12-ch4",
         "modern-robotics-6"
       ],
-      "onCorrect": "The least reach is 0.10 m, so a point at 0.08 m is closer than the hand can ever come.",
+      "onCorrect": "The least reach is 0.20 m, so a point at 0.12 m is closer than the hand can ever come.",
       "misconceptions": [
         {
           "match": {
@@ -10375,7 +10403,7 @@
               "a"
             ]
           },
-          "feedback": "Folding the elbow fully gives only 0.10 m."
+          "feedback": "Folding the elbow fully gives only 0.20 m."
         },
         {
           "match": {
@@ -10391,16 +10419,12 @@
               "d"
             ]
           },
-          "feedback": "0.08 m is well within the 0.5 m maximum."
+          "feedback": "0.12 m is well within the 0.80 m maximum."
         }
       ],
       "skill": "spot-limits",
       "calculator": "off",
       "choices": [
-        {
-          "id": "b",
-          "label": "No, it is inside the hole of the ring"
-        },
         {
           "id": "a",
           "label": "Yes, by folding the elbow right back on itself"
@@ -10408,6 +10432,10 @@
         {
           "id": "c",
           "label": "Yes, by turning the base joint towards it"
+        },
+        {
+          "id": "b",
+          "label": "No, it is inside the hole of the ring"
         },
         {
           "id": "d",
@@ -11698,21 +11726,21 @@
         "diff-drive",
         "complementary"
       ],
-      "prompt": "α = 0.98, angle 10°, gyro 5°/s, dt = 0.01 s, accelerometer 7°. What is the new angle, in degrees to two decimals?",
+      "prompt": "α = 0.96, angle 15°, gyro −8°/s, dt = 0.02 s, accelerometer 12°. What is the new angle, in degrees to two decimals?",
       "responseType": "numeric",
       "difficulty": 1.3,
       "hints": [
-        "Gyro step first: 10 + 5 × 0.01.",
-        "Weight it by 0.98, then add 0.02 × 7.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Gyro step first: 15 + (−8) × 0.02.",
+        "Weight it by 0.96, then add 0.04 × 12.",
+        "The gyro rate is negative, so the angle goes down before the weighting."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 9.99,
+        "value": 14.73,
         "unit": "degrees",
         "absoluteTolerance": 0.01,
         "relativeTolerance": 0,
-        "workedAnswer": "0.98 × (10 + 0.05) + 0.02 × 7 = 9.849 + 0.14 = 9.989°."
+        "workedAnswer": "0.96 × (15 − 8 × 0.02) + 0.04 × 12 = 14.2464 + 0.48 = 14.726°."
       },
       "sourceIds": [
         "columbia-diff-drive",
@@ -11724,18 +11752,18 @@
         {
           "match": {
             "numeric": [
-              7
+              14.84
             ]
           },
-          "feedback": "That is the accelerometer's reading, ignoring the gyro."
+          "feedback": "That is the gyro step before it is weighted, with no accelerometer share."
         },
         {
           "match": {
             "numeric": [
-              10.05
+              15.03
             ]
           },
-          "feedback": "That is the gyro step with no accelerometer."
+          "feedback": "That drops the minus sign of the gyro rate, so the gyro step moves the angle the wrong way."
         }
       ],
       "skill": "apply-complementary-filter",
@@ -12072,21 +12100,21 @@
         "sense-plan-act",
         "mecr-budget"
       ],
-      "prompt": "A 14.8 Wh battery supplies an average of 10 W. How long does it run, in hours?",
+      "prompt": "A robot has a 4000 mAh battery at 7.4 V and an average power of 12.5 W. How long does it run, in hours to two decimal places?",
       "responseType": "numeric",
       "difficulty": 1,
       "hints": [
-        "Run time is energy divided by average power.",
-        "Write each quantity with its unit, then combine them in the order the question describes.",
-        "Write each quantity with its unit, then combine them in the order the question describes."
+        "Convert mAh to Ah.",
+        "Multiply by the voltage to get the energy in watt-hours.",
+        "Run time is the energy divided by the average power."
       ],
       "answerAuthority": {
         "kind": "numeric",
-        "value": 1.48,
+        "value": 2.37,
         "unit": "h",
-        "absoluteTolerance": 0.0074,
+        "absoluteTolerance": 0.012,
         "relativeTolerance": 0,
-        "workedAnswer": "14.8 / 10 = 1.48 h."
+        "workedAnswer": "4 Ah × 7.4 V = 29.6 Wh, and 29.6 / 12.5 = 2.37 h."
       },
       "sourceIds": [
         "openstax-up2-9-5",
@@ -12094,23 +12122,23 @@
         "rp2040-ds",
         "arduino-blink-without-delay"
       ],
-      "onCorrect": "About 1 hour 29 minutes, if the average really holds.",
+      "onCorrect": "That is about 2 hours 22 minutes, if the average really holds.",
       "misconceptions": [
         {
           "match": {
             "numeric": [
-              148
+              29.6
             ]
           },
-          "feedback": "That multiplies by 10."
+          "feedback": "That is the energy in watt-hours. Divide it by the power."
         },
         {
           "match": {
             "numeric": [
-              0.68
+              2368
             ]
           },
-          "feedback": "That divides 10 by 14.8."
+          "feedback": "That leaves the capacity in mAh, so the energy comes out a thousand times too large."
         }
       ],
       "skill": "compute-run-time",
@@ -12172,20 +12200,20 @@
         "sense-plan-act",
         "mecr-budget"
       ],
-      "prompt": "A robot loses the signal from its distance sensor while it is driving. What should it do?",
+      "prompt": "An emergency stop button is wired to an input pin. The program reads the pin once per loop and switches the motors off when it is pressed. What is the weakness of this design?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "Think of the safe state.",
-        "What should a fault lead to?"
+        "Ask what happens to the stop if the program itself stops running.",
+        "Which part of the design would still work when the program has hung?"
       ],
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Stop, with the motors off"
+          "A hung program never reads the button, so the motors run on"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Stop, with the motors off"
+        "exampleAnswer": "A hung program never reads the button, so the motors run on"
       },
       "sourceIds": [
         "openstax-up2-9-5",
@@ -12193,23 +12221,15 @@
         "rp2040-ds",
         "arduino-blink-without-delay"
       ],
-      "onCorrect": "A sensor that has stopped answering is a fault, and every fault leads to the stopped state.",
+      "onCorrect": "A hung program stops reading the pin, so the stop has to cut the motor power directly and not depend on the program.",
       "misconceptions": [
-        {
-          "match": {
-            "choiceIds": [
-              "a"
-            ]
-          },
-          "feedback": "The last reading is out of date, so carrying on trusts a stale number."
-        },
         {
           "match": {
             "choiceIds": [
               "c"
             ]
           },
-          "feedback": "A slower robot is still driving on a stale number, and a sensor that has stopped answering is a fault, which leads to the safe state."
+          "feedback": "Reading a pin takes only microseconds, far inside a 10 ms loop."
         },
         {
           "match": {
@@ -12217,27 +12237,35 @@
               "d"
             ]
           },
-          "feedback": "A turn is another motion made without information."
+          "feedback": "A person holds the button for far longer than one pass of the loop."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "a"
+            ]
+          },
+          "feedback": "Bounce adds extra edges, but the first edge is still seen, so the press is not missed."
         }
       ],
       "skill": "choose-safe-state",
       "calculator": "off",
       "choices": [
         {
-          "id": "a",
-          "label": "Carry on using the last reading"
+          "id": "c",
+          "label": "Reading a pin takes too long inside a 10 ms loop"
         },
         {
           "id": "b",
-          "label": "Stop, with the motors off"
-        },
-        {
-          "id": "c",
-          "label": "Slow down but keep using the last reading"
+          "label": "A hung program never reads the button, so the motors run on"
         },
         {
           "id": "d",
-          "label": "Turn away from the last obstacle it saw"
+          "label": "A press is too short for the program to see it"
+        },
+        {
+          "id": "a",
+          "label": "The button's contacts bounce, so a press may be missed"
         }
       ]
     },
@@ -12729,12 +12757,12 @@
         "ik",
         "elbow"
       ],
-      "prompt": "A target is 0.35 m from the base of an arm with l1 = 0.3 m and l2 = 0.2 m. What does inverse kinematics find?",
+      "prompt": "An arm has l1 = 0.3 m and l2 = 0.2 m. Which of these targets can it not reach?",
       "responseType": "short_text",
       "difficulty": 1,
       "hints": [
-        "The reach runs from |l1 − l2| to l1 + l2.",
-        "Compare 0.35 m with both ends of that range."
+        "Find the distance of each target from the base, the square root of x² + y².",
+        "A target can be reached when its distance lies between |l1 − l2| and l1 + l2."
       ],
       "sourceIds": [
         "modern-robotics-6",
@@ -12746,28 +12774,28 @@
       "answerAuthority": {
         "kind": "text",
         "acceptedIdeas": [
-          "Two solutions, one for each way the elbow bends"
+          "(0.45, 0.30) m"
         ],
         "rejectedIdeas": [],
-        "exampleAnswer": "Two solutions, one for each way the elbow bends"
+        "exampleAnswer": "(0.45, 0.30) m"
       },
-      "onCorrect": "At 0.35 m, cos θ2 comes out between −1 and 1, and each sign of θ2 gives a valid arm.",
+      "onCorrect": "The target is at distance √(0.45² + 0.30²) = 0.54 m, beyond the greatest reach of 0.5 m, so cos θ2 would come out above 1.",
       "choices": [
         {
           "id": "a",
-          "label": "No solution, since the target is out of reach"
-        },
-        {
-          "id": "b",
-          "label": "One solution, since the arm must be straight"
+          "label": "(0.30, 0.30) m"
         },
         {
           "id": "c",
-          "label": "Infinitely many, since the joints can turn freely"
+          "label": "(0.10, 0.05) m"
         },
         {
           "id": "d",
-          "label": "Two solutions, one for each way the elbow bends"
+          "label": "(0.48, 0.00) m"
+        },
+        {
+          "id": "b",
+          "label": "(0.45, 0.30) m"
         }
       ],
       "misconceptions": [
@@ -12777,15 +12805,7 @@
               "a"
             ]
           },
-          "feedback": "The reach runs from 0.1 m to 0.5 m for this arm, and 0.35 m lies between them."
-        },
-        {
-          "match": {
-            "choiceIds": [
-              "b"
-            ]
-          },
-          "feedback": "A single solution occurs only at full stretch or fully folded back, which are 0.5 m and 0.1 m from the base."
+          "feedback": "Its distance from the base is 0.42 m, between the least reach of 0.1 m and the greatest of 0.5 m."
         },
         {
           "match": {
@@ -12793,7 +12813,15 @@
               "c"
             ]
           },
-          "feedback": "A two-link arm in a plane has only the elbow's two signs to choose between, so the number of solutions is finite."
+          "feedback": "Its distance from the base is 0.11 m, just outside the hole of 0.1 m, so the arm reaches it with the elbow almost folded back."
+        },
+        {
+          "match": {
+            "choiceIds": [
+              "d"
+            ]
+          },
+          "feedback": "Its distance from the base is 0.48 m, just inside the greatest reach of 0.5 m."
         }
       ]
     },
