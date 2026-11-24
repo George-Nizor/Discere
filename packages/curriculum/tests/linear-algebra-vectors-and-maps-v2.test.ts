@@ -111,18 +111,22 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L4, 2), unit([3, 4])[0]!);
     eq(k(L4, 6), unit([0, -7])[1]!);
     eq(k(L4, 5), dot([2, -1], [1, 2]));
-    eq(k(L4, 10), unit([8, -6])[0]!);
+    eq(k(L4, 10), unit([24, -7])[0]!);
     expect(dot([1, 1], [1, -1])).toBe(0);
     expect(choiceLabel(k(L4, 8))).toBe("(1, 1) and (1, −1)");
     expect(dot([1, 2], [2, 3])).not.toBe(0);
     expect(dot([3, 1], [1, 3])).not.toBe(0);
-    // (2, 0) and (0, 3) are orthogonal, with lengths 2 and 3.
-    expect(dot([2, 0], [0, 3])).toBe(0);
-    expect(len([2, 0])).not.toBe(1);
-    expect(choiceLabel(k(L4, 3))).toBe("Orthogonal but not orthonormal");
+    // (0.6, 0.8) and (−0.8, 0.6) are orthogonal, and both have length 1, so they are orthonormal.
+    expect(dot([0.6, 0.8], [-0.8, 0.6])).toBeCloseTo(0, 12);
+    expect(len([0.6, 0.8])).toBeCloseTo(1, 12);
+    expect(len([-0.8, 0.6])).toBeCloseTo(1, 12);
+    expect(choiceLabel(k(L4, 3))).toBe("Orthonormal: orthogonal, and both unit vectors");
     expect(choiceIds(k(L4, 3))).toEqual(["a"]);
+    // Only the zero vector has length zero: (0, 3), (−4, −3) and (1, −1) can all be normalised.
     expect(len([0, 0])).toBe(0);
-    expect(choiceLabel(k(L4, 4))).toBe("No");
+    expect([len([0, 3]), len([-4, -3]), len([1, -1])].every((x) => x > 0)).toBe(true);
+    expect(choiceLabel(k(L4, 4))).toBe("(0, 0)");
+    expect(choiceIds(k(L4, 4))).toEqual(["c"]);
   });
 
   it("lessons 5 to 8: matrices, maps, products, inverses", () => {
@@ -144,7 +148,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
         [4, 0],
       ][0]![1]!,
     );
-    eq(k(L5, 6), 3);
+    eq(k(L5, 6), 5);
     eq(
       k(L5, 10),
       [
@@ -214,7 +218,10 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     ])
       expect(sub(shift(v), v)).toEqual([1, 0]);
     expect(shift([3, 4])).not.toEqual(shift([1, 2]).map((x, i) => x + shift([2, 2])[i]!));
-    expect(choiceLabel(k(L6, 3))).toBe("T(u) + T(v)");
+    // T(u + v) = T(u) + T(v): the outputs (2, 1) and (3, −1) add to (5, 0).
+    expect([2 + 3, 1 + -1]).toEqual([5, 0]);
+    expect(choiceLabel(k(L6, 3))).toBe("(5, 0)");
+    expect(choiceIds(k(L6, 3))).toEqual(["a"]);
     const L7 = "compose-matrix-maps";
     const A7 = [
         [1, 2],
@@ -358,7 +365,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     );
     eq(k(L9, 2), 1 - 2 * 5);
     eq(k(L9, 3), -9 / -3);
-    eq(k(L9, 5), 5 - (4 - 1));
+    eq(k(L9, 5), 7 - (6 - 2));
     eq(
       k(L9, 6),
       solve(
@@ -366,7 +373,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
           [2, 1],
           [1, -1],
         ],
-        [8, 1],
+        [14, 1],
       )[1]!,
     );
     eq(
@@ -430,16 +437,15 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
       ],
     ];
     for (const A of zeroSolutions) expect(apply(A, [0, 0])).toEqual([0, 0]);
-    expect(choiceLabel(k(L10, 5))).toBe(
-      `${yesNo(zeroSolutions.every((A) => apply(A, [0, 0]).every((x) => x === 0)))}, because A times the zero vector is always the zero vector.`,
-    );
-    expect(choiceIds(k(L10, 5))).toEqual(["a"]);
+    // Three unknowns, three pivots: no free variable, so only the zero vector solves A x = 0.
+    expect(choiceLabel(k(L10, 5))).toBe("Exactly one, the zero vector");
+    expect(choiceIds(k(L10, 5))).toEqual(["b"]);
     const L11 = "spans-and-subspaces";
     const rank2 = (u: number[], v: number[]) => (det2([u, v]) === 0 ? 1 : 2);
     eq(k(L11, 7), 3 * 2);
     eq(k(L11, 8), 1);
     eq(k(L11, 1), rank2([1, 2], [2, 4]));
-    eq(k(L11, 2), rank2([1, 0], [1, 1]));
+    eq(k(L11, 2), rank2([3, -6], [-1, 2]));
     eq(k(L11, 5), rank2([2, 1], [-4, -2]));
     eq(k(L11, 11), rank2([1, 2], [3, 1]));
     eq(k(L11, 6), 5 - 3);
@@ -610,8 +616,8 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(
       k(L14, 3),
       det2([
-        [1, 2],
-        [2, 4],
+        [2, -6],
+        [-1, 3],
       ]),
     );
     eq(
@@ -624,7 +630,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
           ],
           [
             [1, 1],
-            [0, 2],
+            [0, 7],
           ],
         ),
       ),
@@ -651,7 +657,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L15, 1), proj([4, 2], [1, 1])[0]!);
     eq(k(L15, 6), proj([-2, 4], [1, 1])[0]!);
     eq(k(L15, 3), sub([4, 2], [3, 3])[1]!);
-    eq(k(L15, 4), proj([2, -2], [1, 1])[0]!);
+    eq(k(L15, 4), proj([1, -3], [3, 1])[0]!);
     eq(k(L15, 5), proj([2, 5], [0, 1])[1]!);
     eq(k(L15, 10), proj([7, 1], [1, -1])[0]!);
     expect(sub([5, 1], proj([5, 1], [1, 1]))).toEqual([2, -2]);
@@ -679,7 +685,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     );
     eq(k(L16, 6), slope([2, 5, 8]));
     eq(k(L16, 3), slope([1, 2, 2]));
-    eq(k(L16, 5), mean([1, 5, 9]));
+    eq(k(L16, 5), mean([6, 15, 36]));
     eq(k(L16, 10), slope([4, 3, 0]));
     expect(sq([2, 3, 10], mean([2, 3, 10]))).toBe(38);
     // Shortcut quoted in the transfer lead: (last y − first y) ÷ 2 for x = 0, 1, 2.
@@ -697,7 +703,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
     eq(k(L17, 8), sub([2, 3], proj([2, 3], [1, 0]))[1]!);
     eq(k(L17, 5), sub([3, 1], proj([3, 1], [1, 0]))[1]!);
     eq(k(L17, 2), unit([1, 1])[0]!);
-    eq(k(L17, 6), unit([-3, 4])[1]!);
+    eq(k(L17, 6), unit([7, -24])[0]!);
     eq(k(L17, 1), sub([1, 0], proj([1, 0], [1, 1]))[1]!);
     eq(k(L17, 3), dot([1, 1], [1, -1]));
     eq(k(L17, 10), sub([2, 4], proj([2, 4], [1, 1]))[0]!);
@@ -839,7 +845,7 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
           [0, -2],
         ],
         [0, 1],
-      ) ** 4,
+      ) ** 5,
     );
     expect(
       lam(
@@ -850,7 +856,11 @@ describe("linear algebra v2: numeric keys follow from the arithmetic", () => {
         [1, 1],
       ) ** 2,
     ).toBe(25);
-    expect(choiceLabel(k(L19, 3))).toBe("No");
+    // Two different eigenvalues, 2 and 5, give two independent eigenvectors, so P is invertible.
+    expect(choiceLabel(k(L19, 3))).toBe(
+      "Yes, because its two eigenvectors cannot lie along one line",
+    );
+    expect(choiceIds(k(L19, 3))).toEqual(["c"]);
     expect(choiceLabel(k(L19, 6))).toBe("Its columns must form a basis");
     // A is P D P⁻¹ for P = [(1, 1), (1, -1)] columns and D = diag(3, 1).
     const P = [
@@ -1375,7 +1385,7 @@ describe("linear algebra story lessons 6 to 10", () => {
     // Worked example: rows (1, 2, 7), (3, 5, 18) gives (0, -1, -3).
     expect([3 - 3 * 1, 5 - 3 * 2, 18 - 3 * 7]).toEqual([0, -1, -3]);
     // Skill check items by Cramer's rule are already covered above; the staircase item by hand.
-    eq(k("solve-by-row-reduction", 5), 5 - (4 - 1));
+    eq(k("solve-by-row-reduction", 5), 7 - (6 - 2));
   });
 
   it("lesson 10: recomputes the numbers the teaching screens quote", () => {
@@ -1428,10 +1438,8 @@ describe("linear algebra story lessons 6 to 10", () => {
         [0, 0],
       ),
     ).toEqual([0, 0]);
-    expect(choiceLabel(k("one-none-or-many-solutions", 5))).toBe(
-      "Yes, because A times the zero vector is always the zero vector.",
-    );
-    expect(choiceIds(k("one-none-or-many-solutions", 5))).toEqual(["a"]);
+    expect(choiceLabel(k("one-none-or-many-solutions", 5))).toBe("Exactly one, the zero vector");
+    expect(choiceIds(k("one-none-or-many-solutions", 5))).toEqual(["b"]);
   });
 });
 
@@ -1523,8 +1531,8 @@ describe("linear algebra story lessons 11 to 15", () => {
     eq(
       k(L, 2),
       det2([
-        [1, 0],
-        [1, 1],
+        [3, -6],
+        [-1, 2],
       ]) === 0
         ? 1
         : 2,
@@ -1872,7 +1880,7 @@ describe("linear algebra story lessons 11 to 15", () => {
           ],
           [
             [1, 1],
-            [0, 2],
+            [0, 7],
           ],
         ),
       ),
@@ -1890,8 +1898,8 @@ describe("linear algebra story lessons 11 to 15", () => {
     eq(
       k(L, 3),
       det2([
-        [1, 2],
-        [2, 4],
+        [2, -6],
+        [-1, 3],
       ]),
     );
     eq(
@@ -1937,7 +1945,7 @@ describe("linear algebra story lessons 11 to 15", () => {
     expect(dot([3, -3], [1, 1])).toBe(0);
     eq(k(L, 3), sub([4, 2], [3, 3])[1]!);
     // Skill check items.
-    eq(k(L, 4), proj([2, -2], [1, 1])[0]!);
+    eq(k(L, 4), proj([1, -3], [3, 1])[0]!);
     eq(k(L, 5), proj([2, 5], [0, 1])[1]!);
     eq(k(L, 10), proj([7, 1], [1, -1])[0]!);
   });
@@ -2093,7 +2101,7 @@ describe("linear algebra story lessons 16 to 20", () => {
     eq(k(L, 6), line([2, 5, 8]).s);
     eq(k(L, 3), line([1, 2, 2]).s);
     eq(k(L, 10), line([4, 3, 0]).s);
-    eq(k(L, 5), mean([1, 5, 9]));
+    eq(k(L, 5), mean([6, 15, 36]));
     // The close points at the next lesson: these columns are not at right angles.
     expect(dot([1, 1, 1], [0, 1, 2])).toBe(3);
   });
@@ -2135,7 +2143,7 @@ describe("linear algebra story lessons 16 to 20", () => {
     near(unit(w2), [0.8, -0.6]);
     // Normalising: (1, 1) and (−3, 4).
     eq(k(L, 2), 1 / Math.SQRT2);
-    eq(k(L, 6), 4 / len([-3, 4]));
+    eq(k(L, 6), 7 / len([7, -24]));
     // When nothing is left: (3, 6) along (1, 2), and the transfer item (2, 2) along (1, 1).
     expect(dot([3, 6], [1, 2])).toBe(15);
     expect(proj([3, 6], [1, 2])).toEqual([3, 6]);
@@ -2387,9 +2395,12 @@ describe("linear algebra story lessons 16 to 20", () => {
           [0, -2],
         ],
         [0, 1],
-      ) ** 4,
+      ) ** 5,
     );
-    expect(choiceLabel(k(L, 3))).toBe("No");
+    expect(choiceLabel(k(L, 3))).toBe(
+      "Yes, because its two eigenvectors cannot lie along one line",
+    );
+    expect(choiceIds(k(L, 3))).toEqual(["c"]);
     expect(choiceLabel(k(L, 6))).toBe("Its columns must form a basis");
     expect(lamOf(S, [1, 1]) ** 2).toBe(9);
   });

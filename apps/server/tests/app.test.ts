@@ -104,7 +104,7 @@ describe("Discere API", () => {
       ["elec-current-in-one-loop-after-the-resistor", "Exactly 0.05 A, because the charge has nowhere else to go"],
       ["why-divide-by-resistance", "A bigger resistance holds the current back, so the current is smaller"],
       ["calculate-current-6v-150ohm", "0.04 A"],
-      ["calculate-current-5v-100ohm", "0.05 A"],
+      ["calculate-current-5v-100ohm", "0.015 A"],
       ["choose-change-that-raises-current", "Raising the supply voltage, so the battery pushes much harder on the charge"],
       ["current-at-second-meter", "0.2 A"],
     ] as const)
@@ -426,7 +426,7 @@ describe("Discere API", () => {
       url: "/api/attempts",
       payload: {
         questionId: "calculate-current-5v-100ohm",
-        response: "50 mA",
+        response: "15 mA",
         mode: "coach",
       },
     });
@@ -440,9 +440,9 @@ describe("Discere API", () => {
       url: "/api/attempts",
       payload: {
         questionId: "calculate-current-5v-100ohm",
-        response: "50 mA",
+        response: "15 mA",
         mode: "coach",
-        answerAuthority: { value: 0.05, unit: "A" },
+        answerAuthority: { value: 0.015, unit: "A" },
       },
     });
     expect(response.statusCode).toBe(400);
@@ -455,7 +455,7 @@ describe("Discere API", () => {
       url: "/api/attempts",
       payload: {
         questionId: "calculate-current-5v-100ohm",
-        response: "50 mA",
+        response: "15 mA",
         mode: "direct",
       },
     });
@@ -470,7 +470,7 @@ describe("Discere API", () => {
       url: "/api/attempts",
       payload: {
         questionId: "calculate-current-5v-100ohm",
-        response: "50 mA",
+        response: "15 mA",
         mode: "coach",
       },
     });
@@ -509,7 +509,7 @@ describe("Discere API", () => {
       url: "/api/attempts",
       payload: {
         questionId: "calculate-current-5v-100ohm",
-        response: "0.05 A",
+        response: "0.015 A",
         mode: "coach",
       },
     });
@@ -595,7 +595,7 @@ describe("Discere API", () => {
       payload: { token, confirmation: "show answer" },
     });
     expect(confirm.statusCode).toBe(200);
-    expect(confirm.json().answer).toContain("0.05 A");
+    expect(confirm.json().answer).toContain("0.015 A");
     expect(confirm.json().transferPrompt).toContain("6 V");
     const repeated = await app.inject({
       method: "POST",

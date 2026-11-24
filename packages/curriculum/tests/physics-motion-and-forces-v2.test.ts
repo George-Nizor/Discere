@@ -46,6 +46,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
   it("measuring motion: displacement and distance", () => {
     // keys
     near("measuring-motion-hook", 5 - 2);
+    near("measuring-motion-lap", 60 - 60);
     near("measuring-motion-direction", 2 - 6);
     near("measuring-motion-stretches", 4 + 4);
     near("measuring-motion-1", 9 - 2);
@@ -88,7 +89,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("reading-motion-graphs-1", (14 - 2) / 3);
     near("reading-motion-graphs-3", (2 - 10) / 4);
     near("reading-motion-graphs-4", (2 - 0) / 6);
-    near("reading-motion-graphs-5", (15 - 3) / (4 - 1));
+    near("reading-motion-graphs-5", (21 - 3) / (4 - 1));
     near("reading-motion-graphs-check-3", (5 - 20) / 3);
     // sums in the teaching screens and the worked example
     expect((10 - 1) / 3).toBe(3);
@@ -106,7 +107,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("changing-velocity-2", (-2 - -8) / 3);
     near("changing-velocity-4", (6 - 6) / 4);
     near("changing-velocity-5", (-3 - 9) / 4);
-    near("changing-velocity-check-3", (-4 - -10) / 3);
+    near("changing-velocity-check-3", (-4 - -9) / 2);
     // sums in the teaching screens and the worked example
     expect([0 + 3 * 3, 9 / 1]).toEqual([9, 9]);
     expect([(16 - 4) / 3, (2 - 8) / 3, (-9 - -1) / 4]).toEqual([4, -2, -2]);
@@ -127,10 +128,10 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("predicting-a-motion-4", ((12 + 0) / 2) * 4);
     near("predicting-a-motion-5", 5 + 2 * 4 + 0.5 * 1 * 16);
     near("predicting-a-motion-check-3", dx(8, 2, 3));
-    // a cart from rest covers 6 m in 2 s: a = 3 m/s², so 24 m in 4 s
-    const a = (2 * 6) / 2 ** 2;
+    // a cart from rest covers 7 m in 2 s: a = 3.5 m/s², so 28 m in 4 s
+    const a = (2 * 7) / 2 ** 2;
     near("predicting-a-motion-double", 0.5 * a * 4 ** 2);
-    expect(dx(0, a, 2)).toBe(6);
+    expect(dx(0, a, 2)).toBe(7);
     // from rest, doubling the time quadruples the distance
     expect(dx(0, 2, 4) / dx(0, 2, 2)).toBe(4);
     // sums in the teaching screens and the worked example
@@ -181,7 +182,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("force-mass-acceleration-1", (18 - 6) / 3);
     near("force-mass-acceleration-3", 24 / 2);
     near("force-mass-acceleration-4", (4 - 12) / 4);
-    near("force-mass-acceleration-5", 4 * 3);
+    near("force-mass-acceleration-5", 5 * 3);
     near("force-mass-acceleration-check-3", 45 / 9);
     // the trolley: 10 N on 5 kg, then on 10 kg, then 20 N on 5 kg
     expect([10 / 5, 10 / 10, 20 / 5]).toEqual([2, 1, 4]);
@@ -194,7 +195,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     // working backwards: F = ma and m = F / a
     expect([5 * 3, 30 / 6]).toEqual([15, 5]);
     // the transfer item and the skill check's first item
-    near("force-mass-acceleration-5", 4 * 3);
+    near("force-mass-acceleration-5", 5 * 3);
     near("force-mass-acceleration-divide", 20 / 4);
   });
 
@@ -203,7 +204,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("weight-and-support-other-planet", 3 * 4);
     near("weight-and-support-shelf", 7 * g);
     near("weight-and-support-1", 3 * g);
-    near("weight-and-support-3", 4 * g);
+    near("weight-and-support-3", 8 * g);
     near("weight-and-support-4", 4 * (g + 2));
     near("weight-and-support-5", 7 * 9.8);
     near("weight-and-support-check-3", 6 * (g - 3));
@@ -219,8 +220,8 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     for (const m of [0.5, 2, 8]) expect((m * g) / m).toBe(g);
     // a lift going down steadily has a = 0, so the support equals the weight
     expect(6 * (g + 0)).toBe(6 * g);
-    // the skill check's second item is the resting 4 kg object
-    expect(numeric("weight-and-support-3")).toBe(4 * g);
+    // the skill check's second item is the resting 8 kg object
+    expect(numeric("weight-and-support-3")).toBe(8 * g);
   });
 
   it("pairs of forces", () => {
@@ -229,7 +230,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("pairs-of-forces-2", 10 / 5);
     near("pairs-of-forces-3", -10 / 2);
     near("pairs-of-forces-5", 18 / 6);
-    near("pairs-of-forces-check-3", -16 / 4);
+    near("pairs-of-forces-check-3", -14 / 4);
     // the screen's skaters: 90 N on 30 kg and on 45 kg, in opposite directions
     expect([90 / 30, 90 / 45]).toEqual([3, 2]);
     expect([-90 / 30, 90 / 45]).toEqual([-3, 2]);
@@ -248,7 +249,7 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("friction-and-motion-2", 0.5 * 4 * g);
     near("friction-and-motion-3", 0.3 * 4 * g);
     near("friction-and-motion-4", (24 - 12) / 4);
-    near("friction-and-motion-check-3", 0.25 * 6 * g);
+    near("friction-and-motion-check-3", 0.35 * 8 * g);
     // the worked example's push (15 N) beats its limit
     expect(15 > 0.4 * 3 * g).toBe(true);
     // the screen on the ceiling: a 10 kg crate, μs = 0.4, ceiling 40 N, so 45 N slides
@@ -316,9 +317,10 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
     near("lifting-and-falling-energy-rise", 5 * g * 3);
     near("lifting-and-falling-energy-1", 3 * g * (5 - 1));
     near("lifting-and-falling-energy-gravity-up", -(3 * g * 2));
+    near("lifting-and-falling-energy-2-v2", 3 * g * ((5.5 - 1) - (2 - 1)));
     near("lifting-and-falling-energy-3", 2 * g * (3 - 8));
     near("lifting-and-falling-energy-4", -(2 * g * (3 - 8)));
-    near("lifting-and-falling-energy-5", 4 * g * 1.5);
+    near("lifting-and-falling-energy-5", 3 * g * 2.5);
     near("lifting-and-falling-energy-check-3", 5 * g * -4);
     // the lift screen: a 6 kg bag up 1.5 m, then gravity's work is its negative
     expect([6 * g, 6 * g * 1.5, -(6 * g) * 1.5]).toEqual([60, 90, -90]);
@@ -351,6 +353,8 @@ describe("Physics: Motion and Forces (v2 numeric keys)", () => {
   it("carts that stick", () => {
     const v = (m1: number, u1: number, m2: number, u2: number) => (m1 * u1 + m2 * u2) / (m1 + m2);
     const k = (m: number, s: number) => 0.5 * m * s ** 2;
+    // a 2 kg cart at +5 m/s with an impulse of -8 N·s (the momentum-and-impulse end check)
+    near("momentum-and-impulse-try", (2 * 5 - 8) / 2);
     near("carts-that-stick-first-stick", v(2, 9, 1, 0));
     near("carts-that-stick-1", v(2, 6, 4, 0));
     near("carts-that-stick-2", v(2, 6, 4, -3));
