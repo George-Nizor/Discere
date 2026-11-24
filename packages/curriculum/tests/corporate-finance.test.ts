@@ -468,7 +468,7 @@ describe("questions in Corporate Finance: How Businesses Decide", () => {
         "around 70% of predicted revenue synergies from mergers failed to materialize",
       ],
       [
-        "the target's intrinsic value, which is what the cash it can produce is worth today, the synergies",
+        "the target's intrinsic value (what the cash it can produce is worth today), the synergies",
         "the sum of the target firm's intrinsic value",
       ],
       [
