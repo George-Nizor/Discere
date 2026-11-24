@@ -179,6 +179,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
       courseIds: [
         "psychology-how-minds-work",
         "economics-markets-and-strategy",
+        "macroeconomics",
         "decision-theory",
         "personal-finance",
         "accounting",

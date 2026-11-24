@@ -5,8 +5,8 @@ well rounded across the main fields of knowledge. How Government Works, Modern P
 Thermodynamics and Energy Systems were written on 23 November 2026, and Personal Finance and
 Investing, under Australian rules, Accounting: Reading the Numbers of a Business, and
 Genetics: From Genes to Genomes on 24 November, and they have left the list. Corporate Finance:
-How Businesses Decide, and Electrical Power Systems: From Generator to Socket, which this list never
-carried, were written on 24 November too. On 23 November
+How Businesses Decide, Electrical Power Systems: From Generator to Socket, and Macroeconomics: How
+Economies Grow, Slow and Recover, which this list never carried, were written on 24 November too. On 23 November
 George put science, engineering, and money and business courses ahead of the humanities ones
 below. George chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
 
