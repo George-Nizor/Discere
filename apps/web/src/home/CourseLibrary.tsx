@@ -181,6 +181,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
         "decision-theory",
         "personal-finance",
         "accounting",
+        "corporate-finance",
         "how-government-works",
       ],
     },
