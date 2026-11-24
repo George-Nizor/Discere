@@ -148,6 +148,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
         "astronomy-sky-to-cosmos",
         "chemistry-atoms-to-reactions",
         "biology-cells-to-ecosystems",
+        "genetics",
         "how-the-body-works",
         "earth-and-environmental-science",
       ],

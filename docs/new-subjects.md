@@ -3,9 +3,9 @@
 A proposal of 14 November 2026 for completing the library's breadth, for a learner who wants to be
 well rounded across the main fields of knowledge. How Government Works, Modern Physics and
 Thermodynamics and Energy Systems were written on 23 November 2026, and Personal Finance and
-Investing, under Australian rules, and Accounting: Reading the Numbers of a Business on 24
-November, and they have left the list. Corporate Finance: How Businesses Decide, which this list
-never carried, was written on 24 November too. On 23 November
+Investing, under Australian rules, Accounting: Reading the Numbers of a Business, and
+Genetics: From Genes to Genomes on 24 November, and they have left the list. Corporate Finance:
+How Businesses Decide, which this list never carried, was written on 24 November too. On 23 November
 George put science, engineering, and money and business courses ahead of the humanities ones
 below. George chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
 
@@ -65,8 +65,9 @@ answers, order, sort, quoted sources side by side, code).
   (NC-SA). Extends Logic.
 - **Public Health and Epidemiology:** partly covered by Statistical and Causal Inference.
 - **Classical Mythology,** and **Greek and Latin Roots of English** (a quick vocabulary win).
-- **Genetics and Evolution, Neuroscience, Organic Chemistry:** deeper science courses after the
-  current introductions.
+- **Evolution, Neuroscience, Organic Chemistry:** deeper science courses after the current
+  introductions. Genetics: From Genes to Genomes was written on 24 November 2026 and is in the
+  library.
 - **Film, History of Architecture, Marketing and Management, Criminology:** useful, lower priority.
 
 ## What each needs from the app
