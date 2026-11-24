@@ -3,7 +3,8 @@
 A proposal of 14 November 2026 for completing the library's breadth, for a learner who wants to be
 well rounded across the main fields of knowledge. How Government Works, Modern Physics and
 Thermodynamics and Energy Systems were written on 23 November 2026, and Personal Finance and
-Investing, under Australian rules, on 24 November, and they have left the list. On 23 November
+Investing, under Australian rules, and Accounting: Reading the Numbers of a Business on 24
+November, and they have left the list. On 23 November
 George put science, engineering, and money and business courses ahead of the humanities ones
 below. George chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
 
@@ -44,7 +45,6 @@ answers, order, sort, quoted sources side by side, code).
 
 | # | Course | What it adds | Main sources (licence) |
 |---|---|---|---|
-| 9 | **Accounting: Reading the Numbers of a Business** | Balance sheet, income statement, cash flow, ratios: how to read a company. Pairs with Economics and Personal Finance. | Lyryx Introduction to Financial Accounting (NC-SA) |
 | 10 | **Sociology** | Social structure, class, institutions, inequality, how societies change, and how sociologists know. | Little and McGivern, Introduction to Sociology (BCcampus, CC BY); Noba (NC-SA); Du Bois, Weber, Durkheim (public domain) |
 | 11 | **Human and Physical Geography** | Why people, cities, trade and climate sit where they do; landforms, climate zones and hazards; reading maps. | Dorrell and Henderson, Introduction to Human Geography (CC BY); Earle, Physical Geology (CC BY); Our World in Data and World Bank data (CC BY) |
 | 12 | **A first foreign language** | Speaking, reading and listening in a second language. The largest single gap, but also the largest build (see below). | Depends on the language: LibreTexts ¡Chévere! (Spanish, CC BY), FREN 101 (French, CC BY), Grimm Grammar (German, CC BY); US Foreign Service Institute courses with audio (public domain) |

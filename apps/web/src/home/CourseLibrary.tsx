@@ -179,6 +179,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
         "economics-markets-and-strategy",
         "decision-theory",
         "personal-finance",
+        "accounting",
         "how-government-works",
       ],
     },
