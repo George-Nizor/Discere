@@ -2,10 +2,10 @@
 
 A proposal of 14 November 2026 for completing the library's breadth, for a learner who wants to be
 well rounded across the main fields of knowledge. How Government Works, Modern Physics and
-Thermodynamics and Energy Systems were written on 23 November 2026 and have left the list. On that
-day George put science, engineering, and money and business courses ahead of the humanities ones
-below. Modern Physics and Thermodynamics and Energy Systems came first, and Personal Finance under
-Australian rules is next. George chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
+Thermodynamics and Energy Systems were written on 23 November 2026, and Personal Finance and
+Investing, under Australian rules, on 24 November, and they have left the list. On 23 November
+George put science, engineering, and money and business courses ahead of the humanities ones
+below. George chooses what goes ahead and in what order. George agreed the order on 15 November; the first two are being written.
 
 OpenStax text is left out of every source list here: its books now forbid use in AI tools without
 written permission (`docs/authoring/open-sources.md`). Once a course is written it leaves this list and enters
@@ -35,7 +35,6 @@ answers, order, sort, quoted sources side by side, code).
 | # | Course | What it adds | Main sources (licence) |
 |---|---|---|---|
 | 1 | **The Modern World, 1750 to Today** | Revolutions, industrialisation, empire, the world wars, decolonisation, the Cold War, globalisation. The History course teaches method with cases up to 1914; nothing covers how the present world was made. | Wikipedia (CC BY-SA); Our World in Data (CC BY) for long-run charts; Avalon Project and Fordham Modern History Sourcebook (public domain) for quoted documents |
-| 3 | **Personal Finance and Investing** | Budgeting, debt and interest, compounding, index funds and fees, risk, insurance, retirement saving. The highest everyday payoff of anything missing. | Government consumer guides (public domain in the US; check the local equivalent); Saylor Personal Finance (NC-SA) |
 | 4 | **Law and Legal Reasoning** | How law is made and argued: sources of law, precedent, contract, tort, criminal law, constitutional rights. | Law 101 (Open SUNY, CC BY); constitutions and court judgments (public domain); CALI casebooks (NC-SA) |
 | 5 | **Art History: a Survey** | How to look at a painting, sculpture or building, and the main traditions from cave art to now, across cultures. | Smarthistory (NC-SA); Introduction to Art, University of North Georgia (BY-SA); Met, Art Institute and National Gallery open images (CC0), through the existing Wikimedia image retriever |
 | 6 | **Reading Literature: Poems, Stories and Plays** | Close reading of poetry, how a novel and a short story work, drama and Shakespeare. English teaches rhetoric and some prosody, not literature as such. | Lindsay and Bergstrom, An Introduction to Poetry (CC BY); Maricopa Introduction to Literature (BY-SA); public-domain works from Gutenberg and Wikisource, quoted word for word |
@@ -83,9 +82,9 @@ answers, order, sort, quoted sources side by side, code).
 ## Decisions for George
 
 - **Which of the first eight, and in what order.** The order above is a recommendation.
-- **Which country** for Law and Personal Finance. The open sources are mostly American; tax,
-  pensions and much of the law differ by country, and the courses should teach the rules George
-  lives under.
+- **Which country** for Law. The open sources are mostly American; the law differs by country,
+  and the course should teach the rules George lives under. Personal Finance was written under
+  Australian rules.
 - **Which language,** if any, and whether listening matters enough to build audio first.
 
 ## Cost
