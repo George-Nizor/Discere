@@ -105,6 +105,7 @@ const AREAS = [
     [
       "psychology-how-minds-work",
       "economics-markets-and-strategy",
+      "macroeconomics",
       "decision-theory",
       "personal-finance",
       "accounting",
