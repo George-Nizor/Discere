@@ -161,6 +161,7 @@ export function CourseLibrary({ courses }: { courses: CourseSummary[] }) {
       courseIds: [
         "engineering-structures-and-machines",
         "electronics-foundations",
+        "electrical-power",
         "mechanisms-and-machine-design",
         "materials-and-manufacturing",
         "thermodynamics-and-energy",
